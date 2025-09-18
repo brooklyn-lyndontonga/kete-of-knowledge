@@ -1,8 +1,4 @@
-import React, { useState } from "react"
-import { View, FlatList, TextInput } from "react-native"
-import Text from "../components/ui/Text"
-import Card from "../components/ui/Card"
-import Spacer from "../components/ui/Spacer"
+import { useState } from "react"
 import { spacing } from "../theme"
 
 const MOCK = [

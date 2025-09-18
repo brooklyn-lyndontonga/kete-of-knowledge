@@ -1,8 +1,3 @@
-import React from "react"
-import { View } from "react-native"
-import Text from "../components/ui/Text"
-import Card from "../components/ui/Card"
-import Spacer from "../components/ui/Spacer"
 import { useNavigation } from "@react-navigation/native"
 
 export default function LibraryScreen() {

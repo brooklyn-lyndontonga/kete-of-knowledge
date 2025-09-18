@@ -1,4 +1,3 @@
-import { View } from "react-native"
 import { colors, spacing, radii } from "../../theme"
 
 export default function Card({ children, style }) {

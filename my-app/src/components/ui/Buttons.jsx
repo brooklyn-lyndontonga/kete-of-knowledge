@@ -1,20 +1,16 @@
-import { TouchableOpacity, Text } from "react-native"
-import { colors, spacing, radii } from "../../theme"
+import PropTypes from "prop-types"
 
 export default function Button({ title, onPress, style, variant = "primary" }) {
-  const bg = variant === "primary" ? colors.primary : colors.secondary
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[{
-        backgroundColor: bg,
-        paddingVertical: spacing.md,
-        paddingHorizontal: spacing.xl,
-        borderRadius: radii.lg,
-        alignItems: "center"
-      }, style]}
-    >
-      <Text style={{ color: "white", fontWeight: "600" }}>{title}</Text>
-    </TouchableOpacity>
+    <Pressable onPress={onPress} style={style} accessibilityRole="button">
+      <Text>{title}</Text>
+    </Pressable>
   )
+}
+
+Button.propTypes = {
+  title: PropTypes.string.isRequired,
+  onPress: PropTypes.func,
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  variant: PropTypes.oneOf(["primary", "secondary", "ghost"]),
 }
