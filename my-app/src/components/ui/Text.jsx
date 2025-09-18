@@ -1,4 +1,3 @@
-import { Text as RNText } from "react-native"
 import { typography, colors } from "../../theme"
 
 export default function Text({ children, style, variant="body", ...rest }) {

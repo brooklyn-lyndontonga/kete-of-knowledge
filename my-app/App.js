@@ -1,10 +1,7 @@
-import { StatusBar } from "expo-status-bar";
-import React from "react";
-import { StyleSheet, View, ActivityIndicator } from "react-native";
+import { StyleSheet } from "react-native";
 import { useFonts, PlayfairDisplay_700Bold } from "@expo-google-fonts/playfair-display";
 import { Poppins_400Regular, Poppins_500Medium, Poppins_700Bold } from "@expo-google-fonts/poppins";
 import { Quicksand_500Medium } from "@expo-google-fonts/quicksand";
-import RootNavigator from "./src/navigation/RootNavigator";
 
 export default function App() {
   const [loaded] = useFonts({

@@ -1,7 +1,3 @@
-import { View } from "react-native"
-import Text from "../components/ui/Text"
-import Card from "../components/ui/Card"
-import Spacer from "../components/ui/Spacer"
 
 export default function HomeScreen() {
   return (

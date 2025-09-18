@@ -1,7 +1,3 @@
-import { View } from "react-native"
-import Text from "../components/ui/Text"
-import Button from "../components/ui/Button"
-import Spacer from "../components/ui/Spacer"
 
 export default function ProfilesScreen() {
   return (
