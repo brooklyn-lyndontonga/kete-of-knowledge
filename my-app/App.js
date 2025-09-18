@@ -1,10 +1,10 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import { useFonts, PlayfairDisplay_700Bold } from "@expo-google-fonts/playfair-display"
-import { Poppins_400Regular, Poppins_500Medium, Poppins_700Bold } from "@expo-google-fonts/poppins"
-import { Quicksand_500Medium } from "@expo-google-fonts/quicksand"
-import { View, ActivityIndicator } from "react-native"
-import RootNavigator from "./src/navigation/RootNavigator"
+import { StatusBar } from "expo-status-bar";
+import React from "react";
+import { StyleSheet, View, ActivityIndicator } from "react-native";
+import { useFonts, PlayfairDisplay_700Bold } from "@expo-google-fonts/playfair-display";
+import { Poppins_400Regular, Poppins_500Medium, Poppins_700Bold } from "@expo-google-fonts/poppins";
+import { Quicksand_500Medium } from "@expo-google-fonts/quicksand";
+import RootNavigator from "./src/navigation/RootNavigator";
 
 export default function App() {
   const [loaded] = useFonts({
@@ -12,28 +12,28 @@ export default function App() {
     Poppins_400Regular,
     Poppins_500Medium,
     Poppins_700Bold,
-    Quicksand_500Medium
-  })
+    Quicksand_500Medium,
+  });
 
-  if (!loaded) return <View style={{flex:1,justifyContent:"center"}}><ActivityIndicator/></View>
+  if (!loaded) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator />
+        <StatusBar style="auto" />
+      </View>
+    );
+  }
 
-  return <RootNavigator />
-}
-
-export default function App() {
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
       <StatusBar style="auto" />
+      <RootNavigator />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
+  loader: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" },
 });
+

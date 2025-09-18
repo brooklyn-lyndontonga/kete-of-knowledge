@@ -1,27 +1,17 @@
-import { NavigationContainer } from "@react-navigation/native"
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import HomeScreen from "../screens/HomeScreen"
-import ProfilesScreen from "../screens/ProfilesScreen"
-import LibraryScreen from "../screens/LibraryScreen"
-import SettingsScreen from "../screens/SettingsScreen"
-import { colors } from "../theme"
+// src/navigation/RootNavigator.js
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import HomeScreen from "../screens/HomeScreen";
 
-const Tab = createBottomTabNavigator()
+const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: true,
-          tabBarActiveTintColor: colors.primary
-        }}
-      >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Profiles" component={ProfilesScreen} />
-        <Tab.Screen name="Library" component={LibraryScreen} />
-        <Tab.Screen name="Settings" component={SettingsScreen} />
-      </Tab.Navigator>
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={HomeScreen} />
+      </Stack.Navigator>
     </NavigationContainer>
-  )
+  );
 }
