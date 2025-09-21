@@ -1,5 +1,6 @@
 import { colors, spacing, radii } from "../../theme"
 
+
 export default function Card({ children, style }) {
   return (
     <View style={[{
