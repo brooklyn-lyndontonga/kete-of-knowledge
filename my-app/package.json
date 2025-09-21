@@ -9,7 +9,6 @@
     "web": "expo start --web",
     "lint": "eslint . --ext .js,.jsx",
     "lint:fix": "eslint . --ext .js,.jsx --fix"
-
   },
   "dependencies": {
     "@expo-google-fonts/playfair-display": "^0.4.2",
