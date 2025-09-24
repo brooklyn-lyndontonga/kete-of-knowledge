@@ -1,24 +1,19 @@
 /* eslint-disable unused-imports/no-unused-imports */
-
-// export default function SettingsScreen() {
-//   return (
-//     <View style={{ flex:1, padding:16 }}>
-//       <Text variant="heading">Settings</Text>
-//       <Spacer />
-//       <Card><Text>App settings (placeholder)</Text></Card>
-//     </View>
-//   )
-// }
-
-
 import Placeholder from "../components/Placeholder"
+import { useNavigation } from "@react-navigation/native"
+import Button from "../components/ui/Button"
+import Spacer from "../components/ui/Spacer"
 
 function SettingsScreen() {
+  const nav = useNavigation()
   return (
-    <Placeholder
-      title="Settings"
-      body="Basic app settings (placeholder). More options land post-MVP."
-    />
+    <>
+    <Placeholder title="Settings" body="App settings (stub)" />
+    <Spacer />
+    <Button title="Help" onPress={() => nav.navigate("Help")} />
+    <Spacer />
+    <Button title="Privacy" onPress={() => nav.navigate("Privacy")} />
+  </>
   )
 }
 

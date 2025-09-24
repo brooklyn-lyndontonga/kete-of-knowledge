@@ -1,10 +1,17 @@
+/* eslint-disable unused-imports/no-unused-imports */
+import { useNavigation } from "@react-navigation/native"
+import Button from "../components/ui/Button"
+import Spacer from "../components/ui/Spacer"
 
-export default function ProfilesScreen() {
+function ProfilesScreen() {
+  const nav = useNavigation()
   return (
     <View style={{ flex:1, padding:16 }}>
-      <Text variant="heading">Profiles</Text>
+      <Text title="Profiles" body="Whānau profile hub (stub)"></Text>/Text&gt;
       <Spacer size={12} />
-      <Button title="Add Profile (placeholder)" onPress={() => {}} />
+      <Button title="Profile Guidelines" onPress={() => nav.navigate("ProfileGuidelines")} />
     </View>
   )
 }
+
+export default ProfilesScreen

@@ -1,23 +1,9 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable unused-imports/no-unused-imports */
-// /* eslint-disable unused-imports/no-unused-imports */
-// import { StyleSheet } from "react-native";
-// import { Text, View } from "react-native";
-
-
-// export default function HomeScreen() {
-//   return (
-//     <View style={styles.container}>
-//       <Text>Home screen is working ✅</Text>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, alignItems: "center", justifyContent: "center" },
-// });
-
-
 import Placeholder from "../components/Placeholder"
+import { useNavigation } from "@react-navigation/native"
+import Button from "../components/ui/Button"
+import Spacer from "../components/ui/Spacer"
 
 function HomeScreen() {
   return (
@@ -27,5 +13,12 @@ function HomeScreen() {
     />
   )
 }
+const nav = useNavigation()(
+  <>
+    <Placeholder title="Kete of Knowledge" body="Start here — Sprint-1 shell" />
+    <Spacer />
+    <Button title="Getting Started" onPress={() => nav.navigate("GettingStarted")} />
+  </>
+)
 
 export default HomeScreen
