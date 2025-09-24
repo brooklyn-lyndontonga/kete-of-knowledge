@@ -7,6 +7,13 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "kok",                   
+    "extra": {
+      "eas": {
+      "projectId": "4682360a-ffa9-4a22-87ca-fceedc719c41",
+      "SUPABASE_URL": "https://lpwjgpywtrizrbpvybdw.supabase.co",
+      "SUPABASE_ANON_KEY": "<eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd2pncHl3dHJpenJicHZ5YmR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2ODcwNjQsImV4cCI6MjA3NDI2MzA2NH0.wbLq1zvj86xYxCPli651hnXYQpRJmI3IxIrCS74XjSs>"
+    },
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -26,14 +33,11 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "4682360a-ffa9-4a22-87ca-fceedc719c41"
-      }
-    },
+  
     "owner": "brooklynlt24",
     "plugins": [
       "expo-font"
     ]
   }
+}
 }
