@@ -1,52 +1,17 @@
 /* eslint-disable unused-imports/no-unused-imports */
-// import { useNavigation } from "@react-navigation/native"
-
-
-// export default function LibraryScreen() {
-//   const navigation = useNavigation()
-
-//   return (
-//     <View style={{ flex: 1, padding: 16 }}>
-//       <Text variant="heading">Library</Text>
-//       <Spacer size={12} />
-//       <Card>
-//         <Text
-//           onPress={() => navigation.navigate("Conditions")}
-//           style={{ textDecorationLine: "underline" }}
-//         >
-//           Conditions (placeholder)
-//         </Text>
-//       </Card>
-//       <Spacer />
-//       <Card>
-//         <Text
-//           onPress={() => navigation.navigate("Symptoms")}
-//           style={{ textDecorationLine: "underline" }}
-//         >
-//           Symptoms (placeholder)
-//         </Text>
-//       </Card>
-//       <Spacer />
-//       <Card>
-//         <Text
-//           onPress={() => navigation.navigate("Medicines")}
-//           style={{ textDecorationLine: "underline" }}
-//         >
-//           Medicines (placeholder)
-//         </Text>
-//       </Card>
-//     </View>
-//   )
-// }
-
 import Placeholder from "../components/Placeholder"
+import { useNavigation } from "@react-navigation/native"
+import Button from "../components/ui/Button"
+import Spacer from "../components/ui/Spacer"
 
 function LibraryScreen() {
+  const nav = useNavigation()
   return (
-    <Placeholder
-      title="Library"
-      body="Hub for Conditions, Symptoms, Medicines (lists arrive in Sprint 3–4)."
-    />
+    <>
+    <Placeholder title="Library" body="Hub for health info (stub)" />
+    <Spacer />
+    <Button title="Library Guide" onPress={() => nav.navigate("LibraryGuide")} />
+  </>
   )
 }
 
