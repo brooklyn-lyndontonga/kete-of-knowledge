@@ -6,6 +6,8 @@ function Card({ children, style }) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
+export default Card;
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
@@ -15,5 +17,3 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
 });
-
-export default Card;

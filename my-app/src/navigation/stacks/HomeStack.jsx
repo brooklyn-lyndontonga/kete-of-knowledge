@@ -4,9 +4,9 @@ import HomeScreen from "../../screens/HomeScreen"
 import AboutScreen from "../../screens/AboutScreen"
 import GettingStartedScreen from "../../screens/GettingStartedScreen"
 
-const Stack = createNativeStackNavigator()
-
 function HomeStack() {
+  const Stack = createNativeStackNavigator()
+  
   return (
     <Stack.Navigator>
       <Stack.Screen name="HomeMain" component={HomeScreen} options={{ title: "Home" }} />

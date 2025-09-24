@@ -6,6 +6,7 @@ import Spacer from "../components/ui/Spacer"
 
 function LibraryScreen() {
   const nav = useNavigation()
+  
   return (
     <>
     <Placeholder title="Library" body="Hub for health info (stub)" />

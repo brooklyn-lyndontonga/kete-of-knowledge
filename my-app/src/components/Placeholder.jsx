@@ -1,9 +1,9 @@
 /* eslint-disable unused-imports/no-unused-imports */
 import { View, Text, StyleSheet } from "react-native";
-import Spacer from "../components/ui/Spacer"; 
-import Card from "../components/ui/Cards";        
+import Spacer from "../components/ui/Spacer";
+import Card from "../components/ui/Cards";
 
-export default function Placeholder({ title, body = "Coming soon…" }) {
+function Placeholder({ title, body = "Coming soon…" }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -14,6 +14,8 @@ export default function Placeholder({ title, body = "Coming soon…" }) {
     </View>
   );
 }
+
+export default Placeholder;
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },

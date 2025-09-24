@@ -8,7 +8,7 @@ const MOCK = [
   { id: "c3", name: "High Cholesterol" }
 ]
 
-export default function ConditionsScreen() {
+function ConditionsScreen() {
   const [q, setQ] = useState("")
   const data = MOCK.filter(item => item.name.toLowerCase().includes(q.toLowerCase()))
 
@@ -41,3 +41,5 @@ export default function ConditionsScreen() {
     </View>
   )
 }
+
+export default ConditionsScreen
