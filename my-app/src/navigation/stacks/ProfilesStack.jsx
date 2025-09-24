@@ -3,9 +3,9 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import ProfilesScreen from "../../screens/ProfilesScreen"
 import ProfileGuidelinesScreen from "../../screens/ProfileGuidelinesScreen"
 
-const Stack = createNativeStackNavigator()
-
 function ProfilesStack() {
+  const Stack = createNativeStackNavigator()
+  
   return (
     <Stack.Navigator>
       <Stack.Screen name="ProfilesHome" component={ProfilesScreen} options={{ title: "Profiles" }} />

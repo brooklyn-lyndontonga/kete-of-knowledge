@@ -1,6 +1,6 @@
 /* eslint-disable unused-imports/no-unused-vars */
 /* eslint-disable unused-imports/no-unused-imports */
-import { NavigationContainer } from "@react-navigation/native";   // ✅ add this
+import { NavigationContainer } from "@react-navigation/native"; 
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeStack from "./stacks/HomeStack";
 import ProfilesStack from "./stacks/ProfilesStack";
@@ -8,9 +8,9 @@ import LibraryStack from "./stacks/LibraryStack";
 import SettingsStack from "./stacks/SettingsStack";
 import { colors } from "../theme";
 
-const Tab = createBottomTabNavigator();
-
-export default function RootNavigator() {
+function RootNavigator() {
+  const Tab = createBottomTabNavigator();
+  
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -27,3 +27,5 @@ export default function RootNavigator() {
     </NavigationContainer>
   );
 }
+
+export default RootNavigator

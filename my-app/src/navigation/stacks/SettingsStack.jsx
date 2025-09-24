@@ -4,9 +4,9 @@ import SettingsScreen from "../../screens/SettingsScreen"
 import HelpScreen from "../../screens/HelpScreen"
 import PrivacyScreen from "../../screens/PrivacyScreen"
 
-const Stack = createNativeStackNavigator()
-
 function SettingsStack() {
+  const Stack = createNativeStackNavigator()
+  
   return (
     <Stack.Navigator>
       <Stack.Screen name="SettingsHome" component={SettingsScreen} options={{ title: "Settings" }} />

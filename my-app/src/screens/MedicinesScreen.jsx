@@ -1,16 +1,14 @@
 import { useState } from "react"
 import { spacing } from "../theme"
 
-
-const MOCK = [
+function MedicinesScreen() {
+  const [q, setQ] = useState("")
+  const data = MOCK.filter(item => item.name.toLowerCase().includes(q.toLowerCase()))
+  const MOCK = [
   { id: "m1", name: "Aspirin" },
   { id: "m2", name: "Atorvastatin" },
   { id: "m3", name: "Metformin" }
 ]
-
-export default function MedicinesScreen() {
-  const [q, setQ] = useState("")
-  const data = MOCK.filter(item => item.name.toLowerCase().includes(q.toLowerCase()))
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
@@ -39,3 +37,5 @@ export default function MedicinesScreen() {
     </View>
   )
 }
+
+export default MedicinesScreen
