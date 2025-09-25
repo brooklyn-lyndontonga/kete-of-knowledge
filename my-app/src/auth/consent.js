@@ -10,18 +10,23 @@ export async function upsertConsentIfNeeded(userId) {
     const { consentAcceptedAt } = JSON.parse(local)
 
     // upsert profile with consent time
-    await supabase.from("profiles").upsert({
-      user_id: userId,
-      consent_accepted_at: consentAcceptedAt ?? new Date().toISOString()
-    }, { onConflict: "user_id" })
+    await supabase.from("profiles").upsert(
+      {
+        user_id: userId,
+        consent_accepted_at: consentAcceptedAt ?? new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    )
   } catch (e) {
     console.error("consent sync failed", e)
   }
 }
 
-// called when user ticks consent:
 export async function markConsentLocal(userId) {
-  await AsyncStorage.setItem(`consent:${userId}`, JSON.stringify({
-    consentAcceptedAt: new Date().toISOString()
-  }))
+  await AsyncStorage.setItem(
+    `consent:${userId}`,
+    JSON.stringify({
+      consentAcceptedAt: new Date().toISOString(),
+    })
+  )
 }
