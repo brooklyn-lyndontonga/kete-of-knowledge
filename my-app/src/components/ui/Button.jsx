@@ -9,8 +9,6 @@ function Button({ title, onPress }) {
   );
 }
 
-export default Button;
-
 const styles = StyleSheet.create({
   button: {
     padding: 12,
@@ -22,3 +20,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+export default Button;

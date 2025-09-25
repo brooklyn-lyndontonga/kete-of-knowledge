@@ -1,15 +1,12 @@
-// App.js
-import { StyleSheet } from "react-native";
+/* eslint-disable unused-imports/no-unused-imports */
+import { StyleSheet, View, ActivityIndicator } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import { useFonts, PlayfairDisplay_700Bold } from "@expo-google-fonts/playfair-display";
 import { Poppins_400Regular, Poppins_500Medium, Poppins_700Bold } from "@expo-google-fonts/poppins";
 import { Quicksand_500Medium } from "@expo-google-fonts/quicksand";
-// eslint-disable-next-line unused-imports/no-unused-imports
-import { View, ActivityIndicator, StatusBar } from "react-native";
-// eslint-disable-next-line unused-imports/no-unused-imports
 import RootNavigator from "./src/navigation/RootNavigator";
 
-
-export default function App() {
+function App() {
   const [loaded] = useFonts({
     PlayfairDisplay_700Bold,
     Poppins_400Regular,
@@ -39,3 +36,5 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   loader: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" },
 });
+
+export default App;
