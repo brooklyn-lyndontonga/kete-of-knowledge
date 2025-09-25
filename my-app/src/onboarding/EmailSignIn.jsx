@@ -3,9 +3,9 @@ import { useState } from "react"
 import { View, TextInput, Button, Alert } from "react-native"
 import * as Linking from "expo-linking"
 import { supabase } from "../auth/supabaseClient"
-import { useOnboarding } from "./OnboardingContext"
+import { useOnboarding } from "../context/OnboardingContext"
 
-export default function EmailSignIn() {
+function EmailSignIn() {
   const [busy, setBusy] = useState(false)
   const { email, setEmail } = useOnboarding()
   const send = async () => {
@@ -28,3 +28,5 @@ export default function EmailSignIn() {
     </View>
   )
 }
+
+export default EmailSignIn

@@ -1,43 +1,54 @@
 /* eslint-disable unused-imports/no-unused-vars */
-/* eslint-disable no-undef */
 /* eslint-disable unused-imports/no-unused-imports */
-import React, { useEffect } from "react"
 import { NavigationContainer } from "@react-navigation/native"
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import * as Linking from "expo-linking"
-import { supabase } from "../auth/supabaseClient"
+import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import { linking } from "./linking"
+import { useAuth } from "../auth/AuthProvider"
+import { OnboardingProvider, useOnboarding } from "../context/OnboardingContext"
+import ConsentScreen from "../onboarding/ConsentScreen"
+import EmailSignIn from "../onboarding/EmailSignIn"
+import OnboardingWelcome from "../onboarding/OnboardingWelcome"
+import ProfileStub from "../onboarding/ProfileStub"
+import Done from "../onboarding/Done"
+import AppTabs from "./tabs/AppTabs"
 
-// Example screens (replace with your real stacks/screens)
-import SignInScreen from "../screens/SignInScreen"
-import HomeScreen from "../screens/HomeScreen"
-
-const Tab = createBottomTabNavigator()
-
-function RootNavigator() {
-  // Handle magic link callback
-  useEffect(() => {
-    const subscription = Linking.addEventListener("url", async ({ url }) => {
-      console.log("🔗 Received deep link:", url)
-      const { data, error } = await supabase.auth.exchangeCodeForSession(url)
-
-      if (error) {
-        console.error("❌ Error exchanging code:", error.message)
-      } else {
-        console.log("✅ Signed in as:", data.user?.email)
-      }
-    })
-
-    return () => subscription.remove()
-  }, [])
-
+const Stack = createNativeStackNavigator()
+function ConsentStack() {
   return (
-    <NavigationContainer>
-      <Tab.Navigator screenOptions={{ headerShown: false }}>
-        <Tab.Screen name="SignIn" component={SignInScreen} />
-        <Tab.Screen name="Home" component={HomeScreen} />
-      </Tab.Navigator>
-    </NavigationContainer>
+    <Stack.Navigator>
+      <Stack.Screen name="Consent" component={ConsentScreen}/>
+      <Stack.Screen name="EmailSignIn" component={EmailSignIn}/>
+    </Stack.Navigator>
+  )
+}
+function OnboardingStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Welcome" component={OnboardingWelcome}/>
+      <Stack.Screen name="ProfileStub" component={ProfileStub}/>
+      <Stack.Screen name="Done" component={Done}/>
+    </Stack.Navigator>
   )
 }
 
-export default RootNavigator
+export default function RootNavigator() {
+  const { user, loading } = useAuth()
+  const { consentAccepted } = useOnboarding()
+  if (loading) return null
+
+  if (!consentAccepted) return (
+    <NavigationContainer linking={linking}><ConsentStack/></NavigationContainer>
+  )
+
+  if (!user) return (
+    <NavigationContainer linking={linking}><ConsentStack/></NavigationContainer>
+  )
+
+  // (Optional) check profile presence via a lightweight query/cached flag
+  const hasProfile = true // TODO: replace with real check later
+  return (
+    <NavigationContainer linking={linking}>
+      {hasProfile ? <AppTabs/> : <OnboardingStack/>}
+    </NavigationContainer>
+  )
+}
