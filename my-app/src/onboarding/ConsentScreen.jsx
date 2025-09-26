@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable unused-imports/no-unused-imports */
 import { useOnboarding } from "../context/OnboardingContext"
-import { markConsentLocal } from "./consentUtils"
+import { markConsentLocal, upsertConsentIfNeeded } from "../auth/consent"
 import { View, Text, Button, Switch, Alert } from "react-native"
 
 function ConsentScreen({ navigation }) {

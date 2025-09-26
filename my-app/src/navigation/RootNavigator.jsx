@@ -1,54 +1,99 @@
-/* eslint-disable unused-imports/no-unused-vars */
 /* eslint-disable unused-imports/no-unused-imports */
+// src/navigation/RootNavigator.jsx
+/* eslint-disable unused-imports/no-unused-vars */
 import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { linking } from "./linking"
-import { useAuth } from "../auth/AuthProvider"
-import { OnboardingProvider, useOnboarding } from "../context/OnboardingContext"
-import ConsentScreen from "../onboarding/ConsentScreen"
+import { Text, View, ActivityIndicator } from "react-native"
+import { useAuth } from "../context/AuthContext"
+import { useOnboarding } from "../context/OnboardingContext"
+
+// Screens
+import ModeChooser from "../screens/ModeChooser"
 import EmailSignIn from "../onboarding/EmailSignIn"
+import ConsentScreen from "../onboarding/ConsentScreen"
 import OnboardingWelcome from "../onboarding/OnboardingWelcome"
 import ProfileStub from "../onboarding/ProfileStub"
 import Done from "../onboarding/Done"
 import AppTabs from "./tabs/AppTabs"
+import GuestTabs from "./tabs/GuestTabs"
+import SignUp from "../onboarding/SignUp" // placeholder if not yet built
 
 const Stack = createNativeStackNavigator()
-function ConsentStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="Consent" component={ConsentScreen}/>
-      <Stack.Screen name="EmailSignIn" component={EmailSignIn}/>
-    </Stack.Navigator>
-  )
-}
+
+// --- Stacks ---
 function OnboardingStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Welcome" component={OnboardingWelcome}/>
-      <Stack.Screen name="ProfileStub" component={ProfileStub}/>
-      <Stack.Screen name="Done" component={Done}/>
+      <Stack.Screen name="Welcome" component={OnboardingWelcome} />
+      <Stack.Screen name="ProfileStub" component={ProfileStub} />
+      <Stack.Screen name="Done" component={Done} />
     </Stack.Navigator>
   )
 }
 
+// --- Loading screen ---
+function LoadingScreen() {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ActivityIndicator size="large" />
+      <Text style={{ marginTop: 12 }}>Loading…</Text>
+    </View>
+  )
+}
+
+// --- Root Navigator ---
 export default function RootNavigator() {
   const { user, loading } = useAuth()
   const { consentAccepted } = useOnboarding()
-  if (loading) return null
 
-  if (!consentAccepted) return (
-    <NavigationContainer linking={linking}><ConsentStack/></NavigationContainer>
-  )
+  if (loading) {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen
+            name="Loading"
+            component={LoadingScreen}
+            options={{ headerShown: false }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    )
+  }
 
-  if (!user) return (
-    <NavigationContainer linking={linking}><ConsentStack/></NavigationContainer>
-  )
+  // 🟢 If not signed in, show ModeChooser first
+  if (!user) {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen
+            name="ModeChooser"
+            component={ModeChooser}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="EmailSignIn" component={EmailSignIn} />
+          <Stack.Screen name="SignUp" component={SignUp} />
+          <Stack.Screen name="GuestTabs" component={GuestTabs} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    )
+  }
 
-  // (Optional) check profile presence via a lightweight query/cached flag
-  const hasProfile = true // TODO: replace with real check later
+  // 🟢 If signed in but hasn’t given consent
+  if (!consentAccepted) {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen name="Consent" component={ConsentScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    )
+  }
+
+  // 🟢 If signed in & consented
+  const hasProfile = true // swap later with real profile check
   return (
-    <NavigationContainer linking={linking}>
-      {hasProfile ? <AppTabs/> : <OnboardingStack/>}
+    <NavigationContainer>
+      {hasProfile ? <AppTabs /> : <OnboardingStack />}
     </NavigationContainer>
   )
 }

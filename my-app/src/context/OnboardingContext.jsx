@@ -4,10 +4,10 @@ import React, { createContext, useContext, useState } from "react"
 const OnboardingContext = createContext()
 
 export function OnboardingProvider({ children }) {
-  const [consented, setConsented] = useState(false)
+  const [consentAccepted, setConsentAccepted] = useState(false)
 
   return (
-    <OnboardingContext.Provider value={{ consented, setConsented }}>
+    <OnboardingContext.Provider value={{ consentAccepted, setConsentAccepted }}>
       {children}
     </OnboardingContext.Provider>
   )
