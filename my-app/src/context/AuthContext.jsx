@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable unused-imports/no-unused-imports */
 import React, { createContext, useContext, useEffect, useState } from "react"
-import { supabase } from "../auth/supabaseClient"
+import supabase from "../auth/supabaseClient"
 
 const AuthContext = createContext()
 
@@ -10,27 +10,33 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // ✅ check supabase before using
-    if (!supabase) {
-      console.error("❌ Supabase client is not defined")
-      return
-    }
+    let mounted = true
+    let timeoutId
 
+    // initial session check
     supabase.auth.getSession().then(({ data, error }) => {
-      if (error) console.error("Error fetching session:", error)
+      if (!mounted) return
       setUser(data?.session?.user ?? null)
       setLoading(false)
     })
 
-    const { data: subscription } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null)
-        setLoading(false)
-      }
-    )
+    // listen for changes
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+    const subscription = data?.subscription
+
+    // fallback to avoid stuck loading
+    timeoutId = setTimeout(() => {
+      if (mounted) setLoading(false)
+    }, 500)
 
     return () => {
-      subscription?.subscription?.unsubscribe?.()
+      mounted = false
+      clearTimeout(timeoutId)
+      subscription?.unsubscribe?.()
     }
   }, [])
 
