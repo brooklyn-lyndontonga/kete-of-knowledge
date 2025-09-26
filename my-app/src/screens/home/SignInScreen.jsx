@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { View, Text, TextInput, Button, StyleSheet } from "react-native"
 import * as Linking from "expo-linking"
-import { supabase } from "../auth/supabaseClient"
+import { supabase } from "../../auth/supabaseClient"
 
 function SignInScreen() {
   const [email, setEmail] = useState("")

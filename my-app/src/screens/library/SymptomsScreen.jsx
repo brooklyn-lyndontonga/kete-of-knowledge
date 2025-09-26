@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { spacing } from "../theme"
+import { spacing } from "../../theme"
 
 function SymptomsScreen() {
   const [q, setQ] = useState("")
