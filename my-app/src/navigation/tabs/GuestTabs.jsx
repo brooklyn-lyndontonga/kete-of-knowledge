@@ -1,75 +1,43 @@
-/* eslint-disable no-undef */
 /* eslint-disable unused-imports/no-unused-vars */
 /* eslint-disable unused-imports/no-unused-imports */
- 
+// src/navigation/tabs/GuestTabs.jsx
 import React from "react"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import { Text, View, Button } from "react-native"
-
-// Basic placeholder screens
-function GuestHome() {
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ fontSize: 20 }}>Welcome, Guest!</Text>
-      <Text style={{ marginTop: 8 }}>You have limited access. Sign in to unlock more features.</Text>
-    </View>
-  )
-}
-
-function GuestLibrary() {
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ fontSize: 20 }}>Guest Library</Text>
-      <Text style={{ marginTop: 8 }}>Read-only resources available here.</Text>
-    </View>
-  )
-}
-
-function GuestSettings() {
-  return (
-     <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 20 }}>
-      <Text style={{ fontSize: 22, fontWeight: "600" }}>Guest Settings</Text>
-
-      <Button
-        title="Change Mode"
-        onPress={() => {
-          // Reset to ModeChooser
-          navigation.reset({
-            index: 0,
-            routes: [{ name: "ModeChooser" }],
-          })
-        }}
-      />
-
-      <Button
-        title="Sign In"
-        onPress={() => {
-          // Send directly to sign-in flow
-          navigation.reset({
-            index: 0,
-            routes: [{ name: "EmailSignIn" }],
-          })
-        }}
-      />
-
-      <Button
-        title="About App"
-        onPress={() => alert("App version 1.0.0 — Guest Mode")}
-      />
-    </View>
-  )
-}
+import { Text, View } from "react-native"
+import GuestSettings from "../../screens/GuestSettings"
 
 const Tab = createBottomTabNavigator()
 
-function GuestTabs() {
+function Placeholder({ message }) {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
-      <Tab.Screen name="Home" component={GuestHome} />
-      <Tab.Screen name="Library" component={GuestLibrary} />
-      <Tab.Screen name="Settings" component={GuestSettings} />
-    </Tab.Navigator>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
+      <Text style={{ textAlign: "center", fontSize: 16, lineHeight: 22 }}>{message}</Text>
+    </View>
   )
 }
 
-export default GuestTabs
+export default function GuestTabs() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen
+        name="GuestHome"
+        children={() => (
+          <Placeholder message={`Welcome to Guest Mode 👋\n\nThis is a preview of the app’s features. As a guest you can browse and explore the layout, but you won’t have access to personalised content or data until you sign in.`} />
+        )}
+        options={{ title: "Home" }}
+      />
+      <Tab.Screen
+        name="GuestResources"
+        children={() => (
+          <Placeholder message={`Resource Library (Guest Preview) 🔒\n\nIn Guest Mode, you can see educational materials, tools, or resources.\n\nTo unlock the full library and save your progress, you’ll need to sign in or create an account.`} />
+        )}
+        options={{ title: "Resources" }}
+      />
+      <Tab.Screen
+        name="GuestSettings"
+        component={GuestSettings}
+        options={{ title: "Settings" }}
+      />
+    </Tab.Navigator>
+  )
+}
