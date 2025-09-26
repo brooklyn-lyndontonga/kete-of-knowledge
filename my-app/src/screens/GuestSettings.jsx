@@ -1,41 +1,48 @@
-/* eslint-disable no-undef */
 /* eslint-disable unused-imports/no-unused-imports */
 // src/screens/GuestSettings.jsx
-import { useNavigation } from "@react-navigation/native"
-import { View, Text, Button } from "react-native"
+import React from "react"
+import { View, Text, Button, StyleSheet } from "react-native"
 
-export default function GuestSettings() {
-  // ✅ get navigation object from the hook
-  const navigation = useNavigation()
-
+function GuestSettings({ navigation }) {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 20 }}>
-      <Text style={{ fontSize: 22, fontWeight: "600" }}>Guest Settings</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Guest Settings</Text>
+      <Text style={styles.subtitle}>
+        You are currently in Guest Mode. Limited features are available.
+      </Text>
 
       <Button
-        title="Change Mode"
-        onPress={() =>
+        title="🔑 Switch Account Mode"
+        onPress={() => {
+          // Reset navigation stack → goes back to ModeChooser
           navigation.reset({
             index: 0,
-            routes: [{ name: "ModeChooser" }], // ⚡ Make sure ModeChooser is registered in your RootNavigator
+            routes: [{ name: "ModeChooser" }],
           })
-        }
-      />
-
-      <Button
-        title="Sign In"
-        onPress={() =>
-          navigation.reset({
-            index: 0,
-            routes: [{ name: "EmailSignIn" }], // ⚡ Make sure EmailSignIn is also registered
-          })
-        }
-      />
-
-      <Button
-        title="About App"
-        onPress={() => alert("App version 1.0.0 — Guest Mode")}
+        }}
       />
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 24,
+    color: "#666",
+  },
+})
+
+export default GuestSettings

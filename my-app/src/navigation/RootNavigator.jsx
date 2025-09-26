@@ -1,6 +1,6 @@
 /* eslint-disable unused-imports/no-unused-imports */
-// src/navigation/RootNavigator.jsx
 /* eslint-disable unused-imports/no-unused-vars */
+// src/navigation/RootNavigator.jsx
 import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { Text, View, ActivityIndicator } from "react-native"
@@ -16,16 +16,29 @@ import ProfileStub from "../onboarding/ProfileStub"
 import Done from "../onboarding/Done"
 import AppTabs from "./tabs/AppTabs"
 import GuestTabs from "./tabs/GuestTabs"
-import SignUp from "../onboarding/SignUp" // placeholder if not yet built
+import PostSignInWelcome from "../onboarding/PostSignInWelcome"
+import CompleteProfile from "../onboarding/CompleteProfile"
 
 const Stack = createNativeStackNavigator()
 
-// --- Stacks ---
+// --- Onboarding stack (if profile setup is separate) ---
 function OnboardingStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Welcome" component={OnboardingWelcome} />
       <Stack.Screen name="ProfileStub" component={ProfileStub} />
+      <Stack.Screen name="Done" component={Done} />
+    </Stack.Navigator>
+  )
+}
+
+// --- Post sign-in setup (first-time users) ---
+function PostSignInStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="PostSignInWelcome" component={PostSignInWelcome} />
+      <Stack.Screen name="CompleteProfile" component={CompleteProfile} />
+      <Stack.Screen name="Consent" component={ConsentScreen} />
       <Stack.Screen name="Done" component={Done} />
     </Stack.Navigator>
   )
@@ -46,6 +59,7 @@ export default function RootNavigator() {
   const { user, loading } = useAuth()
   const { consentAccepted } = useOnboarding()
 
+  // ⏳ Still checking auth/session
   if (loading) {
     return (
       <NavigationContainer>
@@ -60,7 +74,7 @@ export default function RootNavigator() {
     )
   }
 
-  // 🟢 If not signed in, show ModeChooser first
+  // 🔑 Not signed in → ModeChooser
   if (!user) {
     return (
       <NavigationContainer>
@@ -71,29 +85,30 @@ export default function RootNavigator() {
             options={{ headerShown: false }}
           />
           <Stack.Screen name="EmailSignIn" component={EmailSignIn} />
-          <Stack.Screen name="SignUp" component={SignUp} />
-          <Stack.Screen name="GuestTabs" component={GuestTabs} />
+          <Stack.Screen
+            name="GuestTabs"
+            component={GuestTabs}
+            options={{ headerShown: false }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     )
   }
 
-  // 🟢 If signed in but hasn’t given consent
-  if (!consentAccepted) {
+  // 📜 Signed in but hasn’t completed setup (consent/profile)
+  const hasCompletedSetup = consentAccepted // later add profile check too
+  if (!hasCompletedSetup) {
     return (
       <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name="Consent" component={ConsentScreen} />
-        </Stack.Navigator>
+        <PostSignInStack />
       </NavigationContainer>
     )
   }
 
-  // 🟢 If signed in & consented
-  const hasProfile = true // swap later with real profile check
+  // 👤 Signed in + fully onboarded
   return (
     <NavigationContainer>
-      {hasProfile ? <AppTabs /> : <OnboardingStack />}
+      <AppTabs />
     </NavigationContainer>
   )
 }
