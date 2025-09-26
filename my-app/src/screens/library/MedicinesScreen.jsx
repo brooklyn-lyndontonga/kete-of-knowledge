@@ -1,25 +1,23 @@
 import { useState } from "react"
-import { spacing } from "../theme"
+import { spacing } from "../../theme"
 
-
-const MOCK = [
-  { id: "c1", name: "Hypertension" },
-  { id: "c2", name: "Diabetes (Type 2)" },
-  { id: "c3", name: "High Cholesterol" }
-]
-
-function ConditionsScreen() {
+function MedicinesScreen() {
   const [q, setQ] = useState("")
   const data = MOCK.filter(item => item.name.toLowerCase().includes(q.toLowerCase()))
+  const MOCK = [
+  { id: "m1", name: "Aspirin" },
+  { id: "m2", name: "Atorvastatin" },
+  { id: "m3", name: "Metformin" }
+]
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      <Text variant="heading">Conditions</Text>
+      <Text variant="heading">Medicines</Text>
       <Spacer />
       <TextInput
         value={q}
         onChangeText={setQ}
-        placeholder="Search conditions…"
+        placeholder="Search medicines…"
         style={{
           padding: spacing.md,
           borderWidth: 1,
@@ -31,15 +29,13 @@ function ConditionsScreen() {
         data={data}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity>
-            <Card style={{ marginBottom: spacing.md }}>
-              <Text>{item.name}</Text>
-            </Card>
-          </TouchableOpacity>
+          <Card style={{ marginBottom: spacing.md }}>
+            <Text>{item.name}</Text>
+          </Card>
         )}
       />
     </View>
   )
 }
 
-export default ConditionsScreen
+export default MedicinesScreen

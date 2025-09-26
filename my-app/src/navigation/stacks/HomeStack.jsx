@@ -1,17 +1,18 @@
 /* eslint-disable unused-imports/no-unused-vars */
+// src/navigation/stacks/HomeStack.jsx
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import HomeScreen from "../../screens/HomeScreen"
-import AboutScreen from "../../screens/AboutScreen"
-import GettingStartedScreen from "../../screens/GettingStartedScreen"
+import ModeChooser from "../../screens/home/ModeChooser" // Home shows mode chooser for now
+
+const Stack = createNativeStackNavigator()
 
 function HomeStack() {
-  const Stack = createNativeStackNavigator()
-  
   return (
     <Stack.Navigator>
-      <Stack.Screen name="HomeMain" component={HomeScreen} options={{ title: "Home" }} />
-      <Stack.Screen name="About" component={AboutScreen} />
-      <Stack.Screen name="GettingStarted" component={GettingStartedScreen} />
+      <Stack.Screen
+        name="HomeMain"
+        component={ModeChooser}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   )
 }
