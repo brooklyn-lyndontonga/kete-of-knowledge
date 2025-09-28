@@ -1,19 +1,19 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import HomeScreen from "../../screens/home/HomeScreen"
+import HubScreen from "../../screens/hub/HubScreen"
 
-function HomeStack() {
+function HubStack() {
   const Stack = createNativeStackNavigator()
 
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="HomeDashboard"
-        component={HomeScreen}
-        options={{ title: "Home" }}
+        name="Tāku Manawa"
+        component={HubScreen}
+        options={{ title: "Hub" }}
       />
     </Stack.Navigator>
   )
 }
 
-export default HomeStack
+export default HubStack

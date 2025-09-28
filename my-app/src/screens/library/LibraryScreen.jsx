@@ -1,18 +1,16 @@
 /* eslint-disable unused-imports/no-unused-imports */
-import Placeholder from "../components/Placeholder"
-import { useNavigation } from "@react-navigation/native"
-import Button from "../components/ui/Button"
-import Spacer from "../components/ui/Spacer"
+import { View, Text } from "react-native"
 
 function LibraryScreen() {
-  const nav = useNavigation()
-  
   return (
-    <>
-    <Placeholder title="Library" body="Hub for health info (stub)" />
-    <Spacer />
-    <Button title="Library Guide" onPress={() => nav.navigate("LibraryGuide")} />
-  </>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
+      <Text style={{ fontSize: 20, fontWeight: "bold" }}>📚 Library</Text>
+      <Text style={{ marginTop: 10, textAlign: "center" }}>
+        This is the Library screen.  
+        Eventually this will display resources, tools, or saved items depending on the build plan.  
+        For now, it’s just a placeholder to help you continue development.
+      </Text>
+    </View>
   )
 }
 

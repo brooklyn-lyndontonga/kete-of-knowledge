@@ -1,19 +1,16 @@
 /* eslint-disable unused-imports/no-unused-imports */
-import Placeholder from "../components/Placeholder"
-import { useNavigation } from "@react-navigation/native"
-import Button from "../components/ui/Button"
-import Spacer from "../components/ui/Spacer"
+import { View, Text } from "react-native"
 
 function SettingsScreen() {
-  const nav = useNavigation()
   return (
-    <>
-    <Placeholder title="Settings" body="App settings (stub)" />
-    <Spacer />
-    <Button title="Help" onPress={() => nav.navigate("Help")} />
-    <Spacer />
-    <Button title="Privacy" onPress={() => nav.navigate("Privacy")} />
-  </>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
+      <Text style={{ fontSize: 22, fontWeight: "bold" }}>⚙️ Settings</Text>
+      <Text style={{ marginTop: 10, textAlign: "center" }}>
+        This is the Settings screen.  
+        Later, it will include account settings, preferences, and app configurations.  
+        Currently just a placeholder.
+      </Text>
+    </View>
   )
 }
 

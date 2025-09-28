@@ -1,30 +1,19 @@
-/* eslint-disable unused-imports/no-unused-imports */
-// src/navigation/RootNavigator.jsx
 /* eslint-disable unused-imports/no-unused-vars */
+/* eslint-disable unused-imports/no-unused-imports */
+/* src/navigation/RootNavigator.jsx */
+import React from "react"
 import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { View, Text, ActivityIndicator } from "react-native"
 import { useAuth } from "../context/AuthContext"
 import { useOnboarding } from "../context/OnboardingContext"
 
-// Screens
-import EmailSignIn from "../onboarding/EmailSignIn"
-import ConsentScreen from "../onboarding/ConsentScreen"
+// Screens / stacks
 import AppTabs from "./tabs/AppTabs"
-import PostSignInWelcome from "../onboarding/PostSignInWelcome"
-import CompleteProfile from "../onboarding/CompleteProfile"
+import EmailSignIn from "../onboarding/EmailSignIn"
+import PostSignInStack from "./PostSignInStack" // contains PostSignInWelcome / Consent / Profile / Done
 
 const Stack = createNativeStackNavigator()
-
-function PostSignInStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="PostSignInWelcome" component={PostSignInWelcome} />
-      <Stack.Screen name="CompleteProfile" component={CompleteProfile} />
-      <Stack.Screen name="Consent" component={ConsentScreen} />
-    </Stack.Navigator>
-  )
-}
 
 function LoadingScreen() {
   return (
@@ -35,47 +24,45 @@ function LoadingScreen() {
   )
 }
 
-export default function RootNavigator() {
+function RootNavigator() {
   const { user, loading } = useAuth()
   const { consentAccepted } = useOnboarding()
 
-  // ⏳ Checking session
+  // 1) still determining auth
   if (loading) {
     return (
       <NavigationContainer>
         <Stack.Navigator>
-          <Stack.Screen
-            name="Loading"
-            component={LoadingScreen}
-            options={{ headerShown: false }}
-          />
+          <Stack.Screen name="Loading" component={LoadingScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     )
   }
 
-  // 👤 Signed-in but not finished setup
+  // 2) signed-in but hasn't accepted consent / finished onboarding (real flow)
+  //    we show post-signin stack (consent/profile) before unlocking the app
   if (user && !consentAccepted) {
     return (
       <NavigationContainer>
-        <PostSignInStack />
+        <Stack.Navigator>
+          <Stack.Screen name="PostSignIn" component={PostSignInStack} options={{ headerShown: false }} />
+        </Stack.Navigator>
       </NavigationContainer>
     )
   }
 
-  // 🌐 Default: always show AppTabs
-  // - If guest → AppTabs renders restricted versions
-  // - If signed in → AppTabs renders full versions
+  // 3) default: show app tabs for everyone (guests see restricted placeholders; signed-in users see full features)
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen
-          name="AppTabs"
-          component={AppTabs}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="AppTabs" component={AppTabs} options={{ headerShown: false }} />
+        {/* keep EmailSignIn reachable from restricted screens */}
         <Stack.Screen name="EmailSignIn" component={EmailSignIn} />
+        {/* allow dev navigation directly to PostSignIn stack for dev-only iteration */}
+        <Stack.Screen name="PostSignInDev" component={PostSignInStack} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   )
 }
+
+export default RootNavigator
