@@ -13,7 +13,7 @@ import ProfileStack from "../stacks/ProfileStack"
 import SettingsStack from "../stacks/SettingsStack"
 
 // restricted placeholder (guest)
-import RestrictedScreen from "../../features/auth/screens/RestrictedScreen"
+import RestrictedScreen from "../../features/auth/screens/RestrictedScreen.jsx"
 
 const Tab = createBottomTabNavigator()
 
