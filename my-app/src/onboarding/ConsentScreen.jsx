@@ -1,47 +1,21 @@
-/* eslint-disable no-undef */
 /* eslint-disable unused-imports/no-unused-imports */
-import { useOnboarding } from "../context/OnboardingContext"
-import { markConsentLocal, upsertConsentIfNeeded } from "../auth/consent"
-import { View, Text, Button, Switch, Alert } from "react-native"
+import { View, Text, Switch, Button } from "react-native"
+import { useState } from "react"
 
 function ConsentScreen({ navigation }) {
-  const { consentAccepted, setConsentAccepted } = useOnboarding()
-
-  async function handleContinue() {
-    try {
-      // TODO: replace this with supabase.auth.getUser() once sign-in works
-      const userId = "anon"
-
-      if (consentAccepted) {
-        await markConsentLocal(userId)
-        navigation.navigate("EmailSignIn")
-      }
-    } catch (e) {
-      console.error("Consent save failed", e)
-      Alert.alert("Error", "Something went wrong saving your consent")
-    }
-  }
+  const [consent, setConsent] = useState(false)
 
   return (
-    <View style={{ flex: 1, padding: 20, gap: 16 }}>
-      <Text style={{ fontSize: 18, fontWeight: "700" }}>Terms & Conditions|Privacy & Consent</Text>
-      <Text>
-       We’ll store your data locally and only sync with your permission. 
-        You can delete your data any time.
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
+      <Text style={{ fontSize: 18, fontWeight: "bold" }}>Privacy & Consent</Text>
+      <Text style={{ marginVertical: 10, textAlign: "center" }}>
+        You must agree to our data policy before using the app.
       </Text>
-
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <Switch
-          value={consentAccepted}
-          onValueChange={setConsentAccepted}
-        />
-        <Text>I agree</Text>
-      </View>
-
+      <Switch value={consent} onValueChange={setConsent} />
       <Button
         title="Continue"
-        onPress={handleContinue}
-        disabled={!consentAccepted}
+        onPress={() => navigation.navigate("OnboardingWelcome")}
+        disabled={!consent}
       />
     </View>
   )

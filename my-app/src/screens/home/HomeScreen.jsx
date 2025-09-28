@@ -1,51 +1,62 @@
-/* eslint-disable no-undef */
 /* eslint-disable unused-imports/no-unused-imports */
-/* src/screens/HomeScreen.jsx */
+// src/screens/home/HomeScreen.jsx
 import React from "react"
-import { View, Text, Button } from "react-native"
+import { View, Text, Button, ScrollView } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { useAuth } from "../../context/AuthContext"
 
 function HomeScreen() {
   const nav = useNavigation()
   const { user } = useAuth()
+  const isGuest = !user
 
-  if (user) {
-    return (
-      <View style={{ flex:1, padding:20 }}>
-        <Text style={{ fontSize:24, fontWeight:"700" }}>Your Dashboard</Text>
-        <Text style={{ marginTop:8 }}>
-          Welcome back — this is your dashboard. (Placeholder content.)
-        </Text>
-      </View>
-    )
-  }
-
-  // guest landing / mode chooser
   return (
-    <View style={{ flex:1, padding:20 }}>
-      <Text style={{ fontSize:26, fontWeight:"700", marginBottom:12 }}>Welcome to Kete of Knowledge</Text>
-      <Text style={{ marginBottom:20 }}>
-        Sign up for full access or continue as guest (limited features).
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
+      }}
+    >
+      <Text style={{ fontSize: 22, fontWeight: "bold" }}>🏠 Home Dashboard</Text>
+      <Text style={{ marginTop: 10, textAlign: "center" }}>
+        {isGuest
+          ? "You are currently in Guest Mode. Sign up or sign in to unlock full features."
+          : "Welcome back! You’re signed in and will see more features here soon."}
       </Text>
 
-      <Button title="Sign In / Sign Up" onPress={() => nav.navigate("EmailSignIn")} />
-      <View style={{ height:10 }} />
+      {/* --- Dev Section --- */}
+      <View
+        style={{
+          marginTop: 40,
+          width: "100%",
+          padding: 20,
+          backgroundColor: "#f2f2f2",
+          borderRadius: 8,
+        }}
+      >
+        <Text
+          style={{ fontWeight: "bold", fontSize: 16, marginBottom: 10 }}
+        >
+          🛠 Dev Tools
+        </Text>
 
-      <Button title="Continue as Guest" color="gray" onPress={() => { /* guest = default - nothing needed */ }} />
-      <View style={{ height:20 }} />
+        {/* First-time signup flow */}
+        <Button
+          title="DEV: Open Post-Signup Flow"
+          onPress={() => nav.navigate("PostSignInDev")}
+        />
 
-      {/* DEV BYPASS: opens PostSignIn stack so devs can build post-signup screens */}
-      {__DEV__ && (
-        <>
-          <Button title="DEV: Open post-signup flow" color="#b35700"
-                  onPress={() => nav.navigate("PostSignInDev", { screen: "PostSignInWelcome" })} />
-          <Text style={{ marginTop:8, fontSize:12, color:"#666" }}>
-            Dev-only link — remove before release
-          </Text>
-        </>
-      )}
-    </View>
+        {/* Returning user flow → AppTabs/Home dashboard */}
+        <View style={{ marginTop: 12 }}>
+          <Button
+            title="DEV: Open Returning User Flow"
+            onPress={() => nav.navigate("AppTabs", { screen: "Home" })}
+          />
+        </View>
+      </View>
+    </ScrollView>
   )
 }
 
