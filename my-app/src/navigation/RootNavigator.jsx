@@ -5,13 +5,14 @@ import React from "react"
 import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { View, Text, ActivityIndicator } from "react-native"
+
 import { useAuth } from "../context/AuthContext"
 import { useOnboarding } from "../context/OnboardingContext"
 
-// Screens / stacks
 import AppTabs from "./tabs/AppTabs"
 import EmailSignIn from "../onboarding/EmailSignIn"
-import PostSignInStack from "./PostSignInStack" // contains PostSignInWelcome / Consent / Profile / Done
+import PostSignInStack from "./PostSignInStack" 
+import WelcomeBackScreen from "../screens/welcome/WelcomeBackScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -26,9 +27,8 @@ function LoadingScreen() {
 
 function RootNavigator() {
   const { user, loading } = useAuth()
-  const { consentAccepted } = useOnboarding()
+  const { isFirstLogin } = useOnboarding()
 
-  // 1) still determining auth
   if (loading) {
     return (
       <NavigationContainer>
@@ -39,27 +39,35 @@ function RootNavigator() {
     )
   }
 
-  // 2) signed-in but hasn't accepted consent / finished onboarding (real flow)
-  //    we show post-signin stack (consent/profile) before unlocking the app
-  if (user && !consentAccepted) {
+  // Guest (no user yet)
+  if (!user) {
     return (
       <NavigationContainer>
         <Stack.Navigator>
-          <Stack.Screen name="PostSignIn" component={PostSignInStack} options={{ headerShown: false }} />
+          <Stack.Screen name="AppTabs" component={AppTabs} options={{ headerShown: false }} />
+          <Stack.Screen name="EmailSignIn" component={EmailSignIn} />
         </Stack.Navigator>
       </NavigationContainer>
     )
   }
 
-  // 3) default: show app tabs for everyone (guests see restricted placeholders; signed-in users see full features)
+  // Signed in, decide if it’s first login
+  if (isFirstLogin) {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="PostSignIn" component={PostSignInStack} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    )
+  }
+
+  // Returning user → dashboard
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="AppTabs" component={AppTabs} options={{ headerShown: false }} />
-        {/* keep EmailSignIn reachable from restricted screens */}
-        <Stack.Screen name="EmailSignIn" component={EmailSignIn} />
-        {/* allow dev navigation directly to PostSignIn stack for dev-only iteration */}
-        <Stack.Screen name="PostSignInDev" component={PostSignInStack} options={{ headerShown: false }} />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="AppTabs" component={AppTabs} />
+        <Stack.Screen name="WelcomeBack" component={WelcomeBackScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   )
