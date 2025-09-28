@@ -12,6 +12,7 @@ module.exports = function (api) {
           "@lib": "./src/lib"
         }
       }]
+      // If you add Reanimated later, append: 'react-native-reanimated/plugin'
     ]
   }
 }

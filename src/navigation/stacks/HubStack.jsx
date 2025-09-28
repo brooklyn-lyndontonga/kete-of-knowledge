@@ -1,6 +1,6 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import HubScreen from "../../screens/hub/HubScreen"
+import HubScreen from "../../features/hub/screens/HubScreen"
 
 function HubStack() {
   const Stack = createNativeStackNavigator()

@@ -3,7 +3,7 @@
 /* src/navigation/tabs/AppTabs.jsx */
 import React from "react"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import { useAuth } from "../../context/AuthContext"
+import { useAuth } from "../../app/providers/AuthProvider"
 
 // stacks
 import HomeStack from "../stacks/HomeStack"
@@ -13,7 +13,7 @@ import ProfileStack from "../stacks/ProfileStack"
 import SettingsStack from "../stacks/SettingsStack"
 
 // restricted placeholder (guest)
-import RestrictedScreen from "../../screens/RestrictedScreen"
+import RestrictedScreen from "../../features/auth/screens/RestrictedScreen"
 
 const Tab = createBottomTabNavigator()
 

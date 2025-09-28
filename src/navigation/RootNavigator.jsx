@@ -6,13 +6,13 @@ import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { View, Text, ActivityIndicator } from "react-native"
 
-import { useAuth } from "../context/AuthContext"
-import { useOnboarding } from "../context/OnboardingContext"
+import { useAuth } from "../app/providers/AuthProvider"
+import { useOnboarding } from "../app/providers/OnboardingProvider"
 
 import AppTabs from "./tabs/AppTabs"
-import EmailSignIn from "../onboarding/EmailSignIn"
+import EmailSignIn from "../features/onboarding/screens/EmailSignIn"
 import PostSignInStack from "./PostSignInStack" 
-import WelcomeBackScreen from "../screens/welcome/WelcomeBackScreen"
+import WelcomeBackScreen from "../features/welcome/screens/WelcomeBackScreen"
 
 const Stack = createNativeStackNavigator()
 

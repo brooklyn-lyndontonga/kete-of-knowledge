@@ -1,6 +1,6 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import HomeScreen from "../../screens/home/HomeScreen"
+import HomeScreen from "../../features/home/screens/HomeScreen"
 
 function HomeStack() {
   const Stack = createNativeStackNavigator()

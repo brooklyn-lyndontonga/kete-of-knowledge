@@ -1,7 +1,7 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import ProfileScreen from "../../screens/profile/ProfileScreen"
-import ProfileGuidelinesScreen from "../../screens/profile/ProfileGuidelinesScreen"
+import ProfileScreen from "../../features/profile/screens/ProfileScreen"
+import ProfileGuidelinesScreen from "../../features/profile/screens/ProfileGuidelinesScreen"
 
 function ProfileStack() {
   const Stack = createNativeStackNavigator()
