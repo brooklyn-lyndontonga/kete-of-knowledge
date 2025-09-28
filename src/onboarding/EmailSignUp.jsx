@@ -4,7 +4,7 @@ import { useState } from "react"
 import { View, TextInput, Button, Alert } from "react-native"
 import * as Linking from "expo-linking"
 import { supabase } from "../auth/supabaseClient"
-import { useOnboarding } from "../context/OnboardingContext"
+import { useOnboarding } from "../app/providers/OnboardingProvider"
 
 function EmailSignUp() {
   const [busy, setBusy] = useState(false)

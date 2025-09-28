@@ -1,8 +1,8 @@
 /* eslint-disable no-undef */
 import { createContext, useContext, useEffect, useState } from "react"
 import * as Linking from "expo-linking"
-import supabase from "./supabaseClient"       // <-- FIXED
-import { upsertConsentIfNeeded } from "./consent"
+import { supabase } from "../../features/auth/lib/supabaseClient"
+import { upsertConsentIfNeeded } from "../../features/auth/lib/consent"
 
 const AuthCtx = createContext({ user: null, session: null, loading: true })
 

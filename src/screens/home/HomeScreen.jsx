@@ -3,7 +3,7 @@
 import React from "react"
 import { View, Text, Button, ScrollView } from "react-native"
 import { useNavigation } from "@react-navigation/native"
-import { useAuth } from "../../context/AuthContext"
+import { useAuth } from "../../app/providers/AuthProvider"
 
 function HomeScreen() {
   const nav = useNavigation()
