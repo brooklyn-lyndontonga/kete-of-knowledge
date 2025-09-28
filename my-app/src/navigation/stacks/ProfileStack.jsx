@@ -1,16 +1,16 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import ProfilesScreen from "../../screens/ProfilesScreen"
-import ProfileGuidelinesScreen from "../../screens/ProfileGuidelinesScreen"
-
-const Stack = createNativeStackNavigator()
+import ProfileScreen from "../../screens/profile/ProfileScreen"
+import ProfileGuidelinesScreen from "../../screens/profile/ProfileGuidelinesScreen"
 
 function ProfileStack() {
+  const Stack = createNativeStackNavigator()
+
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="ProfilesHome"
-        component={ProfilesScreen}
+        component={ProfileScreen}
         options={{ title: "Profiles" }}
       />
       <Stack.Screen
