@@ -1,5 +1,5 @@
 /* eslint-disable unused-imports/no-unused-imports */
-import Placeholder from "../../components/Placeholder"
+import Placeholder from "../../ui/components/Placeholder"
 
 function AboutScreen() {
   return (
