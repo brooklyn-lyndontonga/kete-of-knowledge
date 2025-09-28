@@ -1,7 +1,7 @@
 /* eslint-disable unused-imports/no-unused-imports */
 import { View, Text, StyleSheet } from "react-native";
-import Spacer from "../components/ui/Spacer";
-import Card from "../components/ui/Cards";
+import Spacer from "./Spacer";
+import Card from "./Card";
 
 function Placeholder({ title, body = "Coming soon…" }) {
   return (
