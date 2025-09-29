@@ -9,9 +9,13 @@ import { useOnboarding } from "../app/providers/OnboardingProvider"
 
 import AppTabs from "./tabs/AppTabs"
 import EmailSignIn from "../features/onboarding/screens/EmailSignIn"
-import EmailSignUp from "../features/onboarding/screens/EmailSignUp"   // ✅ added
+import EmailSignUp from "../features/onboarding/screens/EmailSignUp"
 import PostSignInStack from "./PostSignInStack"
 import WelcomeBackScreen from "../features/welcome/screens/WelcomeBackScreen"
+
+import { navigationRef } from "./navigationRef"
+// If you set up dev deep-links, keep this import and prop; otherwise remove both
+// import linking from "./linking"
 
 const Stack = createNativeStackNavigator()
 
@@ -29,13 +33,18 @@ export default function RootNavigator() {
   const { isFirstLogin } = useOnboarding()
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      ref={navigationRef}
+      // linking={linking}
+    >
       {loading ? (
+        // ----- Loading -----
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Loading" component={LoadingScreen} />
         </Stack.Navigator>
       ) : !user ? (
-        // Guest flow (show headers so native Back appears)
+        // ----- Guest flow -----
+        // Register AppTabs here (dev-only escape hatch), so DevBypass can always jump to it.
         <Stack.Navigator
           screenOptions={{
             headerShown: true,
@@ -53,7 +62,11 @@ export default function RootNavigator() {
             component={EmailSignUp}
             options={{ title: "Sign up" }}
           />
-          {/* Dev shortcut mounts the inner stack (it has its own headers) */}
+          <Stack.Screen
+            name="AppTabs"
+            component={AppTabs}
+            options={{ headerShown: false }}
+          />
           <Stack.Screen
             name="PostSignInDev"
             component={PostSignInStack}
@@ -61,13 +74,15 @@ export default function RootNavigator() {
           />
         </Stack.Navigator>
       ) : isFirstLogin ? (
-        // First login flow mounts the post-sign-in stack (it shows its own headers)
+        // ----- First login flow -----
+        // Also register AppTabs here so DevBypass can jump to tabs during onboarding.
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="PostSignIn" component={PostSignInStack} />
           <Stack.Screen name="PostSignInDev" component={PostSignInStack} />
+          <Stack.Screen name="AppTabs" component={AppTabs} />
         </Stack.Navigator>
       ) : (
-        // Returning user flow (tabs manage their own headers)
+        // ----- Returning user flow -----
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="AppTabs" component={AppTabs} />
           <Stack.Screen name="WelcomeBack" component={WelcomeBackScreen} />

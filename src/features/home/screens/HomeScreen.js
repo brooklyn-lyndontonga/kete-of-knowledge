@@ -26,36 +26,14 @@ function HomeScreen() {
           : "Welcome back! You’re signed in and will see more features here soon."}
       </Text>
 
-      {/* --- Dev Section --- */}
-      <View
-        style={{
-          marginTop: 40,
-          width: "100%",
-          padding: 20,
-          backgroundColor: "#f2f2f2",
-          borderRadius: 8,
-        }}
-      >
-        <Text
-          style={{ fontWeight: "bold", fontSize: 16, marginBottom: 10 }}
-        >
-          🛠 Dev Tools
-        </Text>
-
-        {/* First-time signup flow */}
-        <Button
-          title="DEV: Open Post-Signup Flow"
-          onPress={() => nav.navigate("PostSignInDev")}
-        />
-
-        {/* Returning user flow → AppTabs/Home dashboard */}
-        <View style={{ marginTop: 12 }}>
-          <Button
-            title="DEV: Open Returning User Flow"
-            onPress={() => nav.navigate("AppTabs", { screen: "Home" })}
-          />
-        </View>
-      </View>
+      <Button
+        title="Sign In"
+        onPress={() => nav.navigate("EmailSignIn")}
+      />
+      <Button
+        title="Sign Up"
+        onPress={() => nav.navigate("EmailSignUp")}
+      />
     </ScrollView>
   )
 }
