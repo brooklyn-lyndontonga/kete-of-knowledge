@@ -1,24 +1,46 @@
+/* src/navigation/stacks/ProfileStack.jsx */
 /* eslint-disable unused-imports/no-unused-vars */
+import React from "react"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import { useAuth } from "../../app/providers/AuthProvider"
+
+// Full-access screens
 import ProfileScreen from "../../features/profile/screens/ProfileScreen"
 import ProfileGuidelinesScreen from "../../features/profile/screens/ProfileGuidelinesScreen"
 
-function ProfileStack() {
-  const Stack = createNativeStackNavigator()
+// Guest placeholder (locked)
+import RestrictedScreen from "../../features/auth/screens/RestrictedScreen"
+
+const Stack = createNativeStackNavigator()
+
+export default function ProfileStack() {
+  const { user } = useAuth()
+  const isGuest = !user
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: true,
+        headerBackTitleVisible: true,
+        headerTitleAlign: "center",
+      }}
+    >
       <Stack.Screen
         name="ProfilesHome"
-        component={ProfileScreen}
+        component={isGuest ? RestrictedScreen : ProfileScreen}
         options={{ title: "Profiles" }}
+        initialParams={
+          isGuest ? { cta: "Sign in to manage your profile" } : undefined
+        }
       />
       <Stack.Screen
         name="ProfileGuidelines"
-        component={ProfileGuidelinesScreen}
+        component={isGuest ? RestrictedScreen : ProfileGuidelinesScreen}
+        options={{ title: "Guidelines" }}
+        initialParams={
+          isGuest ? { cta: "Sign in to view profile guidelines" } : undefined
+        }
       />
     </Stack.Navigator>
   )
 }
-
-export default ProfileStack

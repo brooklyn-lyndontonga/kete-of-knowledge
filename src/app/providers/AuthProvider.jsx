@@ -1,84 +1,54 @@
-/* eslint-disable no-undef */
-import { createContext, useContext, useEffect, useState } from "react"
+import React, { createContext, useContext, useEffect, useState } from "react"
 import * as Linking from "expo-linking"
 import { supabase } from "../../features/auth/lib/supabaseClient"
 import { upsertConsentIfNeeded } from "../../features/auth/lib/consent"
 
-const AuthCtx = createContext({
-  user: null,
-  session: null,
-  loading: true,
-})
+const AuthCtx = createContext({ user: null, session: null, loading: true })
+export const useAuth = () => useContext(AuthCtx)
 
 export function AuthProvider({ children }) {
-  const [state, setState] = useState({
-    user: null,
-    session: null,
-    loading: true,
-  })
+  const [session, setSession] = useState(null)
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    let mounted = true
+    // initial session
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session || null)
+      setUser(data.session?.user || null)
+      setLoading(false)
+    })
 
-    // 1. Initial session check
-    const init = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession()
-        console.log("🔑 init.getSession:", data, error)
-        if (mounted) {
-          setState({
-            user: data?.session?.user ?? null,
-            session: data?.session ?? null,
-            loading: false,
-          })
-        }
-      } catch (e) {
-        console.error("❌ init.getSession failed", e)
-        if (mounted) setState({ user: null, session: null, loading: false })
-      }
-    }
-    init()
-
-    // 2. Auth state change listener
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("📡 Auth change:", event, session)
-        if (mounted) {
-          setState({ user: session?.user ?? null, session, loading: false })
-        }
-        if (session?.user) {
-          await upsertConsentIfNeeded(session.user.id)
-        }
-      }
-    )
-
-    // 3. Deep link handler
-    const urlSub = Linking.addEventListener("url", async ({ url }) => {
-      console.log("🔗 Deep link received:", url)
-      try {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(url)
-        console.log("exchangeCodeForSession:", data, error)
-        if (data?.session && mounted) {
-          setState({
-            user: data.session.user,
-            session: data.session,
-            loading: false,
-          })
-          await upsertConsentIfNeeded(data.session.user.id)
-        }
-      } catch (e) {
-        console.error("❌ exchangeCodeForSession failed", e)
+    // deep link listener for magic link
+    const sub = Linking.addEventListener("url", async ({ url }) => {
+      const { data, error } = await supabase.auth.exchangeCodeForSession({ code: Linking.parse(url)?.queryParams?.code })
+      if (!error) {
+        setSession(data.session)
+        setUser(data.session.user)
       }
     })
 
+    // auth state changes
+    const { data: subAuth } = supabase.auth.onAuthStateChange(async (_event, sess) => {
+      setSession(sess || null)
+      setUser(sess?.user || null)
+    })
+
     return () => {
-      mounted = false
-      authListener?.subscription?.unsubscribe?.()
-      urlSub.remove()
+      sub.remove()
+      subAuth.subscription.unsubscribe()
     }
   }, [])
 
-  return <AuthCtx.Provider value={state}>{children}</AuthCtx.Provider>
-}
+  // Whenever we have a user, push consent if needed
+  useEffect(() => {
+    if (!user) return
+    upsertConsentIfNeeded(user.id).catch(() => {})
+  }, [user])
 
-export const useAuth = () => useContext(AuthCtx)
+  return (
+  <AuthCtx.Provider value={{ user, session, loading, isGuest: !user, role: user ? "user" : "guest" }}>
+    {children}
+  </AuthCtx.Provider>
+)
+}
