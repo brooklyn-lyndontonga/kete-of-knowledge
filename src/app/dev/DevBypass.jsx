@@ -16,8 +16,8 @@ export default function DevBypass() {
         position: "absolute",
         right: 12,
         bottom: Platform.OS === "ios" ? 40 : 20,
-        gap: 8,
-        padding: 8,
+        gap: 0,
+        padding: 0,
         backgroundColor: "rgba(0,0,0,0.08)",
         borderRadius: 12,
       }}

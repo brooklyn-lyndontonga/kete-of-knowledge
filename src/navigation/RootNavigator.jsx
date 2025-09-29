@@ -12,10 +12,9 @@ import EmailSignIn from "../features/onboarding/screens/EmailSignIn"
 import EmailSignUp from "../features/onboarding/screens/EmailSignUp"
 import PostSignInStack from "./PostSignInStack"
 import WelcomeBackScreen from "../features/welcome/screens/WelcomeBackScreen"
+import LaunchScreen from "../features/welcome/screens/LaunchScreen"   // ✅ new
 
 import { navigationRef } from "./navigationRef"
-// If you set up dev deep-links, keep this import and prop; otherwise remove both
-// import linking from "./linking"
 
 const Stack = createNativeStackNavigator()
 
@@ -33,10 +32,7 @@ export default function RootNavigator() {
   const { isFirstLogin } = useOnboarding()
 
   return (
-    <NavigationContainer
-      ref={navigationRef}
-      // linking={linking}
-    >
+    <NavigationContainer ref={navigationRef}>
       {loading ? (
         // ----- Loading -----
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -44,7 +40,6 @@ export default function RootNavigator() {
         </Stack.Navigator>
       ) : !user ? (
         // ----- Guest flow -----
-        // Register AppTabs here (dev-only escape hatch), so DevBypass can always jump to it.
         <Stack.Navigator
           screenOptions={{
             headerShown: true,
@@ -52,6 +47,12 @@ export default function RootNavigator() {
             headerTitleAlign: "center",
           }}
         >
+          {/* Landing appears first for guests */}
+          <Stack.Screen
+            name="Launch"
+            component={LaunchScreen}
+            options={{ title: "Welcome" }}
+          />
           <Stack.Screen
             name="EmailSignIn"
             component={EmailSignIn}
@@ -62,28 +63,32 @@ export default function RootNavigator() {
             component={EmailSignUp}
             options={{ title: "Sign up" }}
           />
-          <Stack.Screen
-            name="AppTabs"
-            component={AppTabs}
-            options={{ headerShown: false }}
-          />
+          {/* Dev shortcut mounts the inner stack (it has its own headers) */}
           <Stack.Screen
             name="PostSignInDev"
             component={PostSignInStack}
             options={{ headerShown: false }}
           />
+          {/* Keep AppTabs targetable for DevBypass */}
+          <Stack.Screen
+            name="AppTabs"
+            component={AppTabs}
+            options={{ headerShown: false }}
+          />
         </Stack.Navigator>
       ) : isFirstLogin ? (
         // ----- First login flow -----
-        // Also register AppTabs here so DevBypass can jump to tabs during onboarding.
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="PostSignIn" component={PostSignInStack} />
           <Stack.Screen name="PostSignInDev" component={PostSignInStack} />
+          {/* Allow tabs just in case (dev bypass) */}
           <Stack.Screen name="AppTabs" component={AppTabs} />
         </Stack.Navigator>
       ) : (
         // ----- Returning user flow -----
         <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {/* Landing appears before tabs for signed-in users (but auto-skips after first view) */}
+          <Stack.Screen name="Launch" component={LaunchScreen} />
           <Stack.Screen name="AppTabs" component={AppTabs} />
           <Stack.Screen name="WelcomeBack" component={WelcomeBackScreen} />
           <Stack.Screen name="PostSignInDev" component={PostSignInStack} />
