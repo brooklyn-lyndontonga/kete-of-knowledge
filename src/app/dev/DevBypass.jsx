@@ -8,6 +8,12 @@ const enabled =
   (process.env.EXPO_PUBLIC_DEV_BYPASS === "1" ||
    Constants?.expoConfig?.extra?.DEV_BYPASS === 1)
 
+// Prevent double taps & ensure nav is ready
+const go = (fn) => () => {
+  if (!navigationRef.isReady()) return
+  requestAnimationFrame(fn)
+}
+
 export default function DevBypass() {
   if (!enabled) return null
   return (
@@ -15,28 +21,40 @@ export default function DevBypass() {
       style={{
         position: "absolute",
         right: 12,
-        bottom: Platform.OS === "ios" ? 40 : 20,
-        gap: 0,
-        padding: 0,
+        bottom: Platform.OS === "ios" ? 60 : 20, // a bit more room on iOS
+        padding: 6,
         backgroundColor: "rgba(0,0,0,0.08)",
         borderRadius: 12,
+        zIndex: 9999,
+        gap: 6,
       }}
       pointerEvents="box-none"
     >
       <Button
-        title="Onboarding"
-        onPress={() => nav("PostSignInDev", { screen: "PostSignInWelcome" })}
+        accessibilityLabel="Go to welcome screen"
+        title="Guest Welcome"
+        onPress={go(() =>
+          navigationRef.reset({ index: 0, routes: [{ name: "Launch" }] })
+        )}
+      />
+      
+      <Button
+        accessibilityLabel="Reset to app tabs"
+        title="Guest Tabs"
+        onPress={go(() =>
+          navigationRef.reset({ index: 0, routes: [{ name: "AppTabs" }] })
+        )}
       />
       <Button
-        title="Tabs"
-        onPress={() => {
-          // Clean reset to the tabs root; works because AppTabs is registered in all branches
-          if (navigationRef.isReady()) {
-            navigationRef.reset({ index: 0, routes: [{ name: "AppTabs" }] })
-          }
-        }}
+        accessibilityLabel="Open email sign-in"
+        title="Magic Link"
+        onPress={() => nav("EmailSignIn")}
       />
-      <Button title="Sign in" onPress={() => nav("EmailSignIn")} />
+      <Button title="Full Welcome"   onPress={() => nav("PostSignInDev", { screen: "PostSignInWelcome" })} />
+<Button title="Consent page"   onPress={() => nav("PostSignInDev", { screen: "Consent" })} />
+<Button title="Profile Setup"   onPress={() => nav("PostSignInDev", { screen: "CompleteProfile" })} />
+<Button title="Done"      onPress={() => nav("PostSignInDev", { screen: "Done" })} />
+
     </View>
   )
 }

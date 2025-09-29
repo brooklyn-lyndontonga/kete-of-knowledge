@@ -7,15 +7,18 @@ export default function CompleteProfile({ navigation }) {
   const { user } = useAuth()
   const [displayName, setDisplayName] = useState("")
 
-  const saveNow = async (done=false) => {
+  const save = async (finish=false) => {
     try {
-      if (!user) return Alert.alert("Not signed in")
+      if (!user) {
+        Alert.alert("Not signed in", "Sign in first to save your profile.")
+        return navigation.navigate("EmailSignIn")
+      }
       await supabase.from("profiles").upsert({
         user_id: user.id,
         display_name: displayName || null,
       })
-      if (done) navigation.navigate("Done")
-      else Alert.alert("Saved", "You can finish later from your profile.")
+      if (finish) navigation.navigate("Done")
+      else Alert.alert("Saved", "You can finish later from Profile.")
     } catch (e) {
       Alert.alert("Error", e.message)
     }
@@ -30,7 +33,7 @@ export default function CompleteProfile({ navigation }) {
         onChangeText={setDisplayName}
         style={{ borderWidth:1, borderColor:"#ccc", borderRadius:8, padding:12, marginBottom:12 }}
       />
-      <Button title="Save & continue" onPress={() => saveNow(true)} />
+      <Button title="Save & continue" onPress={() => save(true)} />
       <View style={{ height: 12 }} />
       <Button title="Save for later" onPress={() => navigation.navigate("Done")} />
     </View>
