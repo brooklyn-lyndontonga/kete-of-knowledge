@@ -1,44 +1,50 @@
+// src/features/onboarding/screens/EmailSignIn.jsx
 import React, { useState } from "react"
-import { View, Text, TextInput, Button, TouchableOpacity, Alert } from "react-native"
+import { View, Text, TextInput, Button, Alert } from "react-native"
+import * as Linking from "expo-linking"
 import { supabase } from "../../auth/lib/supabaseClient"
 
-export default function EmailSignIn({ navigation }) {
+export default function EmailSignIn() {
   const [email, setEmail] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [sending, setSending] = useState(false)
 
-  const handleSignIn = async () => {
-    if (!email) return Alert.alert("Enter your email")
+  const sendLink = async () => {
     try {
-      setLoading(true)
+      setSending(true)
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: { emailRedirectTo: "keteofknowledge://auth" },
       })
       if (error) throw error
-      Alert.alert("Check your inbox", "We’ve sent you a sign-in link.")
+      Alert.alert("Check your email", "We sent you a secure link to continue.")
     } catch (e) {
-      Alert.alert("Sign-in failed", e.message)
+      Alert.alert("Something went wrong", e.message)
     } finally {
-      setLoading(false)
+      setSending(false)
     }
   }
 
   return (
-    <View style={{ flex:1, justifyContent:"center", alignItems:"center", padding:20 }}>
-      <Text style={{ fontSize:20, fontWeight:"700", marginBottom:12 }}>Welcome back</Text>
+    <View style={{ flex:1, padding:20, justifyContent:"center" }}>
+      <Text style={{ fontSize:22, fontWeight:"700", marginBottom:8 }}>
+        Continue with email
+      </Text>
+      <Text style={{ opacity:0.8, marginBottom:16 }}>
+        We’ll email you a secure link to continue.
+      </Text>
       <TextInput
         value={email}
         onChangeText={setEmail}
         placeholder="you@example.com"
-        autoCapitalize="none"
         keyboardType="email-address"
-        style={{ width:"100%", borderWidth:1, borderColor:"#ccc", padding:12, borderRadius:8, marginBottom:12 }}
+        autoCapitalize="none"
+        autoCorrect={false}
+        style={{ borderWidth:1, borderColor:"#ccc", borderRadius:8, padding:12, marginBottom:12 }}
       />
-      <Button title={loading ? "Sending…" : "Send magic link"} onPress={handleSignIn} disabled={loading} />
-
-      <TouchableOpacity onPress={() => navigation.navigate("EmailSignUp")} style={{ marginTop: 12 }}>
-        <Text>New here? <Text style={{ fontWeight:"700" }}>Sign up</Text></Text>
-      </TouchableOpacity>
+      <Button title={sending ? "Sending…" : "Send link"} onPress={sendLink} disabled={!email || sending} />
+      <Text style={{ marginTop:12, fontSize:12, opacity:0.7 }}>
+        By continuing you agree to our Terms & Privacy.
+      </Text>
     </View>
   )
 }

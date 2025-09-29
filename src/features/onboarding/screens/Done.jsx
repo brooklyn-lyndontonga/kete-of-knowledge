@@ -1,4 +1,3 @@
-/* src/features/onboarding/screens/Done.jsx */
 import React from "react"
 import { View, Text, Button } from "react-native"
 import { supabase } from "../../auth/lib/supabaseClient"
@@ -9,15 +8,9 @@ export default function Done({ navigation, route }) {
   const dev = route?.params?.dev === true
 
   const finish = async () => {
-    // In dev/guest, don’t attempt DB writes
     if (!dev && user) {
-      await supabase
-        .from("profiles")
-        .update({ completed: true })
-        .eq("user_id", user.id)
+      await supabase.from("profiles").update({ completed: true }).eq("user_id", user.id)
     }
-
-    // Reset to: AppTabs -> Home tab -> HomeWelcome (inside HomeStack)
     navigation.reset({
       index: 0,
       routes: [

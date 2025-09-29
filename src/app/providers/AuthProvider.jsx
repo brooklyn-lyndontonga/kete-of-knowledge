@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
 import * as Linking from "expo-linking"
-import { supabase } from "../../features/auth/lib/supabaseClient"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { supabase } from "../../features/auth/lib/supabaseClient"
 
 const AuthCtx = createContext({ user: null, session: null, loading: true })
 export const useAuth = () => useContext(AuthCtx)
@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Load initial session
+  // initial session
   useEffect(() => {
     let mounted = true
     supabase.auth.getSession().then(({ data }) => {
@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
       setLoading(false)
     })
 
-    // Deep link magic-link return
+    // deep link → exchange code
     const sub = Linking.addEventListener("url", async ({ url }) => {
       const { queryParams } = Linking.parse(url)
       const code = queryParams?.code
@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
       setUser(data.session.user)
     })
 
-    // Auth state changes (token refresh, sign out, etc.)
+    // auth changes
     const { data: authSub } = supabase.auth.onAuthStateChange((_evt, sess) => {
       setSession(sess ?? null)
       setUser(sess?.user ?? null)
@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // After we have a user, push pre-auth consent if present
+  // push pre-auth consent after login (if any)
   useEffect(() => {
     if (!user) return
     ;(async () => {
@@ -58,7 +58,6 @@ export function AuthProvider({ children }) {
       if (!raw) return
       const { consentAcceptedAt } = JSON.parse(raw)
 
-      // Only write if server value missing
       const { data: profile } = await supabase
         .from("profiles")
         .select("consent_accepted_at")
@@ -66,12 +65,10 @@ export function AuthProvider({ children }) {
         .maybeSingle()
 
       if (!profile?.consent_accepted_at) {
-        await supabase
-          .from("profiles")
-          .upsert({
-            user_id: user.id,
-            consent_accepted_at: consentAcceptedAt || new Date().toISOString(),
-          })
+        await supabase.from("profiles").upsert({
+          user_id: user.id,
+          consent_accepted_at: consentAcceptedAt || new Date().toISOString(),
+        })
       }
       await AsyncStorage.removeItem(TEMP_CONSENT_KEY)
     })().catch(() => {})

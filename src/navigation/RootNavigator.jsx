@@ -1,15 +1,16 @@
 /* src/navigation/RootNavigator.jsx */
 import React from "react"
+import { View, Text, ActivityIndicator } from "react-native"
 import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { View, Text, ActivityIndicator } from "react-native"
 
 import { useAuth } from "../app/providers/AuthProvider"
 import { useOnboarding } from "../app/providers/OnboardingProvider"
 
 import AppTabs from "./tabs/AppTabs"
 import EmailSignIn from "../features/onboarding/screens/EmailSignIn"
-import EmailSignUp from "../features/onboarding/screens/EmailSignUp"
+// If you fully unified entry, you can remove EmailSignUp entirely:
+// import EmailSignUp from "../features/onboarding/screens/EmailSignUp"
 import PostSignInStack from "./PostSignInStack"
 import WelcomeBackScreen from "../features/welcome/screens/WelcomeBackScreen"
 import LaunchScreen from "../features/welcome/screens/LaunchScreen"
@@ -21,7 +22,7 @@ const Stack = createNativeStackNavigator()
 function LoadingScreen() {
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <ActivityIndicator size="large" />
+      <ActivityIndicator />
       <Text style={{ marginTop: 12 }}>Loading…</Text>
     </View>
   )
@@ -31,21 +32,24 @@ export default function RootNavigator() {
   const { user, loading } = useAuth()
   const { isFirstLogin } = useOnboarding()
 
-  return (
-    <NavigationContainer ref={navigationRef}>
-      {loading ? (
-        // ----- Loading -----
+  if (loading) {
+    // Dedicated component avoids inline-function warnings
+    return (
+      <NavigationContainer ref={navigationRef}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Loading" component={LoadingScreen} />
         </Stack.Navigator>
-      ) : !user ? (
-        // ----- Guest flow -----
+      </NavigationContainer>
+    )
+  }
+
+  return (
+    <NavigationContainer ref={navigationRef}>
+      {!user ? (
+        // ---------- GUEST FLOW ----------
         <Stack.Navigator
-          screenOptions={{
-            headerShown: true,
-            headerBackTitleVisible: true,
-            headerTitleAlign: "center",
-          }}
+          initialRouteName="Launch"
+          screenOptions={{ headerShown: true, headerTitleAlign: "center" }}
         >
           <Stack.Screen
             name="Launch"
@@ -55,36 +59,46 @@ export default function RootNavigator() {
           <Stack.Screen
             name="EmailSignIn"
             component={EmailSignIn}
-            options={{ title: "Sign in" }}
+            options={{ title: "Continue with email" }}
           />
-          <Stack.Screen
+          {/* If you’ve removed EmailSignUp, delete this screen */}
+          {/* <Stack.Screen
             name="EmailSignUp"
             component={EmailSignUp}
             options={{ title: "Sign up" }}
-          />
+          /> */}
+          {/* Keep these registered so DevBypass can always target them */}
           <Stack.Screen
             name="PostSignInDev"
             component={PostSignInStack}
             options={{ headerShown: false }}
           />
-          {/* Keep tabs targetable for DevBypass */}
-          <Stack.Screen name="AppTabs" component={AppTabs} options={{ headerShown: false }} />
+          <Stack.Screen
+            name="AppTabs"
+            component={AppTabs}
+            options={{ headerShown: false }}
+          />
         </Stack.Navigator>
       ) : isFirstLogin ? (
-        // ----- First login flow -----
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {/* Register Launch so DevBypass → Welcome works during onboarding */}
-          <Stack.Screen name="Launch" component={LaunchScreen} />
+        // ---------- FIRST LOGIN (POST-AUTH ONBOARDING) ----------
+        <Stack.Navigator
+          initialRouteName="PostSignIn"
+          screenOptions={{ headerShown: false }}
+        >
           <Stack.Screen name="PostSignIn" component={PostSignInStack} />
+          {/* Registered for DevBypass convenience */}
+          <Stack.Screen name="Launch" component={LaunchScreen} />
           <Stack.Screen name="PostSignInDev" component={PostSignInStack} />
-          {/* Keep tabs targetable for DevBypass */}
           <Stack.Screen name="AppTabs" component={AppTabs} />
         </Stack.Navigator>
       ) : (
-        // ----- Returning user flow -----
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Launch" component={LaunchScreen} />
+        // ---------- RETURNING USER FLOW ----------
+        <Stack.Navigator
+          initialRouteName="AppTabs"
+          screenOptions={{ headerShown: false }}
+        >
           <Stack.Screen name="AppTabs" component={AppTabs} />
+          <Stack.Screen name="Launch" component={LaunchScreen} />
           <Stack.Screen name="WelcomeBack" component={WelcomeBackScreen} />
           <Stack.Screen name="PostSignInDev" component={PostSignInStack} />
         </Stack.Navigator>
