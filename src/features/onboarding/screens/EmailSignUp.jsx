@@ -1,12 +1,12 @@
 import React, { useState } from "react"
-import { View, Text, TextInput, Button, TouchableOpacity, Alert } from "react-native"
+import { View, Text, TextInput, Button, Alert } from "react-native"
 import { supabase } from "../../auth/lib/supabaseClient"
 
-export default function EmailSignIn({ navigation }) {
+export default function EmailSignUp({ navigation }) {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const handleSignIn = async () => {
+  const handleSignUp = async () => {
     if (!email) return Alert.alert("Enter your email")
     try {
       setLoading(true)
@@ -15,9 +15,11 @@ export default function EmailSignIn({ navigation }) {
         options: { emailRedirectTo: "keteofknowledge://auth" },
       })
       if (error) throw error
-      Alert.alert("Check your inbox", "We’ve sent you a sign-in link.")
+      Alert.alert("Check your inbox", "We’ve sent you a sign-up link.")
+      // optional: jump to sign-in to clarify next step
+      navigation.navigate("EmailSignIn")
     } catch (e) {
-      Alert.alert("Sign-in failed", e.message)
+      Alert.alert("Sign-up failed", e.message)
     } finally {
       setLoading(false)
     }
@@ -25,7 +27,7 @@ export default function EmailSignIn({ navigation }) {
 
   return (
     <View style={{ flex:1, justifyContent:"center", alignItems:"center", padding:20 }}>
-      <Text style={{ fontSize:20, fontWeight:"700", marginBottom:12 }}>Welcome back</Text>
+      <Text style={{ fontSize:20, fontWeight:"700", marginBottom:12 }}>Create your account</Text>
       <TextInput
         value={email}
         onChangeText={setEmail}
@@ -34,11 +36,7 @@ export default function EmailSignIn({ navigation }) {
         keyboardType="email-address"
         style={{ width:"100%", borderWidth:1, borderColor:"#ccc", padding:12, borderRadius:8, marginBottom:12 }}
       />
-      <Button title={loading ? "Sending…" : "Send magic link"} onPress={handleSignIn} disabled={loading} />
-
-      <TouchableOpacity onPress={() => navigation.navigate("EmailSignUp")} style={{ marginTop: 12 }}>
-        <Text>New here? <Text style={{ fontWeight:"700" }}>Sign up</Text></Text>
-      </TouchableOpacity>
+      <Button title={loading ? "Sending…" : "Continue"} onPress={handleSignUp} disabled={loading} />
     </View>
   )
 }

@@ -12,37 +12,12 @@ const Stack = createNativeStackNavigator()
 
 export default function PostSignInStack() {
   return (
-    <Stack.Navigator
-      initialRouteName="PostSignInWelcome"
-      screenOptions={{
-        headerShown: true,
-        headerTitleAlign: "center",
-        headerBackTitleVisible: true,
-      }}
-    >
-      <Stack.Screen
-        name="PostSignInWelcome"
-        component={PostSignInWelcome}
-        options={{ title: "Welcome" }}
-      />
-      <Stack.Screen
-        name="CompleteProfile"
-        component={CompleteProfile}
-        options={{ title: "Complete Profile" }}
-      />
-      <Stack.Screen
-        name="Consent"
-        component={ConsentScreen}
-        options={{ title: "Consent" }}
-      />
-      <Stack.Screen
-        name="Done"
-        component={Done}
-        options={{
-          headerShown: false,
-          gestureEnabled: false, // disables swipe-back on iOS
-        }}
-      />
-    </Stack.Navigator>
+<Stack.Navigator screenOptions={{ headerShown: true, headerBackTitleVisible: true, headerTitleAlign: "center" }}>
+  {/* titles control iOS back label on the next screen */}
+  <Stack.Screen name="PostSignInWelcome" component={PostSignInWelcome} options={{ title: "Welcome" }} />
+  <Stack.Screen name="CompleteProfile" component={CompleteProfile} options={{ title: "Complete profile" }} />
+  <Stack.Screen name="Consent" component={ConsentScreen} options={{ title: "Consent" }} />
+  <Stack.Screen name="Done" component={Done} options={{ headerShown: false }} />
+</Stack.Navigator>
   )
 }

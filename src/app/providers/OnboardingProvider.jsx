@@ -2,7 +2,7 @@
 /* eslint-disable unused-imports/no-unused-imports */
 import React, { createContext, useContext, useEffect, useState } from "react"
 import { supabase } from "../../features/auth/lib/supabaseClient"
-import { useAuth } from "../app/providers/AuthProvider" // ✅ correct now
+import { useAuth } from "./AuthProvider" // ✅ correct now
 
 const OnboardingContext = createContext()
 
