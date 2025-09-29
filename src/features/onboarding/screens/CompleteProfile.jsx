@@ -1,4 +1,3 @@
-/* src/features/onboarding/screens/CompleteProfile.jsx */
 import React, { useState } from "react"
 import { View, Text, TextInput, Button, Alert } from "react-native"
 import { supabase } from "../../auth/lib/supabaseClient"
@@ -11,14 +10,12 @@ export default function CompleteProfile({ navigation, route }) {
 
   const save = async (finish=false) => {
     try {
-      // Dev preview or guest → skip DB writes
       if (dev || !user) {
         if (finish) navigation.navigate("Done", { dev: true })
         else Alert.alert("Dev mode", "Skipped saving (no auth).")
         return
       }
 
-      // Real write (signed-in)
       await supabase.from("profiles").upsert({
         user_id: user.id,
         display_name: displayName || null,
