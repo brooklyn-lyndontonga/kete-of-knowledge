@@ -12,7 +12,7 @@ import EmailSignIn from "../features/onboarding/screens/EmailSignIn"
 import EmailSignUp from "../features/onboarding/screens/EmailSignUp"
 import PostSignInStack from "./PostSignInStack"
 import WelcomeBackScreen from "../features/welcome/screens/WelcomeBackScreen"
-import LaunchScreen from "../features/welcome/screens/LaunchScreen"   // ✅ new
+import LaunchScreen from "../features/welcome/screens/LaunchScreen"
 
 import { navigationRef } from "./navigationRef"
 
@@ -47,7 +47,6 @@ export default function RootNavigator() {
             headerTitleAlign: "center",
           }}
         >
-          {/* Landing appears first for guests */}
           <Stack.Screen
             name="Launch"
             component={LaunchScreen}
@@ -63,31 +62,27 @@ export default function RootNavigator() {
             component={EmailSignUp}
             options={{ title: "Sign up" }}
           />
-          {/* Dev shortcut mounts the inner stack (it has its own headers) */}
           <Stack.Screen
             name="PostSignInDev"
             component={PostSignInStack}
             options={{ headerShown: false }}
           />
-          {/* Keep AppTabs targetable for DevBypass */}
-          <Stack.Screen
-            name="AppTabs"
-            component={AppTabs}
-            options={{ headerShown: false }}
-          />
+          {/* Keep tabs targetable for DevBypass */}
+          <Stack.Screen name="AppTabs" component={AppTabs} options={{ headerShown: false }} />
         </Stack.Navigator>
       ) : isFirstLogin ? (
         // ----- First login flow -----
         <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {/* Register Launch so DevBypass → Welcome works during onboarding */}
+          <Stack.Screen name="Launch" component={LaunchScreen} />
           <Stack.Screen name="PostSignIn" component={PostSignInStack} />
           <Stack.Screen name="PostSignInDev" component={PostSignInStack} />
-          {/* Allow tabs just in case (dev bypass) */}
+          {/* Keep tabs targetable for DevBypass */}
           <Stack.Screen name="AppTabs" component={AppTabs} />
         </Stack.Navigator>
       ) : (
         // ----- Returning user flow -----
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {/* Landing appears before tabs for signed-in users (but auto-skips after first view) */}
           <Stack.Screen name="Launch" component={LaunchScreen} />
           <Stack.Screen name="AppTabs" component={AppTabs} />
           <Stack.Screen name="WelcomeBack" component={WelcomeBackScreen} />
