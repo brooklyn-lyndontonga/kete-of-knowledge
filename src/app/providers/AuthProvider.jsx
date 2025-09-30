@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
 import * as Linking from "expo-linking"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import Constants from "expo-constants"
 import { supabase } from "../../features/auth/lib/supabaseClient"
 
-const AuthCtx = createContext({ user: null, session: null, loading: true })
+const AuthCtx = createContext({ user: null, session: null, loading: true, isGuest: true })
 export const useAuth = () => useContext(AuthCtx)
 
 const TEMP_CONSENT_KEY = "consent:temp"
@@ -13,9 +14,17 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // initial session
+  // DEV: mock sign-in (no backend) if flag enabled
+  const DEV_FORCE =
+    __DEV__ &&
+    (process.env.EXPO_PUBLIC_FORCE_SIGNED_IN === "1" ||
+     Constants?.expoConfig?.extra?.FORCE_SIGNED_IN === 1)
+
+  // Initial session + deep-link handler + auth subscription
   useEffect(() => {
     let mounted = true
+
+    // 1) hydrate existing session
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return
       setSession(data.session ?? null)
@@ -23,7 +32,7 @@ export function AuthProvider({ children }) {
       setLoading(false)
     })
 
-    // deep link → exchange code
+    // 2) deep link → exchange code for session
     const sub = Linking.addEventListener("url", async ({ url }) => {
       const { queryParams } = Linking.parse(url)
       const code = queryParams?.code
@@ -37,7 +46,7 @@ export function AuthProvider({ children }) {
       setUser(data.session.user)
     })
 
-    // auth changes
+    // 3) auth state changes
     const { data: authSub } = supabase.auth.onAuthStateChange((_evt, sess) => {
       setSession(sess ?? null)
       setUser(sess?.user ?? null)
@@ -50,13 +59,34 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // push pre-auth consent after login (if any)
+  // DEV: force a mock user (UI only; skip Supabase)
+  useEffect(() => {
+    if (!DEV_FORCE) return
+    const fakeUser = {
+      id: "dev-user-0001",
+      email: "dev@mock.local",
+      app_metadata: { provider: "dev" },
+      user_metadata: { name: "Dev User" },
+    }
+    setSession({ user: fakeUser })
+    setUser(fakeUser)
+    setLoading(false)
+  }, [DEV_FORCE])
+
+  // After login, write any pre-auth consent (captured locally) to Supabase
   useEffect(() => {
     if (!user) return
     ;(async () => {
       const raw = await AsyncStorage.getItem(TEMP_CONSENT_KEY)
       if (!raw) return
       const { consentAcceptedAt } = JSON.parse(raw)
+
+      // Skip database writes when using mock user
+      const isMock = DEV_FORCE || String(user.id).startsWith("dev-user-")
+      if (isMock) {
+        await AsyncStorage.removeItem(TEMP_CONSENT_KEY)
+        return
+      }
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -72,7 +102,7 @@ export function AuthProvider({ children }) {
       }
       await AsyncStorage.removeItem(TEMP_CONSENT_KEY)
     })().catch(() => {})
-  }, [user])
+  }, [user, DEV_FORCE])
 
   return (
     <AuthCtx.Provider value={{ user, session, loading, isGuest: !user }}>
