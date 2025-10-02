@@ -14,17 +14,16 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // DEV: mock sign-in (no backend) if flag enabled
+  // DEV: mock sign-in (UI only; no backend) when flagged
   const DEV_FORCE =
     __DEV__ &&
     (process.env.EXPO_PUBLIC_FORCE_SIGNED_IN === "1" ||
      Constants?.expoConfig?.extra?.FORCE_SIGNED_IN === 1)
 
-  // Initial session + deep-link handler + auth subscription
+  // 1) hydrate session, 2) handle magic-link deep link, 3) subscribe to auth changes
   useEffect(() => {
     let mounted = true
 
-    // 1) hydrate existing session
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return
       setSession(data.session ?? null)
@@ -32,7 +31,6 @@ export function AuthProvider({ children }) {
       setLoading(false)
     })
 
-    // 2) deep link → exchange code for session
     const sub = Linking.addEventListener("url", async ({ url }) => {
       const { queryParams } = Linking.parse(url)
       const code = queryParams?.code
@@ -46,7 +44,6 @@ export function AuthProvider({ children }) {
       setUser(data.session.user)
     })
 
-    // 3) auth state changes
     const { data: authSub } = supabase.auth.onAuthStateChange((_evt, sess) => {
       setSession(sess ?? null)
       setUser(sess?.user ?? null)
@@ -59,7 +56,7 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // DEV: force a mock user (UI only; skip Supabase)
+  // DEV: force a mock user (skip backend)
   useEffect(() => {
     if (!DEV_FORCE) return
     const fakeUser = {
@@ -73,7 +70,7 @@ export function AuthProvider({ children }) {
     setLoading(false)
   }, [DEV_FORCE])
 
-  // After login, write any pre-auth consent (captured locally) to Supabase
+  // After login, push pre-auth consent (captured locally) to Supabase profile
   useEffect(() => {
     if (!user) return
     ;(async () => {
@@ -81,7 +78,7 @@ export function AuthProvider({ children }) {
       if (!raw) return
       const { consentAcceptedAt } = JSON.parse(raw)
 
-      // Skip database writes when using mock user
+      // Skip writes when using mock user
       const isMock = DEV_FORCE || String(user.id).startsWith("dev-user-")
       if (isMock) {
         await AsyncStorage.removeItem(TEMP_CONSENT_KEY)

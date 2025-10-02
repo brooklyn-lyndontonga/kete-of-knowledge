@@ -38,10 +38,7 @@ export default function ModePill() {
   )
 
   return (
-    <View
-      pointerEvents="box-none"
-      style={{ position: "absolute", left: 12, bottom: Platform.OS === "ios" ? 60 : 20, zIndex: 9998 }}
-    >
+    <View pointerEvents="box-none" style={{ position: "absolute", left: 12, bottom: Platform.OS === "ios" ? 60 : 20, zIndex: 9998 }}>
       {open && (
         <Pressable
           onPress={close}
