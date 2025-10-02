@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import "react-native-url-polyfill/auto"
 import "react-native-get-random-values"
 import { View } from "react-native"
@@ -6,17 +6,20 @@ import { View } from "react-native"
 import RootNavigator from "./src/navigation/RootNavigator"
 import { AuthProvider } from "./src/app/providers/AuthProvider"
 import { OnboardingProvider } from "./src/app/providers/OnboardingProvider"
-import ModePill from "./src/ui/components/ModePill"
-import DevBypass from "./src/app/dev/DevBypass"
+import DevBypass from "./src/app/dev/DevBypass"              
+import { verifySupabase } from "./src/features/auth/lib/verifySupabase"
 
 export default function App() {
+  useEffect(() => {
+    if (__DEV__) verifySupabase()
+  }, [])
+
   return (
     <AuthProvider>
       <OnboardingProvider>
         <View style={{ flex: 1 }}>
           <RootNavigator />
-          <ModePill />
-          <DevBypass />
+          <DevBypass />                                       
         </View>
       </OnboardingProvider>
     </AuthProvider>

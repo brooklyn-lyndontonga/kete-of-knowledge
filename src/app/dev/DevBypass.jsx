@@ -1,4 +1,3 @@
-// src/app/dev/DevBypass.jsx
 import React, { useState } from "react"
 import { View, Text, Platform, Pressable } from "react-native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
@@ -41,10 +40,7 @@ export default function DevBypass() {
   const resetTo = (route) => go(() => { close(); navigationRef.reset(route) })
 
   return (
-    <View
-      pointerEvents="box-none"
-      style={{ position: "absolute", right: 12, bottom: Platform.OS === "ios" ? 60 : 20, zIndex: 9999 }}
-    >
+    <View pointerEvents="box-none" style={{ position: "absolute", right: 12, bottom: Platform.OS === "ios" ? 60 : 20, zIndex: 9999 }}>
       {open && (
         <Pressable
           onPress={close}
@@ -60,8 +56,7 @@ export default function DevBypass() {
           style={{
             marginBottom: 8, paddingVertical: 8, backgroundColor: "#fff",
             borderRadius: 12, minWidth: 240,
-            shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 8,
-            shadowOffset: { width: 0, height: 4 }, elevation: 8,
+            shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 8,
           }}
           accessibilityLabel="Developer quick actions"
           accessible
@@ -84,7 +79,6 @@ export default function DevBypass() {
               onPress={async () => {
                 await AsyncStorage.setItem("dev:onboardingMode", "first")
                 close()
-                // jump into onboarding (no-auth preview ok)
                 nav("PostSignInDev", { screen: "Consent", params: { dev: true } })
               }}
             />
@@ -109,29 +103,12 @@ export default function DevBypass() {
 
           <View style={{ height: 8 }} />
 
-          {/* Onboarding (no auth preview) */}
+          {/* Onboarding previews (no auth) */}
           <View style={{ paddingHorizontal: 8 }}>
             <Text style={{ fontSize: 12, opacity: 0.6, paddingHorizontal: 6, paddingBottom: 4 }}>Onboarding (no auth)</Text>
-            <MenuItem label="Consent"
-              onPress={() => { close(); nav("PostSignInDev", { screen: "Consent", params: { dev: true } }) }} />
-            <MenuItem label="Profile Setup"
-              onPress={() => { close(); nav("PostSignInDev", { screen: "CompleteProfile", params: { dev: true } }) }} />
-            <MenuItem label="Done"
-              onPress={() => { close(); nav("PostSignInDev", { screen: "Done", params: { dev: true } }) }} />
-          </View>
-
-          <View style={{ height: 8 }} />
-
-          {/* Tabs shortcuts */}
-          <View style={{ paddingHorizontal: 8 }}>
-            <Text style={{ fontSize: 12, opacity: 0.6, paddingHorizontal: 6, paddingBottom: 4 }}>Tabs</Text>
-            <MenuItem
-              label="Tabs → HomeWelcome"
-              onPress={resetTo({
-                index: 0,
-                routes: [{ name: "AppTabs", params: { screen: "Home", params: { screen: "HomeWelcome" } } }],
-              })}
-            />
+            <MenuItem label="Consent" onPress={() => { close(); nav("PostSignInDev", { screen: "Consent", params: { dev: true } }) }} />
+            <MenuItem label="Profile Setup" onPress={() => { close(); nav("PostSignInDev", { screen: "CompleteProfile", params: { dev: true } }) }} />
+            <MenuItem label="Done" onPress={() => { close(); nav("PostSignInDev", { screen: "Done", params: { dev: true } }) }} />
           </View>
         </View>
       )}
@@ -142,8 +119,7 @@ export default function DevBypass() {
           width: 48, height: 48, borderRadius: 24,
           backgroundColor: pressed ? "#1769aa" : "#1976d2",
           alignItems: "center", justifyContent: "center",
-          shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 8,
-          shadowOffset: { width: 0, height: 4 }, elevation: 6,
+          shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 6,
         })}
         accessibilityRole="button"
         accessibilityLabel={open ? "Close dev menu" : "Open dev menu"}

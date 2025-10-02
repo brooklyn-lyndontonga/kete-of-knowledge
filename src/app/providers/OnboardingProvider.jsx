@@ -14,8 +14,6 @@ export const useOnboarding = () => useContext(Ctx)
  * isFirstLogin:
  *   true  → route user to PostSignInStack (Consent → CompleteProfile → Done)
  *   false → route user to AppTabs
- *
- * returningStatus: useful if you want to branch inside onboarding
  */
 export function OnboardingProvider({ children }) {
   const { user } = useAuth()
@@ -25,12 +23,11 @@ export function OnboardingProvider({ children }) {
     hasCompleted: true,
   })
 
-  // Dev helpers / flags
   const extra = Constants?.expoConfig?.extra ?? {}
   const DEV_FORCE =
     __DEV__ &&
     (extra.FORCE_SIGNED_IN === 1 ||
-      process.env.EXPO_PUBLIC_FORCE_SIGNED_IN === "1")
+     process.env.EXPO_PUBLIC_FORCE_SIGNED_IN === "1")
   const devEnvMode =
     (process.env.EXPO_PUBLIC_DEV_USER_MODE || extra.DEV_USER_MODE || "")
       .toString()
@@ -38,9 +35,7 @@ export function OnboardingProvider({ children }) {
 
   useEffect(() => {
     let cancelled = false
-
-    const run = async () => {
-      // If no user, treat as guest (no onboarding gating needed here)
+    ;(async () => {
       if (!user) {
         if (cancelled) return
         setIsFirstLogin(false)
@@ -48,30 +43,29 @@ export function OnboardingProvider({ children }) {
         return
       }
 
-      // ----- DEV OVERRIDES -----
-      // 1) persistent menu override
-      const stored = ((await AsyncStorage.getItem("dev:onboardingMode")) ||
-        "").toLowerCase()
-
-      // 2) env/config override
+      // DEV overrides (either persistent via AsyncStorage or env)
+      const stored = ((await AsyncStorage.getItem("dev:onboardingMode")) || "")
+        .toLowerCase()
       const mode = (stored || devEnvMode).toLowerCase()
+
       if (__DEV__ && (DEV_FORCE || mode)) {
         if (mode === "first") {
-          if (cancelled) return
-          setIsFirstLogin(true)
-          setReturningStatus({ hasConsent: false, hasCompleted: false })
+          if (!cancelled) {
+            setIsFirstLogin(true)
+            setReturningStatus({ hasConsent: false, hasCompleted: false })
+          }
           return
         }
         if (mode === "returning") {
-          if (cancelled) return
-          setIsFirstLogin(false)
-          setReturningStatus({ hasConsent: true, hasCompleted: true })
+          if (!cancelled) {
+            setIsFirstLogin(false)
+            setReturningStatus({ hasConsent: true, hasCompleted: true })
+          }
           return
         }
-        // if DEV_FORCE but no explicit mode, just fall through to real check
       }
 
-      // ----- REAL BEHAVIOR (no override) -----
+      // Real profile check (no override)
       const { data: profile, error } = await supabase
         .from("profiles")
         .select("consent_accepted_at, completed")
@@ -81,7 +75,6 @@ export function OnboardingProvider({ children }) {
       if (cancelled) return
 
       if (error) {
-        // If profile missing or error, treat as first login
         setIsFirstLogin(true)
         setReturningStatus({ hasConsent: false, hasCompleted: false })
         return
@@ -89,17 +82,11 @@ export function OnboardingProvider({ children }) {
 
       const hasConsent = !!profile?.consent_accepted_at
       const hasCompleted = !!profile?.completed
-
-      // You can decide your gating here; commonly:
-      // isFirstLogin = !hasCompleted (forces user through onboarding until 'Done')
       setIsFirstLogin(!hasCompleted)
       setReturningStatus({ hasConsent, hasCompleted })
-    }
+    })()
 
-    run()
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
   }, [user, DEV_FORCE, devEnvMode])
 
   return (
