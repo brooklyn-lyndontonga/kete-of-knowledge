@@ -1,18 +1,28 @@
 // src/navigation/stacks/HomeStack.jsx
+import React from "react"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import HomeScreen from "../../features/home/screens/HomeScreen"
-import HomeWelcomeScreen from "../../screens/home/HomeWelcomeScreen"
 
-function HomeStack() {
-  const Stack = createNativeStackNavigator()
+import HomeScreen from "../../screens/home/HomeScreen"
+import HomeWelcomeScreen from "../../screens/home/HomeWelcomeScreen" // remove if you don't have this yet
+
+const Stack = createNativeStackNavigator()
+
+export default function HomeStack() {
   return (
     <Stack.Navigator
-      initialRouteName="Home"                // 👈 important: default = Home for returning users
+      initialRouteName="Home"
       screenOptions={{ headerShown: true, headerTitleAlign: "center" }}
     >
-      <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="HomeWelcome" component={HomeWelcomeScreen} options={{ title: "Welcome" }} />
+      <Stack.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="HomeWelcome"
+        component={HomeWelcomeScreen}
+        options={{ title: "Welcome" }}
+      />
     </Stack.Navigator>
   )
 }
-export default HomeStack
