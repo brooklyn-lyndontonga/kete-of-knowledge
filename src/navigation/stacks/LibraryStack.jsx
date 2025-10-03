@@ -1,7 +1,6 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import LibraryScreen from "../../features/library/screens/LibraryScreen"
-import LibraryGuideScreen from "../../features/library/screens/LibraryGuideScreen"
+import { LibraryScreen, LibraryGuideScreen } from "../../screens/library"
 
 function LibraryStack() {
   const Stack = createNativeStackNavigator()
