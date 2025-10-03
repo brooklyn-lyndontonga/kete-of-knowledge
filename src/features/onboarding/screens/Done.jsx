@@ -1,38 +1,18 @@
 import React from "react"
 import { View, Text, Button } from "react-native"
-import { supabase } from "../../auth/lib/supabaseClient"
-import { useAuth } from "../../../app/providers/AuthProvider"
+import { useNavigation } from "@react-navigation/native"
 
-export default function Done({ navigation, route }) {
-  const { user } = useAuth()
-  const dev = route?.params?.dev === true
-
-  const finish = async () => {
-    if (!dev && user) {
-      await supabase.from("profiles").update({ completed: true }).eq("user_id", user.id)
-    }
-    navigation.reset({
-      index: 0,
-      routes: [
-        {
-          name: "AppTabs",
-          params: { screen: "Home", params: { screen: "HomeWelcome" } },
-        },
-      ],
-    })
-  }
+export default function Done() {
+  const navigation = useNavigation()
+  const goTabs = () => navigation.reset({ index: 0, routes: [{ name: "AppTabs" }] })
 
   return (
     <View style={{ flex:1, justifyContent:"center", alignItems:"center", padding:20 }}>
-      <Text style={{ fontSize:22, fontWeight:"700", marginBottom:8 }}>
-        {dev ? "Dev complete (no-auth)" : "All set! ✅"}
-      </Text>
+      <Text style={{ fontSize:22, fontWeight:"700", marginBottom:12 }}>All set! 🎉</Text>
       <Text style={{ textAlign:"center", marginBottom:20 }}>
-        {dev
-          ? "Skipping server writes. You’ll now jump into the dashboard welcome."
-          : "Next you’ll see a quick tour on your dashboard."}
+        You can change these settings anytime from your profile.
       </Text>
-      <Button title="Continue" onPress={finish} />
+      <Button title="Go to dashboard" onPress={goTabs} />
     </View>
   )
 }
