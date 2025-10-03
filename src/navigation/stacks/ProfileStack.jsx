@@ -5,11 +5,11 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { useAuth } from "../../app/providers/AuthProvider"
 
 // Full-access screens
-import ProfileScreen from "../../features/profile/screens/ProfileScreen"
-import ProfileGuidelinesScreen from "../../features/profile/screens/ProfileGuidelinesScreen"
+import ProfileScreen from "../../screens/profile/ProfileScreen"
+import ProfileGuidelinesScreen from "../../screens/profile/ProfileGuidelinesScreen"
 
 // Guest placeholder (locked)
-import RestrictedScreen from "../../features/auth/screens/RestrictedScreen"
+import RestrictedScreen from "../../screens/home/RestrictedScreen"
 
 const Stack = createNativeStackNavigator()
 

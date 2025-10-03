@@ -1,7 +1,7 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import SettingsScreen from "../../features/settings/screens/SettingsScreen"
-import HelpScreen from "../../features/settings/screens/HelpScreen"
+import SettingsScreen from "../../screens/settings/SettingsScreen"
+import HelpScreen from "../../screens/settings/HelpScreen"
 
 function SettingsStack() {
   const Stack = createNativeStackNavigator()
