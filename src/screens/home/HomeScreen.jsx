@@ -1,15 +1,6 @@
 import React from "react"
-import { View, Text, StyleSheet } from "react-native"
+import Placeholder from "../../ui/components/Placeholder"
 
 export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>HomeScreen Placeholder</Text>
-    </View>
-  )
+  return <Placeholder title="Home" body="Placeholder screen for upcoming work." />
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" },
-  text: { fontSize: 20, fontWeight: "600", color: "#333" }
-})

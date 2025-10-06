@@ -1,15 +1,13 @@
 import React from "react"
-import { View, Text, StyleSheet } from "react-native"
+import { View, Text, Button } from "react-native"
+import { useNavigation } from "@react-navigation/native"
 
-export default function SettingsScreen() {
+export default function SettingsScreen(){
+  const nav = useNavigation()
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>SettingsScreen Placeholder</Text>
+    <View style={{ flex:1, alignItems:"center", justifyContent:"center", padding:20 }}>
+      <Text style={{ fontSize:22, fontWeight:"700", marginBottom:12 }}>⚙️ Settings</Text>
+      <Button title="Help & Support" onPress={() => nav.navigate("Help")} />
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" },
-  text: { fontSize: 20, fontWeight: "600", color: "#333" }
-})

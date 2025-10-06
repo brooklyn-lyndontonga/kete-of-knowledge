@@ -10,7 +10,7 @@ import { navigationRef } from "./navigationRef"
 // root-level screens
 import AppTabs from "./tabs/AppTabs"
 import EmailSignIn from "../features/onboarding/screens/EmailSignIn"
-import EmailSignUp from "../features/onboarding/screens/EmailSignUp"
+import EmailSignUp  from "../features/onboarding/screens/EmailSignUp"
 import LaunchScreen from "../features/welcome/screens/LaunchScreen"
 import WelcomeBackScreen from "../features/welcome/screens/WelcomeBackScreen"
 

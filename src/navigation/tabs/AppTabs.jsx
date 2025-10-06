@@ -7,8 +7,7 @@ import HubStack from "../stacks/HubStack"
 import LibraryStack from "../stacks/LibraryStack"
 import ProfileStack from "../stacks/ProfileStack"
 import SettingsStack from "../stacks/SettingsStack"
-
-import RestrictedScreen from "../../features/auth/screens/RestrictedScreen"
+import RestrictedScreen from "../../screens/home/RestrictedScreen"
 
 const Tab = createBottomTabNavigator()
 
