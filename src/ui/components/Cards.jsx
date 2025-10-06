@@ -6,7 +6,7 @@ function Card({ children, style }) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
-export default Card;
+export { default }  from "./Card"
 
 const styles = StyleSheet.create({
   card: {
