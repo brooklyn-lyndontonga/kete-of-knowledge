@@ -6,7 +6,7 @@ import { useAuth } from "./AuthProvider"
 
 const Ctx = createContext({
   isFirstLogin: false,
-  returningStatus: { hasConsent: true, hasCompleted: true },
+  returningStatus: { hasConsent: false, hasCompleted: false },
 })
 export const useOnboarding = () => useContext(Ctx)
 
@@ -19,8 +19,8 @@ export function OnboardingProvider({ children }) {
   const { user } = useAuth()
   const [isFirstLogin, setIsFirstLogin] = useState(false)
   const [returningStatus, setReturningStatus] = useState({
-    hasConsent: true,
-    hasCompleted: true,
+    hasConsent: false,
+    hasCompleted: false,
   })
 
   const extra = Constants?.expoConfig?.extra ?? {}
@@ -36,11 +36,12 @@ export function OnboardingProvider({ children }) {
 
   useEffect(() => {
     let cancelled = false
+
     ;(async () => {
       if (!user) {
         if (cancelled) return
         setIsFirstLogin(false)
-        setReturningStatus({ hasConsent: true, hasCompleted: true })
+        setReturningStatus({ hasConsent: false, hasCompleted: false })
         return
       }
 
@@ -66,24 +67,28 @@ export function OnboardingProvider({ children }) {
         }
       }
 
-      // Real Supabase check
+      // 🔍 Real Supabase check
       const { data: profile, error } = await supabase
         .from("profiles")
-        .select("consent_accepted_at, completed")
-        .eq("user_id", user.id)
+        .select("consent_accepted_at, profile_completed_at")
+        .eq("id", user.id) // ✅ use "id", not "user_id" (depends on your schema)
         .maybeSingle()
 
       if (cancelled) return
 
       if (error) {
+        console.warn("⚠️ Error fetching profile:", error.message)
         setIsFirstLogin(true)
         setReturningStatus({ hasConsent: false, hasCompleted: false })
         return
       }
 
       const hasConsent = !!profile?.consent_accepted_at
-      const hasCompleted = !!profile?.completed
-      setIsFirstLogin(!hasCompleted)
+      const hasCompleted = !!profile?.profile_completed_at
+
+      // 🧩 Decide onboarding flow
+      const firstLogin = !(hasConsent && hasCompleted)
+      setIsFirstLogin(firstLogin)
       setReturningStatus({ hasConsent, hasCompleted })
     })()
 

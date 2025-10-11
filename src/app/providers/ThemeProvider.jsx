@@ -1,23 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, { createContext, useContext } from "react"
 import { ThemeProvider as StyledThemeProvider } from "styled-components/native"
 import { colors, spacing, radii, typography } from "../../theme"
 
-const ThemeCtx = createContext({ theme: "light", toggle: () => {} })
-export const useTheme = () => useContext(ThemeCtx)
+const ThemeCtx = createContext(null)
+
+export const useTheme = () => {
+  const ctx = useContext(ThemeCtx)
+  if (!ctx) throw new Error("useTheme must be used within a ThemeProvider")
+  return ctx
+}
+
+const baseTheme = { colors, spacing, radii, typography, mode: "light" }
 
 export function ThemeProvider({ children }) {
-  const [themeMode, setThemeMode] = useState("light")
-  const toggle = () => setThemeMode(themeMode === "light" ? "dark" : "light")
-
-  const theme = { colors, spacing, radii, typography }
-
-  useEffect(() => {
-    console.log("🎨 Current theme:", themeMode)
-  }, [themeMode])
-
   return (
-    <ThemeCtx.Provider value={{ themeMode, toggle }}>
-      <StyledThemeProvider theme={theme}>{children}</StyledThemeProvider>
+    <ThemeCtx.Provider value={{ theme: baseTheme }}>
+      <StyledThemeProvider theme={baseTheme}>{children}</StyledThemeProvider>
     </ThemeCtx.Provider>
   )
 }
