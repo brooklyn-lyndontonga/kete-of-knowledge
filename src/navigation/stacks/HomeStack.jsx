@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
 import HomeScreen from "../../screens/home/HomeScreen"
 import HomeWelcomeScreen from "../../screens/home/HomeWelcomeScreen" // remove if you don't have this yet
+import UITestScreen from "src/screens/UITestScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -22,6 +23,11 @@ export default function HomeStack() {
         name="HomeWelcome"
         component={HomeWelcomeScreen}
         options={{ title: "Welcome" }}
+      />
+      <Stack.Screen
+        name="UITest"
+        component={UITestScreen}
+        options={{ title: "UI Test" }}
       />
     </Stack.Navigator>
   )
