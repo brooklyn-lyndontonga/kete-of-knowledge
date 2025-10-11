@@ -27,11 +27,12 @@ export function OnboardingProvider({ children }) {
   const DEV_FORCE =
     __DEV__ &&
     (extra.FORCE_SIGNED_IN === 1 ||
-     process.env.EXPO_PUBLIC_FORCE_SIGNED_IN === "1")
+      process.env.EXPO_PUBLIC_FORCE_SIGNED_IN === "1")
+
   const devEnvMode =
     (process.env.EXPO_PUBLIC_DEV_USER_MODE || extra.DEV_USER_MODE || "")
       .toString()
-      .toLowerCase() // "first" | "returning" | ""
+      .toLowerCase()
 
   useEffect(() => {
     let cancelled = false
@@ -43,7 +44,7 @@ export function OnboardingProvider({ children }) {
         return
       }
 
-      // DEV overrides (either persistent via AsyncStorage or env)
+      // DEV overrides
       const stored = ((await AsyncStorage.getItem("dev:onboardingMode")) || "")
         .toLowerCase()
       const mode = (stored || devEnvMode).toLowerCase()
@@ -65,7 +66,7 @@ export function OnboardingProvider({ children }) {
         }
       }
 
-      // Real profile check (no override)
+      // Real Supabase check
       const { data: profile, error } = await supabase
         .from("profiles")
         .select("consent_accepted_at, completed")
@@ -86,8 +87,14 @@ export function OnboardingProvider({ children }) {
       setReturningStatus({ hasConsent, hasCompleted })
     })()
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [user, DEV_FORCE, devEnvMode])
+
+  useEffect(() => {
+    console.log("🪶 Onboarding state:", { isFirstLogin, returningStatus })
+  }, [isFirstLogin, returningStatus])
 
   return (
     <Ctx.Provider value={{ isFirstLogin, returningStatus }}>
