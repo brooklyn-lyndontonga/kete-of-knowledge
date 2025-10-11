@@ -4,7 +4,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import Constants from "expo-constants"
 import { supabase } from "../../features/auth/lib/supabaseClient"
 
-const AuthCtx = createContext({ user: null, session: null, loading: true, isGuest: true })
+const AuthCtx = createContext({
+  user: null,
+  session: null,
+  loading: true,
+  isGuest: true,
+})
 export const useAuth = () => useContext(AuthCtx)
 
 const TEMP_CONSENT_KEY = "consent:temp"
@@ -14,13 +19,13 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // DEV: mock sign-in (UI only; no backend) when flagged
+  // DEV: mock sign-in when flagged
   const DEV_FORCE =
     __DEV__ &&
     (process.env.EXPO_PUBLIC_FORCE_SIGNED_IN === "1" ||
-     Constants?.expoConfig?.extra?.FORCE_SIGNED_IN === 1)
+      Constants?.expoConfig?.extra?.FORCE_SIGNED_IN === 1)
 
-  // 1) hydrate session, 2) handle magic-link deep link, 3) subscribe to auth changes
+  // 1️⃣ Hydrate session + listen for deep links and auth changes
   useEffect(() => {
     let mounted = true
 
@@ -56,7 +61,7 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // DEV: force a mock user (skip backend)
+  // 2️⃣ DEV mock user
   useEffect(() => {
     if (!DEV_FORCE) return
     const fakeUser = {
@@ -70,7 +75,7 @@ export function AuthProvider({ children }) {
     setLoading(false)
   }, [DEV_FORCE])
 
-  // After login, push pre-auth consent (captured locally) to Supabase profile
+  // 3️⃣ Push local consent cache to Supabase
   useEffect(() => {
     if (!user) return
     ;(async () => {
@@ -78,7 +83,6 @@ export function AuthProvider({ children }) {
       if (!raw) return
       const { consentAcceptedAt } = JSON.parse(raw)
 
-      // Skip writes when using mock user
       const isMock = DEV_FORCE || String(user.id).startsWith("dev-user-")
       if (isMock) {
         await AsyncStorage.removeItem(TEMP_CONSENT_KEY)
@@ -100,6 +104,10 @@ export function AuthProvider({ children }) {
       await AsyncStorage.removeItem(TEMP_CONSENT_KEY)
     })().catch(() => {})
   }, [user, DEV_FORCE])
+
+  useEffect(() => {
+    if (!loading) console.log("👤 Auth state:", { user, session, loading })
+  }, [user, session, loading])
 
   return (
     <AuthCtx.Provider value={{ user, session, loading, isGuest: !user }}>

@@ -1,16 +1,46 @@
-// src/app/providers/ThemeProvider.jsx
-import React, { createContext, useContext } from "react"
-import { colors, spacing, radii, typography } from "../../theme"
+import React, { createContext, useContext, useState, useEffect } from "react"
+import { ThemeProvider as StyledThemeProvider } from "styled-components/native"
 
-const ThemeContext = createContext()
-
-export const ThemeProvider = ({ children }) => {
-  const theme = { colors, spacing, radii, typography }
-  return (
-    <ThemeContext.Provider value={theme}>
-      {children}
-    </ThemeContext.Provider>
-  )
+// 🎨 Define your base theme
+const lightTheme = {
+  mode: "light",
+  colors: {
+    primary: "#267f53",
+    secondary: "#99b7f5",
+    accent: "#f5793b",
+    background: "#ffffff",
+    text: "#000000",
+  },
 }
 
-export const useTheme = () => useContext(ThemeContext)
+const darkTheme = {
+  mode: "dark",
+  colors: {
+    primary: "#267f53",
+    secondary: "#99b7f5",
+    accent: "#f5793b",
+    background: "#000000",
+    text: "#ffffff",
+  },
+}
+
+const ThemeCtx = createContext()
+export const useTheme = () => useContext(ThemeCtx)
+
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState(lightTheme)
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev.mode === "light" ? darkTheme : lightTheme))
+  }
+
+  useEffect(() => {
+    console.log("🎨 Current theme:", theme.mode)
+  }, [theme])
+
+  return (
+    <ThemeCtx.Provider value={{ theme, toggleTheme }}>
+      <StyledThemeProvider theme={theme}>{children}</StyledThemeProvider>
+    </ThemeCtx.Provider>
+  )
+}
