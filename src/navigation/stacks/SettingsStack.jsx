@@ -1,25 +1,18 @@
-/* eslint-disable unused-imports/no-unused-vars */
+// src/navigation/stacks/SettingsStack.jsx
+import React from "react"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import SettingsScreen from "../../screens/settings/SettingsScreen"
-import HelpScreen from "../../screens/settings/HelpScreen"
+import SettingsPlaceholderScreen from "../../features/settings/screens/SettingsPlaceholderScreen"
 
-function SettingsStack() {
-  const Stack = createNativeStackNavigator()
+const Stack = createNativeStackNavigator()
 
+export default function SettingsStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen
-        name="SettingsHome"
-        component={SettingsScreen}
+        name="SettingsPlaceholder"
+        component={SettingsPlaceholderScreen}
         options={{ title: "Settings" }}
-      />
-      <Stack.Screen
-        name="Help"
-        component={HelpScreen}
-        options={{ title: "Help & Support" }}
       />
     </Stack.Navigator>
   )
 }
-
-export default SettingsStack

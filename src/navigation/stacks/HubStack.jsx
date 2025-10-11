@@ -1,19 +1,18 @@
-/* eslint-disable unused-imports/no-unused-vars */
+// src/navigation/stacks/HubStack.jsx
+import React from "react"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import HubScreen from "../../screens/hub/HubScreen"
+import HubPlaceholderScreen from "../../features/hub/screens/HubPlaceholderScreen"
 
-function HubStack() {
-  const Stack = createNativeStackNavigator()
+const Stack = createNativeStackNavigator()
 
+export default function HubStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen
-        name="Tāku Manawa"
-        component={HubScreen}
+        name="HubPlaceholder"
+        component={HubPlaceholderScreen}
         options={{ title: "Hub" }}
       />
     </Stack.Navigator>
   )
 }
-
-export default HubStack

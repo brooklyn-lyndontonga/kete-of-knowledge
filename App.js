@@ -11,7 +11,7 @@ import { OnboardingProvider } from "./src/app/providers/OnboardingProvider"
 import RootNavigator from "./src/navigation/RootNavigator"
 
 // 🧪 Dev Tool
-import DevBypass from "./src/app/dev/DevBypass"   // 👈 added import
+import DevBypass from "./src/app/dev/DevBypass"
 
 // 🖋 Fonts
 import { PlayfairDisplay_700Bold } from "@expo-google-fonts/playfair-display"
@@ -37,7 +37,9 @@ export default function App() {
   })
 
   useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync()
+    if (fontsLoaded) {
+      SplashScreen.hideAsync().catch(() => {})
+    }
   }, [fontsLoaded])
 
   if (!fontsLoaded) return null
@@ -47,10 +49,11 @@ export default function App() {
       <AuthProvider>
         <OnboardingProvider>
           <RootNavigator />
-          <DevBypass />
+
+          {/* 🧭 Developer floating menu (only in dev) */}
+          {__DEV__ && <DevBypass />}
         </OnboardingProvider>
       </AuthProvider>
     </ThemeProvider>
-
   )
 }
