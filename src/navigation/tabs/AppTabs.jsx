@@ -2,6 +2,9 @@
 import React from "react"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { useAuth } from "../../app/providers/AuthProvider"
+import { useTheme } from "../../app/providers/ThemeProvider"
+const { theme } = useTheme()
+
 
 // 🧭 Stacks
 import {
@@ -23,12 +26,14 @@ export default function AppTabs() {
 
   return (
     <Tab.Navigator
-      initialRouteName="HomeTab"
-      screenOptions={{
-        headerShown: false,
-        tabBarLabelStyle: { fontSize: 12 },
-      }}
-    >
+  screenOptions={({ route }) => ({
+    headerShown: false,
+    tabBarActiveTintColor: theme.colors.primary,
+    tabBarInactiveTintColor: theme.colors.mutedText,
+    tabBarStyle: { backgroundColor: theme.colors.bg },
+  })}
+>
+
       <Tab.Screen
         name="HomeTab"
         component={HomeStack}

@@ -33,6 +33,8 @@ const Item = ({ label, onPress }) => (
 )
 
 export default function DevBypass() {
+  const { theme } = useTheme()
+  
   if (!enabled) return null
 
   const [open, setOpen] = useState(false)

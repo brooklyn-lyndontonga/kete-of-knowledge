@@ -13,7 +13,7 @@ import RootNavigator from "./src/navigation/RootNavigator"
 // 🧪 Dev Tool
 import DevBypass from "./src/app/dev/DevBypass"
 
-// 🖋 Fonts
+// 🖋 Fonts — import directly from the packages
 import { PlayfairDisplay_700Bold } from "@expo-google-fonts/playfair-display"
 import {
   Poppins_400Regular,
@@ -37,9 +37,7 @@ export default function App() {
   })
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync().catch(() => {})
-    }
+    if (fontsLoaded) SplashScreen.hideAsync()
   }, [fontsLoaded])
 
   if (!fontsLoaded) return null
@@ -49,9 +47,7 @@ export default function App() {
       <AuthProvider>
         <OnboardingProvider>
           <RootNavigator />
-
-          {/* 🧭 Developer floating menu (only in dev) */}
-          {__DEV__ && <DevBypass />}
+          <DevBypass />
         </OnboardingProvider>
       </AuthProvider>
     </ThemeProvider>

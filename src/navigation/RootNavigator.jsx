@@ -32,25 +32,21 @@ export default function RootNavigator() {
   return (
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {loading ? (
-          <Stack.Screen name="Loading" component={LoadingScreen} />
-        ) : !user ? (
-          <>
-            <Stack.Screen name="Launch" component={LaunchScreen} />
-            <Stack.Screen name="EmailSignIn" component={EmailSignIn} />
-            <Stack.Screen name="EmailSignUp" component={EmailSignUp} />
-            <Stack.Screen name="AppTabs" component={AppTabs} />
-          </>
-        ) : isFirstLogin ? (
-          <>
-            <Stack.Screen name="PostSignIn" component={PostSignInStack} />
-            <Stack.Screen name="AppTabs" component={AppTabs} />
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="AppTabs" component={AppTabs} />
-            <Stack.Screen name="WelcomeBack" component={WelcomeBackScreen} />
-          </>
+        {/* ✅ Always register all major stacks */}
+        <Stack.Screen name="Launch" component={LaunchScreen} />
+        <Stack.Screen name="EmailSignIn" component={EmailSignIn} />
+        <Stack.Screen name="EmailSignUp" component={EmailSignUp} />
+        <Stack.Screen name="PostSignIn" component={PostSignInStack} />
+        <Stack.Screen name="AppTabs" component={AppTabs} />
+        <Stack.Screen name="WelcomeBack" component={WelcomeBackScreen} />
+
+        {/* 👩‍💻 Dev-only route for bypass navigation */}
+        {__DEV__ && (
+          <Stack.Screen
+            name="PostSignInDev"
+            component={PostSignInStack}
+            options={{ headerShown: false }}
+          />
         )}
       </Stack.Navigator>
     </NavigationContainer>
