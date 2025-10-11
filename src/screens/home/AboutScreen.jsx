@@ -1,15 +1,12 @@
+// src/screens/home/AboutScreen.jsx
 import React from "react"
-import { View, Text, StyleSheet } from "react-native"
+import Placeholder from "../../ui/components/Placeholder"
 
 export default function AboutScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>AboutScreen Placeholder</Text>
-    </View>
+    <Placeholder
+      title="About/Dashboard"
+      body="Learn more about the kaupapa behind this app — coming soon."
+    />
   )
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" },
-  text: { fontSize: 20, fontWeight: "600", color: "#333" }
-})

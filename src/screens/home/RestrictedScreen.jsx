@@ -1,15 +1,12 @@
+// src/screens/home/RestrictedScreen.jsx
 import React from "react"
-import { View, Text, StyleSheet } from "react-native"
+import Placeholder from "../../ui/components/Placeholder"
 
 export default function RestrictedScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>RestrictedScreen Placeholder</Text>
-    </View>
+    <Placeholder
+      title="Restricted Access"
+      body="You need an account or permission to access this area."
+    />
   )
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" },
-  text: { fontSize: 20, fontWeight: "600", color: "#333" }
-})

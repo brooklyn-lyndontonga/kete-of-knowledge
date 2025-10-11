@@ -1,23 +1,30 @@
-/* eslint-disable unused-imports/no-unused-imports */
-import { View, Text, StyleSheet } from "react-native";
-import Spacer from "./Spacer";
-import Card from "./Card";
+// src/ui/components/Placeholder.jsx
+import React from "react"
+import { View } from "react-native"
+import Text from "./Text"
+import Spacer from "./Spacer"
+import Card from "./Card"
+import { useTheme } from "../../app/providers/ThemeProvider"
 
-function Placeholder({ title, body = "Coming soon…" }) {
+export default function Placeholder({ title = "Coming Soon", body = "This feature is under development." }) {
+  const { theme } = useTheme()
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      <Spacer size={16} />
+    <View
+      style={{
+        flex: 1,
+        padding: theme.spacing.lg,
+        backgroundColor: theme.colors.bg,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
       <Card>
-        <Text>{body}</Text>
+        <Text variant="heading" style={{ marginBottom: theme.spacing.sm }}>
+          {title}
+        </Text>
+        <Spacer size={theme.spacing.xs} />
+        <Text color={theme.colors.mutedText}>{body}</Text>
       </Card>
     </View>
-  );
+  )
 }
-
-export default Placeholder;
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 8 },
-});

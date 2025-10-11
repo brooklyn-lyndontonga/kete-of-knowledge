@@ -10,6 +10,9 @@ import { OnboardingProvider } from "./src/app/providers/OnboardingProvider"
 // 🧭 Navigation
 import RootNavigator from "./src/navigation/RootNavigator"
 
+// 🧪 Dev Tool
+import DevBypass from "./src/app/dev/DevBypass"   // 👈 added import
+
 // 🖋 Fonts
 import { PlayfairDisplay_700Bold } from "@expo-google-fonts/playfair-display"
 import {
@@ -44,8 +47,10 @@ export default function App() {
       <AuthProvider>
         <OnboardingProvider>
           <RootNavigator />
+          <DevBypass />
         </OnboardingProvider>
       </AuthProvider>
     </ThemeProvider>
+
   )
 }

@@ -1,19 +1,19 @@
-import { createNavigationContainerRef } from "@react-navigation/native"
+import * as React from "react"
+import { CommonActions } from "@react-navigation/native"
 
-export const navigationRef = createNavigationContainerRef()
+export const navigationRef = React.createRef()
 
 export function nav(name, params) {
-  if (navigationRef.isReady()) {
-    navigationRef.navigate(name, params)
-  } else {
-    console.warn("nav(): navigation not ready", { name, params })
-  }
+  if (!navigationRef.current?.isReady()) return
+  navigationRef.current.navigate(name, params)
 }
 
-export function resetTo(routes, index = 0) {
-  if (navigationRef.isReady()) {
-    navigationRef.reset({ index, routes })
-  } else {
-    console.warn("resetTo(): navigation not ready", { routes, index })
-  }
+export function resetTo(stateArray) {
+  if (!navigationRef.current?.isReady()) return
+  navigationRef.current.dispatch(
+    CommonActions.reset({
+      index: 0,
+      routes: stateArray,
+    })
+  )
 }
