@@ -3,8 +3,6 @@ import React from "react"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { useAuth } from "../../app/providers/AuthProvider"
 import { useTheme } from "../../app/providers/ThemeProvider"
-const { theme } = useTheme()
-
 
 // 🧭 Stacks
 import {
@@ -21,19 +19,19 @@ import RestrictedScreen from "../../screens/RestrictedScreen"
 const Tab = createBottomTabNavigator()
 
 export default function AppTabs() {
+  const { theme } = useTheme() // ✅ moved inside the component
   const { user } = useAuth()
   const isGuest = !user
 
   return (
     <Tab.Navigator
-  screenOptions={({ route }) => ({
-    headerShown: false,
-    tabBarActiveTintColor: theme.colors.primary,
-    tabBarInactiveTintColor: theme.colors.mutedText,
-    tabBarStyle: { backgroundColor: theme.colors.bg },
-  })}
->
-
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.mutedText,
+        tabBarStyle: { backgroundColor: theme.colors.bg },
+      }}
+    >
       <Tab.Screen
         name="HomeTab"
         component={HomeStack}
