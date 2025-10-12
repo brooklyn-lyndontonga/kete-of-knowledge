@@ -1,6 +1,7 @@
 import { nav, resetTo } from "../../navigation/navigationRef"
 
 export const devRoutes = {
+  onboardingConsent: () => nav("PostSignIn", { screen: "Consent" }),
   // 🔹 Guest views
   launch: () => resetTo([{ name: "Launch" }]),
   magicLink: () => nav("EmailSignIn"),
@@ -15,9 +16,8 @@ export const devRoutes = {
       },
     ]),
 
-  // 🔹 Onboarding flow (reuses real stack)
+  // 🔹 Onboarding flow (real stack)
   onboardingConsent: () => nav("PostSignIn", { screen: "Consent" }),
-  onboardingCompleteProfile: () =>
-    nav("PostSignIn", { screen: "CompleteProfile" }),
+  onboardingCompleteProfile: () => nav("PostSignIn", { screen: "CompleteProfile" }),
   onboardingDone: () => nav("PostSignIn", { screen: "Done" }),
 }
