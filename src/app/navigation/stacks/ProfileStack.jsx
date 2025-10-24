@@ -2,7 +2,8 @@ import React from "react"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import ProfileScreen from "../../features/profile/screens/ProfileScreen"
 
-const Stack = createNativeStackNavigator() // 🟢 must be here, at the top level
+// 🧭 must come BEFORE using <Stack.Navigator>
+const Stack = createNativeStackNavigator()
 
 export default function ProfileStack() {
   return (
