@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Condition One",
+    "description": "This is an example placeholder condition used for design and testing purposes only.",
+    "symptoms": ["Example symptom A", "Example symptom B", "Example symptom C"]
+  },
+  {
+    "id": 2,
+    "name": "Condition Two",
+    "description": "Another sample entry showing how the layout handles slightly longer text or descriptions in your library.",
+    "symptoms": ["Example symptom D", "Example symptom E"]
+  },
+  {
+    "id": 3,
+    "name": "Condition Three",
+    "description": "A generic placeholder used to confirm that navigation and FlatList rendering are working correctly.",
+    "symptoms": ["Example symptom F", "Example symptom G", "Example symptom H"]
+  },
+  {
+    "id": 4,
+    "name": "Condition Four",
+    "description": "This entry ensures that your detail screen layout is responsive and consistent across all sample data.",
+    "symptoms": ["Example symptom I", "Example symptom J"]
+  },
+  {
+    "id": 5,
+    "name": "Condition Five",
+    "description": "Filler text that allows you to test scrolling behavior, tap interactions, and theming consistency.",
+    "symptoms": ["Example symptom K", "Example symptom L", "Example symptom M"]
+  }
+]
