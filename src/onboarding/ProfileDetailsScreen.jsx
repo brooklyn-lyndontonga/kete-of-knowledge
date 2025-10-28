@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+ 
 /* eslint-disable unused-imports/no-unused-imports */
 import { useState } from "react"
 import { View, Text, TextInput, Button, StyleSheet } from "react-native"
