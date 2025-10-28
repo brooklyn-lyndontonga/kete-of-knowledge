@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState } from "react"
 import { View, Text, FlatList, TouchableOpacity } from "react-native"
 import { useTheme } from "../../../theme"
