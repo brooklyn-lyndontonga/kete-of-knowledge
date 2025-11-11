@@ -1,4 +1,5 @@
-// src/app/dev/DevBypass.jsx
+/* eslint-disable react/prop-types */
+/* eslint-disable no-undef */
 import React, { useState, useRef } from "react";
 import {
   View,
@@ -14,21 +15,24 @@ import { useTheme } from "../providers/ThemeProvider";
 
 const { width, height } = Dimensions.get("window");
 
+// 🧩 Safe toggle — only active when explicitly enabled
+const ENABLE_DEV_BYPASS =
+  __DEV__ &&
+  (process.env.EXPO_PUBLIC_DEV_BYPASS === "1" ||
+    Constants?.expoConfig?.extra?.DEV_BYPASS === 1);
+
 export default function DevBypass() {
-  // ✅ useTheme safely here — it’s inside a component
   const { theme } = useTheme();
 
-  // ✅ only enable after hook
-  const enabled =
-    __DEV__ &&
-    (process.env.EXPO_PUBLIC_DEV_BYPASS === "1" ||
-      Constants?.expoConfig?.extra?.DEV_BYPASS === 1);
-
-  if (!enabled) return null;
+  // ✅ Stop rendering completely if not enabled
+  if (!ENABLE_DEV_BYPASS) return null;
 
   const [open, setOpen] = useState(false);
-  const position = useRef(new Animated.ValueXY({ x: width - 80, y: height - 180 })).current;
+  const position = useRef(
+    new Animated.ValueXY({ x: width - 80, y: height - 180 })
+  ).current;
 
+  // 🖐️ Make the button draggable
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -39,9 +43,10 @@ export default function DevBypass() {
         });
         position.setValue({ x: 0, y: 0 });
       },
-      onPanResponderMove: Animated.event([null, { dx: position.x, dy: position.y }], {
-        useNativeDriver: false,
-      }),
+      onPanResponderMove: Animated.event(
+        [null, { dx: position.x, dy: position.y }],
+        { useNativeDriver: false }
+      ),
       onPanResponderRelease: () => {
         position.flattenOffset();
         Animated.spring(position, {
@@ -55,6 +60,7 @@ export default function DevBypass() {
     })
   ).current;
 
+  // 🔘 Shortcut button component
   const Item = ({ label, onPress }) => (
     <Pressable
       onPress={onPress}
@@ -101,19 +107,57 @@ export default function DevBypass() {
           {/* Guest */}
           <View style={{ paddingHorizontal: theme.spacing?.sm || 8 }}>
             <Text style={{ fontSize: 12, opacity: 0.6, padding: 4 }}>Guest</Text>
-            <Item label="Launch" onPress={() => { setOpen(false); devRoutes.launch(); }} />
-            <Item label="Magic Link" onPress={() => { setOpen(false); devRoutes.magicLink(); }} />
-            <Item label="App Tabs" onPress={() => { setOpen(false); devRoutes.appTabs(); }} />
+            <Item
+              label="Launch"
+              onPress={() => {
+                setOpen(false);
+                devRoutes.launch();
+              }}
+            />
+            <Item
+              label="Magic Link"
+              onPress={() => {
+                setOpen(false);
+                devRoutes.magicLink();
+              }}
+            />
+            <Item
+              label="App Tabs"
+              onPress={() => {
+                setOpen(false);
+                devRoutes.appTabs();
+              }}
+            />
           </View>
 
           <View style={{ height: 8 }} />
 
           {/* Onboarding */}
           <View style={{ paddingHorizontal: theme.spacing?.sm || 8 }}>
-            <Text style={{ fontSize: 12, opacity: 0.6, padding: 4 }}>Onboarding</Text>
-            <Item label="Consent" onPress={() => { setOpen(false); devRoutes.onboardingConsent(); }} />
-            <Item label="Complete Profile" onPress={() => { setOpen(false); devRoutes.onboardingCompleteProfile(); }} />
-            <Item label="Done → Tabs" onPress={() => { setOpen(false); devRoutes.onboardingDone(); }} />
+            <Text style={{ fontSize: 12, opacity: 0.6, padding: 4 }}>
+              Onboarding
+            </Text>
+            <Item
+              label="Consent"
+              onPress={() => {
+                setOpen(false);
+                devRoutes.onboardingConsent();
+              }}
+            />
+            <Item
+              label="Complete Profile"
+              onPress={() => {
+                setOpen(false);
+                devRoutes.onboardingCompleteProfile();
+              }}
+            />
+            <Item
+              label="Done → Tabs"
+              onPress={() => {
+                setOpen(false);
+                devRoutes.onboardingDone();
+              }}
+            />
           </View>
 
           <View style={{ height: 8 }} />
@@ -121,11 +165,18 @@ export default function DevBypass() {
           {/* Tabs */}
           <View style={{ paddingHorizontal: theme.spacing?.sm || 8 }}>
             <Text style={{ fontSize: 12, opacity: 0.6, padding: 4 }}>Tabs</Text>
-            <Item label="Home Welcome" onPress={() => { setOpen(false); devRoutes.homeWelcome(); }} />
+            <Item
+              label="Home Welcome"
+              onPress={() => {
+                setOpen(false);
+                devRoutes.homeWelcome();
+              }}
+            />
           </View>
         </View>
       )}
 
+      {/* Floating Button */}
       <Pressable
         onPress={() => setOpen((v) => !v)}
         style={({ pressed }) => ({

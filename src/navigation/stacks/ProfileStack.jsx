@@ -1,37 +1,25 @@
-import React from "react"
-import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { Ionicons } from "@expo/vector-icons"
-import { useTheme } from "../../theme"
-import ProfileScreen from "../../features/profile/screens/ProfileScreen"
+import React from 'react'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import ProfileScreen from '../../screens/profile/ProfileScreen'
+import ProfileGuidelinesScreen from '../../screens/profile/ProfileGuidelinesScreen'
+import ProfilePlaceholderScreen from '../../screens/profile/ProfilePlaceholderScreen'
+import ProfilesScreen from '../../screens/profile/ProfilesScreen'
 
-const Stack = createNativeStackNavigator() // must be top level
+const Stack = createNativeStackNavigator()
 
 export default function ProfileStack() {
-  const { colors, typography } = useTheme() // ✅ inside component
-
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: true,
-        headerStyle: { backgroundColor: colors.bg },
-        headerTintColor: colors.primary,
-        headerTitleStyle: { fontFamily: typography.display },
-      }}
-    >
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen
-        name="ProfileScreen"
-        component={ProfileScreen}
-        options={{
-          title: "Your Profile",
-          headerRight: () => (
-            <Ionicons
-              name="person-circle-outline"
-              size={24}
-              color={colors.primary}
-            />
-          ),
-        }}
+        name="ProfileGuidelinesScreen"
+        component={ProfileGuidelinesScreen}
       />
+      <Stack.Screen
+        name="ProfilePlaceholderScreen"
+        component={ProfilePlaceholderScreen}
+      />
+      <Stack.Screen name="ProfilesScreen" component={ProfilesScreen} />
     </Stack.Navigator>
   )
 }
