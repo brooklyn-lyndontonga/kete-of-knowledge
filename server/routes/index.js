@@ -1,10 +1,12 @@
-import { Router } from "express"
-import profiles from "./profiles.js"
-import symptoms from "./symptoms.js"
-import goals from "./goals.js"
+import express from "express"
+import profilesRouter from "./profiles.js"
+import goalsRouter from "./goals.js"
+import medicinesRouter from "./myMedicines.js"
 
-const router = Router()
-router.use("/profiles", profiles)
-router.use("/symptoms", symptoms)
-router.use("/goals", goals)
+const router = express.Router()
+
+router.use("/profiles", profilesRouter)
+router.use("/goals", goalsRouter)
+router.use("/mymedicines", medicinesRouter)
+
 export default router

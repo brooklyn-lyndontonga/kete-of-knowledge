@@ -1,32 +1,41 @@
+// server/db/init.js
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
+import path from "path"
+import { fileURLToPath } from "url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 export async function connectDB() {
-  return open({ filename: "./database.db", driver: sqlite3.Database })
+  const dbPath = path.join(__dirname, "database.db")
+  const db = await open({
+    filename: dbPath,
+    driver: sqlite3.Database,
+  })
+  return db
 }
 
 export async function initTables(db) {
   await db.exec(`
-  CREATE TABLE IF NOT EXISTS profiles (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    age INTEGER,
-    goals TEXT
-  );
-  CREATE TABLE IF NOT EXISTS symptoms (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    symptom TEXT,
-    intensity INTEGER,
-    notes TEXT,
-    date TEXT
-  );
-  CREATE TABLE IF NOT EXISTS goals (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    goal_text TEXT,
-    completed INTEGER DEFAULT 0
-  );
+    CREATE TABLE IF NOT EXISTS profiles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      age INTEGER,
+      goals TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS goals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT,
+      description TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS medicines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      dosage TEXT,
+      frequency TEXT
+    );
   `)
 }
-
