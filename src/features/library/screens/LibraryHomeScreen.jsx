@@ -1,95 +1,57 @@
-import React, { useState } from "react"
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native"
-import Header from "../../../ui/components/Header"
-import SearchBar from "../components/SearchBar"
-import ResourceCard from "../components/ResourceCard"
-import { useNavigation } from "@react-navigation/native"
+/* eslint-disable react/prop-types */
+import React from "react"
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from "react-native"
 
-export default function LibraryHomeScreen() {
-  const navigation = useNavigation()
-  const [query, setQuery] = useState("")
-
-  const categories = [
-    { title: "Articles & Guides", route: "ResourceCategoryScreen", icon: "📘", filter: "articles" },
-    { title: "Videos & Podcasts", route: "ResourceCategoryScreen", icon: "🎧", filter: "media" },
-    { title: "Pūrākau & Stories", route: "ResourceCategoryScreen", icon: "🌿", filter: "stories" },
-    { title: "Whakataukī", route: "WhakataukiScreen", icon: "✨" },
-    { title: "External Links", route: "ResourceCategoryScreen", icon: "🔗", filter: "external" },
-  ]
-
-  const sampleResources = [
-    { id: 1, title: "Understanding Blood Pressure", category: "articles", summary: "A simple guide to reading your numbers.", route: "ResourceDetailScreen" },
-    { id: 2, title: "Ngā Kōrero mō te Kai Hauora", category: "stories", summary: "A pūrākau about kai and connection to whenua.", route: "ResourceDetailScreen" },
-  ]
-
-  const filteredResources = sampleResources.filter((r) =>
-    r.title.toLowerCase().includes(query.toLowerCase())
-  )
-
+export default function LibraryHomeScreen({ navigation }) {
   return (
     <ScrollView style={styles.container}>
-      <Header title="Te Puna Mātauranga" subtitle="Library & Resources" />
+      <Text style={styles.header}>Te Whare Rauemi (Library)</Text>
+      <Text style={styles.sub}>Explore health knowledge and whānau stories</Text>
 
-      <SearchBar value={query} onChangeText={setQuery} placeholder="Search resources..." />
+      {/* Search bar */}
+      <TextInput style={styles.search} placeholder="Search resources..." />
 
-      <Text style={styles.sectionTitle}>Browse Categories</Text>
-      <View style={styles.categoryGrid}>
-        {categories.map((cat, idx) => (
+      {/* Categories */}
+      <View style={styles.grid}>
+        {[
+          { name: "Articles & Guides", target: "ResourceCategoryScreen" },
+          { name: "Videos & Podcasts", target: "ResourceCategoryScreen" },
+          { name: "Whānau Stories", target: "ResourceCategoryScreen" },
+          { name: "Whakataukī", target: "WhakataukiScreen" },
+          { name: "External Links", target: "ResourceCategoryScreen" },
+        ].map((item, i) => (
           <TouchableOpacity
-            key={idx}
-            style={styles.categoryTile}
-            onPress={() => navigation.navigate(cat.route, { filter: cat.filter })}
+            key={i}
+            style={styles.tile}
+            onPress={() => navigation.navigate(item.target, { category: item.name })}
           >
-            <Text style={styles.categoryIcon}>{cat.icon}</Text>
-            <Text style={styles.categoryText}>{cat.title}</Text>
+            <Text style={styles.tileText}>{item.name}</Text>
           </TouchableOpacity>
         ))}
       </View>
-
-      <Text style={styles.sectionTitle}>Featured Resources</Text>
-      {filteredResources.map((res) => (
-        <ResourceCard
-          key={res.id}
-          title={res.title}
-          summary={res.summary}
-          onPress={() => navigation.navigate(res.route, { id: res.id })}
-        />
-      ))}
     </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 16,
+  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
+  header: { fontFamily: "Poppins_700Bold", fontSize: 24, color: "#267f53" },
+  sub: { fontFamily: "Poppins_400Regular", color: "#666", marginBottom: 20 },
+  search: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 24,
+    fontFamily: "Poppins_400Regular",
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginVertical: 12,
-    color: "#333",
+  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" },
+  tile: {
+    width: "48%",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 14,
   },
-  categoryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-  categoryTile: {
-    backgroundColor: "#f6f6f6",
-    borderRadius: 12,
-    width: "47%",
-    padding: 16,
-    marginBottom: 12,
-    alignItems: "center",
-  },
-  categoryIcon: {
-    fontSize: 24,
-    marginBottom: 6,
-  },
-  categoryText: {
-    textAlign: "center",
-    fontSize: 14,
-  },
+  tileText: { fontFamily: "Poppins_500Medium", color: "#333", textAlign: "center" },
 })

@@ -1,11 +1,11 @@
-import React from 'react'
+/* eslint-disable react/react-in-jsx-scope */
 import { NavigationContainer } from '@react-navigation/native'
-import AppTabs from '../../navigation/tabs/AppTabs' // ⬅️ note the TWO dots!
+import AppTabs from './tabs/AppTabs'
 
 export default function RootNavigator() {
   return (
     <NavigationContainer>
-      <AppTabs />
+      <AppTabs />   {/* <-- Your 5 main bottom tabs */}
     </NavigationContainer>
   )
 }
