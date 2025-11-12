@@ -1,11 +1,12 @@
-import React from 'react'
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import ProfileScreen from '../../screens/profile/ProfileScreen'
-import ProfileGuidelinesScreen from '../../screens/profile/ProfileGuidelinesScreen'
-import ProfilePlaceholderScreen from '../../screens/profile/ProfilePlaceholderScreen'
-import ProfilesScreen from '../../screens/profile/ProfilesScreen'
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-const Stack = createNativeStackNavigator()
+import ProfileScreen from "../../../screens/profile/ProfileScreen";
+import ProfileGuidelinesScreen from "../../../screens/profile/ProfileGuidelinesScreen";
+import ProfilePlaceholderScreen from "../../../screens/profile/ProfilePlaceholderScreen";
+import ProfilesScreen from "../../../screens/profile/ProfilesScreen";
+
+const Stack = createNativeStackNavigator();
 
 export default function ProfileStack() {
   return (
@@ -21,5 +22,5 @@ export default function ProfileStack() {
       />
       <Stack.Screen name="ProfilesScreen" component={ProfilesScreen} />
     </Stack.Navigator>
-  )
+  );
 }

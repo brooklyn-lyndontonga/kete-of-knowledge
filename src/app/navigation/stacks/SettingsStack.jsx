@@ -1,11 +1,12 @@
-import React from 'react'
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import SettingsScreen from '../../screens/settings/SettingsScreen'
-import AccessibilityScreen from '../../screens/settings/AccessibilityScreen'
-import HelpScreen from '../../screens/settings/HelpScreen'
-import SettingsPlaceholderScreen from '../../screens/settings/SettingsPlaceholderScreen'
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-const Stack = createNativeStackNavigator()
+import SettingsScreen from "../../../screens/settings/SettingsScreen";
+import AccessibilityScreen from "../../../screens/settings/AccessibilityScreen";
+import HelpScreen from "../../../screens/settings/HelpScreen";
+import SettingsPlaceholderScreen from "../../../screens/settings/SettingsPlaceholderScreen";
+
+const Stack = createNativeStackNavigator();
 
 export default function SettingsStack() {
   return (
@@ -21,5 +22,5 @@ export default function SettingsStack() {
         component={SettingsPlaceholderScreen}
       />
     </Stack.Navigator>
-  )
+  );
 }

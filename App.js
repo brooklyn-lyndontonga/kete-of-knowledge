@@ -1,51 +1,18 @@
-/* eslint-disable no-undef */
-import React, { useEffect } from 'react'
-import { useFonts } from 'expo-font'
-import * as SplashScreen from 'expo-splash-screen'
-
-import { ThemeProvider } from './src/app/providers/ThemeProvider'
-import { AuthProvider } from './src/app/providers/AuthProvider'
-import { OnboardingProvider } from './src/app/providers/OnboardingProvider'
-
-import RootNavigator from './src/app/navigation/RootNavigator'
-import DevBypass from './src/app/dev/DevBypass'
-
-// Fonts
-import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display'
-import {
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_700Bold,
-} from '@expo-google-fonts/poppins'
-import { Quicksand_500Medium } from '@expo-google-fonts/quicksand'
-import { Raleway_700Bold } from '@expo-google-fonts/raleway'
-
-SplashScreen.preventAutoHideAsync()
+import React from "react";
+import { ThemeProvider } from "./src/app/providers/ThemeProvider";
+import { AuthProvider } from "./src/app/providers/AuthProvider";
+import { OnboardingProvider } from "./src/app/providers/OnboardingProvider";
+import RootNavigator from "./src/app/navigation/RootNavigator";
 
 export default function App() {
-  const [fontsLoaded] = useFonts({
-    PlayfairDisplay_700Bold,
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_700Bold,
-    Quicksand_500Medium,
-    Raleway_700Bold,
-  })
-
-  useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync()
-  }, [fontsLoaded])
-
-  if (!fontsLoaded) return null
-
+  console.log("🚀 App.js loaded");
   return (
     <ThemeProvider>
       <AuthProvider>
         <OnboardingProvider>
           <RootNavigator />
-          {__DEV__ && <DevBypass />}
         </OnboardingProvider>
       </AuthProvider>
     </ThemeProvider>
-  )
+  );
 }

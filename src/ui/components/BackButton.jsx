@@ -1,20 +1,18 @@
-// src/ui/components/BackButton.jsx
+/* eslint-disable react/prop-types */
 import React from "react"
-import { TouchableOpacity, Text } from "react-native"
-import { useNavigation, useNavigationState } from "@react-navigation/native"
+import { TouchableOpacity, StyleSheet } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
+import { useNavigation } from "@react-navigation/native"
 
-export default function BackButton({ label = "Back" }) {
+export default function BackButton({ color = "#267f53" }) {
   const navigation = useNavigation()
-  const canGoBack = useNavigationState(state => state?.routes?.length > 1)
-
-  const onPress = () => {
-    if (canGoBack) navigation.goBack()
-    else navigation.navigate("AppTabs") // fallback (root)
-  }
-
   return (
-    <TouchableOpacity onPress={onPress} style={{ paddingHorizontal: 8, paddingVertical: 4 }}>
-      <Text style={{ fontSize: 16 }}>{label}</Text>
+    <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
+      <Ionicons name="chevron-back" size={24} color={color} />
     </TouchableOpacity>
   )
 }
+
+const styles = StyleSheet.create({
+  button: { padding: 8 },
+})

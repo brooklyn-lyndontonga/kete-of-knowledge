@@ -1,6 +1,9 @@
-import { createClient } from "@supabase/supabase-js"
-import Constants from "expo-constants"
-import AsyncStorage from "@react-native-async-storage/async-storage"
+// src/features/auth/lib/supabaseClient.js
+/* eslint-disable no-undef */
+import 'react-native-url-polyfill/auto'      // 👈  this fixes the “protocol” crash
+import { createClient } from '@supabase/supabase-js'
+import Constants from 'expo-constants'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const extra = Constants?.expoConfig?.extra ?? {}
 
@@ -9,13 +12,13 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   process.env.EXPO_PUBLIC_SUPABASE_KEY || extra.SUPABASE_KEY
 
-if (!SUPABASE_URL) throw new Error("supabaseUrl is required")
-if (!SUPABASE_KEY) throw new Error("supabaseKey is required")
+if (!SUPABASE_URL) throw new Error('supabaseUrl is required')
+if (!SUPABASE_KEY) throw new Error('supabaseKey is required')
 
 if (__DEV__) {
-  console.log("Supabase runtime:", {
+  console.log('Supabase runtime:', {
     url: SUPABASE_URL,
-    keyLen: (SUPABASE_KEY || "").length, // expect ~150–300, not ~23
+    keyLen: (SUPABASE_KEY || '').length,
   })
 }
 

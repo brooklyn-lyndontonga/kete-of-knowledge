@@ -1,12 +1,13 @@
-import React from 'react'
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import LibraryScreen from '../../screens/library/LibraryScreen'
-import ResourcesScreen from '../../screens/library/ResourcesScreen'
-import RongoaScreen from '../../screens/library/RongoaScreen'
-import ExportDataScreen from '../../screens/library/ExportDataScreen'
-import LibraryPlaceholderScreen from '../../screens/library/LibraryPlaceholderScreen'
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-const Stack = createNativeStackNavigator()
+import LibraryScreen from "../../../screens/library/LibraryScreen";
+import ResourcesScreen from "../../../screens/library/ResourcesScreen";
+import RongoaScreen from "../../../screens/library/RongoaScreen";
+import ExportDataScreen from "../../../screens/library/ExportDataScreen";
+import LibraryPlaceholderScreen from "../../../screens/library/LibraryPlaceholderScreen";
+
+const Stack = createNativeStackNavigator();
 
 export default function LibraryStack() {
   return (
@@ -20,5 +21,5 @@ export default function LibraryStack() {
         component={LibraryPlaceholderScreen}
       />
     </Stack.Navigator>
-  )
+  );
 }

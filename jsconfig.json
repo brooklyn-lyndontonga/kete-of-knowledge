@@ -6,7 +6,9 @@
       "@features/*": ["src/features/*"],
       "@ui/*": ["src/ui/*"],
       "@lib/*": ["src/lib/*"]
-    }
+    },
+    "typeRoots": ["./node_modules/@types"],
+    "types": []
   },
   "exclude": ["node_modules", "dist"]
 }
