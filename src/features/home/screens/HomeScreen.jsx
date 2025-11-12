@@ -1,6 +1,8 @@
 import React, { useState } from "react"
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native"
+import { View, Text, ScrollView, TouchableOpacity } from "react-native"
 import { useNavigation } from "@react-navigation/native"
+import { useTheme } from "../../../theme" // same folder as before
+import { createHomeScreenStyles } from "../../../theme/homeScreenStyles"
 import WhakataukiCard from "./WhakataukiCard"
 import QuickActionCard from "./QuickActionCard"
 import ProgressSnapshot from "./ProgressSnapshot"
@@ -8,7 +10,9 @@ import ReflectionTile from "./ReflectionTile"
 
 export default function HomeScreen() {
   const navigation = useNavigation()
-  const [userName] = useState("Brooky") // will pull from AuthContext later
+  const { colors, spacing, radii, typography } = useTheme()
+  const styles = createHomeScreenStyles(colors, spacing, radii, typography)
+  const [userName] = useState("Brooky")
 
   return (
     <ScrollView style={styles.container}>
@@ -26,24 +30,27 @@ export default function HomeScreen() {
             title="Log Symptoms"
             emoji="📋"
             onPress={() => navigation.navigate("Symptoms")}
+            style={styles.cardWrapper}
           />
           <QuickActionCard
             title="Update Medicines"
             emoji="💊"
             onPress={() => navigation.navigate("MyMedicines")}
+            style={styles.cardWrapper}
           />
         </View>
         <QuickActionCard
           title="View Reminders"
           emoji="⏰"
           onPress={() => navigation.navigate("Reminders")}
+          style={[styles.cardWrapper, { marginTop: spacing.md }]}
         />
       </View>
 
       {/* Progress Snapshot */}
       <ProgressSnapshot />
 
-      {/*  Reflection */}
+      {/* Reflection */}
       <ReflectionTile />
 
       {/* Footer Navigation */}
@@ -61,21 +68,3 @@ export default function HomeScreen() {
     </ScrollView>
   )
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
-  header: { marginBottom: 20 },
-  greeting: { fontSize: 26, fontWeight: "700", color: "#2E2E2E" },
-  quickActions: { marginBottom: 24 },
-  sectionTitle: { fontSize: 18, fontWeight: "600", marginVertical: 10 },
-  cardRow: { flexDirection: "row", justifyContent: "space-between" },
-  footer: {
-    marginTop: 30,
-    borderTopWidth: 1,
-    borderColor: "#eee",
-    paddingTop: 12,
-    flexDirection: "row",
-    justifyContent: "space-around",
-  },
-  footerLink: { color: "#267f53", fontWeight: "600" },
-})

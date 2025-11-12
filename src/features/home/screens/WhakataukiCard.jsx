@@ -1,45 +1,64 @@
 import React, { useState, useEffect } from "react"
 import { View, Text, StyleSheet } from "react-native"
-import whakataukiData from "../../../data/whakatauki.json" // ✅ your file
+import whakataukiData from "../../../data/whakatauki.json"
+import { useTheme } from "../../../theme"
 
 export default function WhakataukiCard() {
+  const { colors, spacing, radii, typography } = useTheme()
   const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
-    // Rotate every 8 seconds
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % whakataukiData.length)
-    }, 8000)
-    return () => clearInterval(interval)
+    const today = new Date()
+    const dayOfYear = Math.floor(
+      (today - new Date(today.getFullYear(), 0, 0)) / 86400000
+    )
+
+    // ✅ use a different variable name to avoid conflict
+    const dailyIndex = dayOfYear % whakataukiData.length
+    setCurrentIndex(dailyIndex)
   }, [])
 
   const { text, translation } = whakataukiData[currentIndex]
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.maori}>{text}</Text>
-      <Text style={styles.translation}>{translation}</Text>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.accent2,
+          borderRadius: radii.lg,
+          padding: spacing.md,
+        },
+      ]}
+    >
+      <Text
+        style={{
+          fontFamily: typography.body,
+          fontSize: 16,
+          color: "#fff",
+          fontWeight: "600",
+          marginBottom: 6,
+        }}
+      >
+        {text}
+      </Text>
+      <Text
+        style={{
+          fontFamily: typography.body,
+          fontSize: 13,
+          color: "#fff",
+          fontStyle: "italic",
+          opacity: 0.9,
+        }}
+      >
+        {translation}
+      </Text>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#f296bd",
-    padding: 14,
-    borderRadius: 12,
     marginTop: 10,
-  },
-  maori: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
-    marginBottom: 6,
-  },
-  translation: {
-    fontSize: 13,
-    fontStyle: "italic",
-    color: "#fff",
-    opacity: 0.9,
   },
 })
