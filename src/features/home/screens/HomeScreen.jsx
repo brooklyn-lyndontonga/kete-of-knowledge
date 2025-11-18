@@ -1,70 +1,73 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react"
 import { View, Text, ScrollView, TouchableOpacity } from "react-native"
+import Animated, { FadeInUp } from "react-native-reanimated"
 import { useNavigation } from "@react-navigation/native"
-import { useTheme } from "../../../theme" // same folder as before
+import { useTheme } from "../../../theme"
 import { createHomeScreenStyles } from "../../../theme/homeScreenStyles"
+
 import WhakataukiCard from "./WhakataukiCard"
 import QuickActionCard from "./QuickActionCard"
-import ProgressSnapshot from "./ProgressSnapshot"
-import ReflectionTile from "./ReflectionTile"
+import ProgressSnapshot from "./ProgressSnapshotScreen"
+import ReflectionTile from "./ReflectionTileScreen"
 
 export default function HomeScreen() {
   const navigation = useNavigation()
   const { colors, spacing, radii, typography } = useTheme()
   const styles = createHomeScreenStyles(colors, spacing, radii, typography)
+
   const [userName] = useState("Brooky")
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Kia ora, {userName}!</Text>
-        <WhakataukiCard />
-      </View>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      
+      {/* Header + Whakataukī */}
+      <Animated.View entering={FadeInUp.duration(600).springify()}>
+        <View style={styles.header}>
+          <Text style={styles.greeting}>Kia ora, {userName}!</Text>
+          <WhakataukiCard />
+        </View>
+      </Animated.View>
 
       {/* Quick Actions */}
-      <View style={styles.quickActions}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
+      <Animated.View
+        entering={FadeInUp.delay(200).duration(600)}
+        style={styles.section}
+      >
+        <Text style={styles.sectionTitle}>Ngā Mahi Hohoro (Quick Actions)</Text>
+
         <View style={styles.cardRow}>
           <QuickActionCard
             title="Log Symptoms"
             emoji="📋"
             onPress={() => navigation.navigate("Symptoms")}
-            style={styles.cardWrapper}
           />
           <QuickActionCard
-            title="Update Medicines"
+            title="My Medicines"
             emoji="💊"
             onPress={() => navigation.navigate("MyMedicines")}
-            style={styles.cardWrapper}
           />
         </View>
+
         <QuickActionCard
-          title="View Reminders"
-          emoji="⏰"
-          onPress={() => navigation.navigate("Reminders")}
-          style={[styles.cardWrapper, { marginTop: spacing.md }]}
+          title="Checklist"
+          emoji="☑️"
+          onPress={() => navigation.navigate("Checklist")}
+          style={{ marginTop: spacing.md }}
         />
-      </View>
+      </Animated.View>
 
       {/* Progress Snapshot */}
-      <ProgressSnapshot />
+      <Animated.View entering={FadeInUp.delay(400).duration(600)}>
+        <ProgressSnapshot />
+      </Animated.View>
 
       {/* Reflection */}
-      <ReflectionTile />
+      <Animated.View entering={FadeInUp.delay(600).duration(600)}>
+        <ReflectionTile />
+      </Animated.View>
 
-      {/* Footer Navigation */}
-      <View style={styles.footer}>
-        <TouchableOpacity onPress={() => navigation.navigate("Hub")}>
-          <Text style={styles.footerLink}>Tāku Manawa (Hub)</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate("Library")}>
-          <Text style={styles.footerLink}>Library</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
-          <Text style={styles.footerLink}>Profile</Text>
-        </TouchableOpacity>
-      </View>
+      <View style={{ height: spacing.xl }} />
     </ScrollView>
   )
 }

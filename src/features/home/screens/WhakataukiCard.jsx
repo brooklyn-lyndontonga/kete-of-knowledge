@@ -9,13 +9,8 @@ export default function WhakataukiCard() {
 
   useEffect(() => {
     const today = new Date()
-    const dayOfYear = Math.floor(
-      (today - new Date(today.getFullYear(), 0, 0)) / 86400000
-    )
-
-    // ✅ use a different variable name to avoid conflict
-    const dailyIndex = dayOfYear % whakataukiData.length
-    setCurrentIndex(dailyIndex)
+    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000)
+    setCurrentIndex(dayOfYear % whakataukiData.length)
   }, [])
 
   const { text, translation } = whakataukiData[currentIndex]
@@ -31,26 +26,10 @@ export default function WhakataukiCard() {
         },
       ]}
     >
-      <Text
-        style={{
-          fontFamily: typography.body,
-          fontSize: 16,
-          color: "#fff",
-          fontWeight: "600",
-          marginBottom: 6,
-        }}
-      >
+      <Text style={{ fontFamily: typography.body, fontSize: 16, color: "white", fontWeight: "600" }}>
         {text}
       </Text>
-      <Text
-        style={{
-          fontFamily: typography.body,
-          fontSize: 13,
-          color: "#fff",
-          fontStyle: "italic",
-          opacity: 0.9,
-        }}
-      >
+      <Text style={{ fontFamily: typography.body, fontSize: 13, color: "white", opacity: 0.9, marginTop: 4 }}>
         {translation}
       </Text>
     </View>
@@ -58,7 +37,5 @@ export default function WhakataukiCard() {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    marginTop: 10,
-  },
+  card: { marginTop: 10 },
 })

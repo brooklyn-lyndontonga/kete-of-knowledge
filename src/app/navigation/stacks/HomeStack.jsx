@@ -4,9 +4,9 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import HomeScreen from "../../../features/home/screens/HomeScreen"
 import ChecklistScreen from "../../../features/home/screens/ChecklistScreen"
 import HomeWelcomeScreen from "../../../features/home/screens/HomeWelcomeScreen"
-import ReflectionTile from "../../../features/home/screens/ReflectionTile"
-import ReminderScreen from "../../../features/home/screens/ReminderScreen"
-import ProgressSnapshot from "../../../features/home/screens/ProgressSnapshot"
+import ReflectionTileScreen from "../../../features/home/screens/ReflectionTileScreen"
+import RemindersScreen from "../../../features/home/screens/RemindersScreen"
+import ProgressSnapshotScreen from "../../../features/home/screens/ProgressSnapshotScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -16,9 +16,9 @@ export default function HomeStack() {
       <Stack.Screen name="HomeMain" component={HomeScreen} />
       <Stack.Screen name="HomeWelcome" component={HomeWelcomeScreen} />
       <Stack.Screen name="Checklist" component={ChecklistScreen} />
-      <Stack.Screen name="Reflection" component={ReflectionTile} />
-      <Stack.Screen name="Reminder" component={ReminderScreen} />
-      <Stack.Screen name="ProgressSnapshot" component={ProgressSnapshot} />
+      <Stack.Screen name="Reflection" component={ReflectionTileScreen} />
+      <Stack.Screen name="Reminders" component={RemindersScreen} />
+      <Stack.Screen name="ProgressSnapshot" component={ProgressSnapshotScreen} />
     </Stack.Navigator>
   )
 }
