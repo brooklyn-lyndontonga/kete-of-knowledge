@@ -1,26 +1,22 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from "react"
+import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
-import ProfileScreen from "../../../screens/profile/ProfileScreen";
-import ProfileGuidelinesScreen from "../../../screens/profile/ProfileGuidelinesScreen";
-import ProfilePlaceholderScreen from "../../../screens/profile/ProfilePlaceholderScreen";
-import ProfilesScreen from "../../../screens/profile/ProfilesScreen";
+import ProfileScreen from "../../../features/profile/screens/ProfileScreen"
+import GoalsScreen from "../../../features/profile/screens/GoalsScreen"
+import DataSettingsScreen from "../../../features/profile/screens/DataSettingsScreen"
+import HealthProviderScreen from "../../../features/profile/screens/HealthProviderScreen"
+import ProfilePlaceholderScreen from "../../../features/profile/screens/ProfilePlaceholderScreen"
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator()
 
 export default function ProfileStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
-      <Stack.Screen
-        name="ProfileGuidelinesScreen"
-        component={ProfileGuidelinesScreen}
-      />
-      <Stack.Screen
-        name="ProfilePlaceholderScreen"
-        component={ProfilePlaceholderScreen}
-      />
-      <Stack.Screen name="ProfilesScreen" component={ProfilesScreen} />
+      <Stack.Screen name="ProfileMain" component={ProfileScreen} />
+      <Stack.Screen name="Goals" component={GoalsScreen} />
+      <Stack.Screen name="DataSettings" component={DataSettingsScreen} />
+      <Stack.Screen name="HealthProvider" component={HealthProviderScreen} />
+      <Stack.Screen name="ProfilePlaceholder" component={ProfilePlaceholderScreen} />
     </Stack.Navigator>
-  );
+  )
 }

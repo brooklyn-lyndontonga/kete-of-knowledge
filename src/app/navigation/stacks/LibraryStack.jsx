@@ -1,25 +1,32 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from "react"
+import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
-import LibraryScreen from "../../../screens/library/LibraryScreen";
-import ResourcesScreen from "../../../screens/library/ResourcesScreen";
-import RongoaScreen from "../../../screens/library/RongoaScreen";
-import ExportDataScreen from "../../../screens/library/ExportDataScreen";
-import LibraryPlaceholderScreen from "../../../screens/library/LibraryPlaceholderScreen";
+import LibraryHomeScreen from "../../../features/library/screens/LibraryHomeScreen"
+import ConditionDetailScreen from "../../../features/library/screens/ConditionDetailScreen"
+import ConditionListScreen from "../../../features/library/screens/ConditionListScreen"
+import LibraryGuideScreen from "../../../features/library/screens/LibraryGuideScreen"
+import ResourceCategoryScreen from "../../../features/library/screens/ResourceCategoryScreen"
+import ResourceDetailScreen from "../../../features/library/screens/ResourceDetailScreen"
+import WhakataukiScreen from "../../../features/library/screens/WhakataukiScreen"
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator()
 
 export default function LibraryStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="LibraryScreen" component={LibraryScreen} />
-      <Stack.Screen name="ResourcesScreen" component={ResourcesScreen} />
-      <Stack.Screen name="RongoaScreen" component={RongoaScreen} />
-      <Stack.Screen name="ExportDataScreen" component={ExportDataScreen} />
+      <Stack.Screen name="LibraryHome" component={LibraryHomeScreen} />
+      <Stack.Screen name="ConditionList" component={ConditionListScreen} />
       <Stack.Screen
-        name="LibraryPlaceholderScreen"
-        component={LibraryPlaceholderScreen}
+        name="ConditionDetail"
+        component={ConditionDetailScreen}
       />
+      <Stack.Screen name="LibraryGuide" component={LibraryGuideScreen} />
+      <Stack.Screen
+        name="ResourceCategory"
+        component={ResourceCategoryScreen}
+      />
+      <Stack.Screen name="ResourceDetail" component={ResourceDetailScreen} />
+      <Stack.Screen name="Whakatauki" component={WhakataukiScreen} />
     </Stack.Navigator>
-  );
+  )
 }
