@@ -1,35 +1,23 @@
-// server/controllers/mymedicinesController.js
+// server/controllers/myMedicinesController.js
 import {
   getMedicines,
-  createMedicine,
-  updateMedicine,
+  addMedicine,
   deleteMedicine,
 } from "../models/myMedicinesModel.js"
 
-export async function getAllMedicines(req, res) {
+export async function listMedicines(req, res) {
   try {
-    const medicines = await getMedicines(req.db)
-    res.json(medicines)
+    const rows = await getMedicines()
+    res.json(rows)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 }
 
-export async function addMedicine(req, res) {
+export async function createMedicine(req, res) {
   try {
-    const { name, dosage, frequency } = req.body
-    await createMedicine(req.db, { name, dosage, frequency })
-    res.status(201).json({ message: "Medicine added successfully" })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-}
-
-export async function editMedicine(req, res) {
-  try {
-    const { id } = req.params
-    await updateMedicine(req.db, id, req.body)
-    res.json({ message: "Medicine updated successfully" })
+    const newMed = await addMedicine(req.body)
+    res.json(newMed)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -37,9 +25,8 @@ export async function editMedicine(req, res) {
 
 export async function removeMedicine(req, res) {
   try {
-    const { id } = req.params
-    await deleteMedicine(req.db, id)
-    res.json({ message: "Medicine deleted successfully" })
+    await deleteMedicine(req.params.id)
+    res.json({ success: true })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

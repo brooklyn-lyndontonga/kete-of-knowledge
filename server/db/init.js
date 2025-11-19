@@ -1,3 +1,4 @@
+// server/db/init.js
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
 import path from "path"
@@ -8,10 +9,13 @@ const __dirname = path.dirname(__filename)
 
 export async function connectDB() {
   const dbPath = path.join(__dirname, "database.db")
+  console.log("🗂 Using DB:", dbPath)
+
   const db = await open({
     filename: dbPath,
     driver: sqlite3.Database,
   })
+
   return db
 }
 
@@ -30,11 +34,21 @@ export async function initTables(db) {
       description TEXT
     );
 
-    CREATE TABLE IF NOT EXISTS medicines (
+    CREATE TABLE IF NOT EXISTS symptoms (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT,
+      symptom TEXT,
+      severity INTEGER,
+      notes TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS mymedicines (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
       dosage TEXT,
       frequency TEXT
     );
   `)
+
+  console.log("📦 Tables initialized")
 }

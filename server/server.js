@@ -1,21 +1,10 @@
+/* eslint-disable no-undef */
 // server/server.js
+import "dotenv/config"
+import app from "./app.js"
 
-import express from "express"
-import cors from "cors"
-import bodyParser from "body-parser"
-import routes from "./routes/index.js"
-
-const app = express()
-const PORT = 3000
-
-app.use(cors())
-app.use(bodyParser.json())
-
-// Mount all routes
-app.use("/", routes)
+const PORT = process.env.PORT || 3000
 
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`)
 })
-
-export default app

@@ -1,23 +1,22 @@
-// server/models/mymedicinesModel.js
-export async function getMedicines(db) {
-  return db.all("SELECT * FROM medicines")
+// server/models/myMedicinesModel.js
+import { connectDB } from "../db/init.js"
+
+export async function getMedicines() {
+  const db = await connectDB()
+  return db.all("SELECT * FROM mymedicines ORDER BY id DESC")
 }
 
-export async function createMedicine(db, { name, dosage, frequency }) {
-  await db.run(
-    "INSERT INTO medicines (name, dosage, frequency) VALUES (?, ?, ?)",
+export async function addMedicine({ name, dosage, frequency }) {
+  const db = await connectDB()
+  const result = await db.run(
+    "INSERT INTO mymedicines (name, dosage, frequency) VALUES (?, ?, ?)",
     [name, dosage, frequency]
   )
+  return { id: result.lastID, name, dosage, frequency }
 }
 
-export async function updateMedicine(db, id, data) {
-  const { name, dosage, frequency } = data
-  await db.run(
-    "UPDATE medicines SET name=?, dosage=?, frequency=? WHERE id=?",
-    [name, dosage, frequency, id]
-  )
-}
-
-export async function deleteMedicine(db, id) {
-  await db.run("DELETE FROM medicines WHERE id=?", [id])
+export async function deleteMedicine(id) {
+  const db = await connectDB()
+  await db.run("DELETE FROM mymedicines WHERE id = ?", id)
+  return true
 }

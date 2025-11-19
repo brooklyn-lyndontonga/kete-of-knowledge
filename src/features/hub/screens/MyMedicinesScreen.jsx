@@ -1,155 +1,106 @@
-import React, { useState } from "react"
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native"
-import Animated, { FadeInUp } from "react-native-reanimated"
-import { useNavigation } from "@react-navigation/native"
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from "react"
+import { View, Text, FlatList, Button, TextInput, StyleSheet } from "react-native"
+import api from "../../../lib/api"
 import { useTheme } from "../../../theme"
 
 export default function MyMedicinesScreen() {
-  const navigation = useNavigation()
-  const { colors, spacing, radii, typography } = useTheme()
+  const { colors } = useTheme()
+  const [meds, setMeds] = useState([])
+  const [form, setForm] = useState({
+    name: "",
+    dosage: "",
+    frequency: "",
+    notes: "",
+  })
 
-  // Fake Sprint-5 data
-  const [medicines] = useState([
-    {
-      id: 1,
-      name: "Metformin",
-      dose: "500mg",
-      schedule: "1x daily (morning)",
-      nextTime: "8:00am",
-    },
-    {
-      id: 2,
-      name: "Levothyroxine",
-      dose: "75mcg",
-      schedule: "1x daily (morning)",
-      nextTime: "7:30am",
-    },
-    {
-      id: 3,
-      name: "Vitamin D",
-      dose: "1000IU",
-      schedule: "Daily",
-      nextTime: "Anytime",
-    },
-  ])
+  async function loadMeds() {
+    try {
+      const data = await api.get("/mymedicines")
+      setMeds(data)
+    } catch (err) {
+      console.log("Error loading medicines:", err)
+    }
+  }
 
-  const styles = createStyles(colors, spacing, radii, typography)
+  async function addMed() {
+    await api.post("/mymedicines", form)
+    setForm({ name: "", dosage: "", frequency: "", notes: "" })
+    loadMeds()
+  }
+
+  async function removeMed(id) {
+    await api.delete(`/mymedicines/${id}`)
+    loadMeds()
+  }
+
+  useEffect(() => {
+    loadMeds()
+  }, [])
 
   return (
-    <ScrollView style={styles.container}>
-      
-      {/* Header */}
-      <Animated.View entering={FadeInUp.duration(600).springify()}>
-        <Text style={styles.heading}>My Medicines</Text>
-        <Text style={styles.subheading}>Your daily medication list</Text>
-      </Animated.View>
+    <View style={styles.container}>
+      <Text style={styles.title}>My Medicines</Text>
 
-      {/* Add new medicine */}
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.navigate("MedicinesList")}
-      >
-        <Text style={styles.addButtonText}>+ Add Medicine</Text>
-      </TouchableOpacity>
+      <FlatList
+        data={meds}
+        keyExtractor={item => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.medCard}>
+            <Text style={styles.medName}>{item.name}</Text>
+            <Text>{item.dosage} — {item.frequency}</Text>
+            <Button title="Delete" onPress={() => removeMed(item.id)} />
+          </View>
+        )}
+      />
 
-      {/* Medicine List */}
-      {medicines.map((med, index) => (
-        <Animated.View
-          key={med.id}
-          entering={FadeInUp.delay(index * 150).duration(500)}
-        >
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate("MedicineDetail", { med })}
-          >
-            <View style={styles.cardHeader}>
-              <Text style={styles.medName}>{med.name}</Text>
-              <Text style={styles.dose}>{med.dose}</Text>
-            </View>
+      <Text style={styles.subtitle}>Add Medicine</Text>
 
-            <Text style={styles.schedule}>{med.schedule}</Text>
+      <TextInput
+        placeholder="Name"
+        style={styles.input}
+        value={form.name}
+        onChangeText={t => setForm({ ...form, name: t })}
+      />
+      <TextInput
+        placeholder="Dosage"
+        style={styles.input}
+        value={form.dosage}
+        onChangeText={t => setForm({ ...form, dosage: t })}
+      />
+      <TextInput
+        placeholder="Frequency"
+        style={styles.input}
+        value={form.frequency}
+        onChangeText={t => setForm({ ...form, frequency: t })}
+      />
+      <TextInput
+        placeholder="Notes"
+        style={styles.input}
+        value={form.notes}
+        onChangeText={t => setForm({ ...form, notes: t })}
+      />
 
-            <Text style={styles.nextTime}>
-              Next dose: {med.nextTime}
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-      ))}
-
-      <View style={{ height: spacing.xl * 2 }} />
-    </ScrollView>
+      <Button title="Add Medicine" onPress={addMed} />
+    </View>
   )
 }
 
-function createStyles(colors, spacing, radii, typography) {
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.bg,
-      paddingHorizontal: spacing.lg,
-      paddingTop: 60,
-    },
-    heading: {
-      fontFamily: typography.heading,
-      fontSize: 26,
-      color: colors.primary,
-    },
-    subheading: {
-      fontFamily: typography.body,
-      fontSize: 14,
-      color: colors.textLight,
-      marginTop: 4,
-      marginBottom: spacing.lg,
-    },
-    addButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: spacing.sm,
-      borderRadius: radii.lg,
-      alignItems: "center",
-      marginBottom: spacing.xl,
-    },
-    addButtonText: {
-      color: "white",
-      fontFamily: typography.medium,
-      fontSize: 16,
-    },
-    card: {
-      backgroundColor: colors.accent1,
-      padding: spacing.md,
-      borderRadius: radii.lg,
-      marginBottom: spacing.md,
-    },
-    cardHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginBottom: 6,
-    },
-    medName: {
-      fontFamily: typography.medium,
-      fontSize: 16,
-      color: colors.text,
-    },
-    dose: {
-      fontFamily: typography.body,
-      fontSize: 14,
-      opacity: 0.8,
-    },
-    schedule: {
-      fontFamily: typography.body,
-      fontSize: 13,
-      marginTop: 2,
-    },
-    nextTime: {
-      fontFamily: typography.body,
-      fontSize: 12,
-      marginTop: 6,
-      opacity: 0.7,
-    },
-  })
-}
+const styles = StyleSheet.create({
+  container: { padding: 20, backgroundColor: "#fff", flex: 1 },
+  title: { fontSize: 22, fontWeight: "700", marginBottom: 20 },
+  medCard: {
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: "#f0f0f0",
+    marginBottom: 10,
+  },
+  medName: { fontSize: 16, fontWeight: "600" },
+  subtitle: { marginTop: 30, fontSize: 18, fontWeight: "700" },
+  input: {
+    backgroundColor: "#eee",
+    padding: 10,
+    borderRadius: 6,
+    marginVertical: 6,
+  },
+})
