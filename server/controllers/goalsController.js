@@ -1,46 +1,54 @@
 // server/controllers/goalsController.js
-import {
-  getGoals,
-  createGoal,
-  updateGoal,
-  deleteGoal,
-} from "../models/goalsModel.js"
+import { connectDB } from "../db/init.js"
 
-export async function getAllGoals(req, res) {
+// GET /goals
+export async function listGoals(req, res) {
   try {
-    const goals = await getGoals(req.db)
+    const db = await connectDB()
+    const goals = await db.all("SELECT * FROM goals")
     res.json(goals)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.error("Error loading goals:", err)
+    res.status(500).json({ error: "Failed to load goals" })
   }
 }
 
-export async function addGoal(req, res) {
+// POST /goals
+export async function createGoal(req, res) {
   try {
-    const { title, description } = req.body
-    await createGoal(req.db, { title, description })
-    res.status(201).json({ message: "Goal added successfully" })
+    const { title } = req.body
+    if (!title) return res.status(400).json({ error: "Title required" })
+
+    const db = await connectDB()
+
+    const result = await db.run(
+      "INSERT INTO goals (title, description) VALUES (?, ?)",
+      [title, ""]
+    )
+
+    res.json({
+      id: result.lastID,
+      title,
+      description: "",
+    })
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.error("Error creating goal:", err)
+    res.status(500).json({ error: "Failed to create goal" })
   }
 }
 
-export async function editGoal(req, res) {
-  try {
-    const { id } = req.params
-    await updateGoal(req.db, id, req.body)
-    res.json({ message: "Goal updated successfully" })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-}
-
+// DELETE /goals/:id
 export async function removeGoal(req, res) {
   try {
     const { id } = req.params
-    await deleteGoal(req.db, id)
-    res.json({ message: "Goal deleted successfully" })
+
+    const db = await connectDB()
+
+    await db.run("DELETE FROM goals WHERE id = ?", id)
+
+    res.json({ success: true })
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.error("Error deleting goal:", err)
+    res.status(500).json({ error: "Failed to delete goal" })
   }
 }

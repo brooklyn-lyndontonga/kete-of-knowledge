@@ -1,25 +1,21 @@
-/* eslint-disable no-undef */
+// server/server.js
+
 import express from "express"
 import cors from "cors"
-import dotenv from "dotenv"
-import { connectDB, initTables } from "./db/init.js"
+import bodyParser from "body-parser"
 import routes from "./routes/index.js"
 
-dotenv.config()
 const app = express()
+const PORT = 3000
+
 app.use(cors())
-app.use(express.json())
+app.use(bodyParser.json())
 
-const db = await connectDB()
-await initTables(db)
+// Mount all routes
+app.use("/", routes)
 
-// make db available in routes
-app.use((req, res, next) => { req.db = db; next() })
-app.use("/api", routes)
-
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => console.log(`✅ Server running at http://localhost:${PORT}`))
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}`)
+})
 
 export default app
-
-

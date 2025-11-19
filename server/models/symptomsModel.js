@@ -1,18 +1,57 @@
 // server/models/symptomsModel.js
 
-export async function getSymptoms(db) {
-  return db.all("SELECT * FROM symptoms")
+let demoSymptoms = [
+  {
+    id: 1,
+    date: "2025-01-15",
+    symptom: "Fatigue",
+    severity: 3,
+    notes: "Felt tired after lunch"
+  },
+  {
+    id: 2,
+    date: "2025-01-15",
+    symptom: "Shortness of breath",
+    severity: 2,
+    notes: ""
+  },
+  {
+    id: 3,
+    date: "2025-01-14",
+    symptom: "Chest tightness",
+    severity: 4,
+    notes: "During walking"
+  }
+]
+
+export function getAllSymptoms() {
+  return demoSymptoms
 }
 
-export async function createSymptom(db, { name, severity }) {
-  await db.run("INSERT INTO symptoms (name, severity) VALUES (?, ?)", [name, severity])
+export function addSymptom({ date, symptom, severity, notes }) {
+  const newEntry = {
+    id: Date.now(),
+    date,
+    symptom,
+    severity,
+    notes,
+  }
+  demoSymptoms.push(newEntry)
+  return newEntry
 }
 
-export async function updateSymptom(db, id, data) {
-  const { name, severity } = data
-  await db.run("UPDATE symptoms SET name=?, severity=? WHERE id=?", [name, severity, id])
+export function deleteSymptom(id) {
+  demoSymptoms = demoSymptoms.filter(i => i.id !== Number(id))
+  return true
 }
 
-export async function deleteSymptom(db, id) {
-  await db.run("DELETE FROM symptoms WHERE id=?", [id])
+export function getSymptomSummary() {
+  const summary = {}
+
+  demoSymptoms.forEach(item => {
+    if (!summary[item.date]) summary[item.date] = []
+    summary[item.date].push(item)
+  })
+
+  return summary
 }

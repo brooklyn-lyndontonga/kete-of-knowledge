@@ -1,46 +1,32 @@
 // server/controllers/symptomsController.js
+
 import {
-  getSymptoms,
-  createSymptom,
-  updateSymptom,
+  getAllSymptoms,
+  addSymptom,
   deleteSymptom,
+  getSymptomSummary
 } from "../models/symptomsModel.js"
 
-export async function getAllSymptoms(req, res) {
-  try {
-    const symptoms = await getSymptoms(req.db)
-    res.json(symptoms)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
+export function listSymptoms(req, res) {
+  res.json(getAllSymptoms())
 }
 
-export async function addSymptom(req, res) {
-  try {
-    const { name, severity } = req.body
-    await createSymptom(req.db, { name, severity })
-    res.status(201).json({ message: "Symptom added successfully" })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
+export function createSymptom(req, res) {
+  const { date, symptom, severity, notes } = req.body
+
+  if (!symptom) {
+    return res.status(400).json({ error: "Symptom name is required" })
   }
+
+  const entry = addSymptom({ date, symptom, severity, notes })
+  res.json(entry)
 }
 
-export async function editSymptom(req, res) {
-  try {
-    const { id } = req.params
-    await updateSymptom(req.db, id, req.body)
-    res.json({ message: "Symptom updated successfully" })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
+export function removeSymptom(req, res) {
+  deleteSymptom(req.params.id)
+  res.json({ success: true })
 }
 
-export async function removeSymptom(req, res) {
-  try {
-    const { id } = req.params
-    await deleteSymptom(req.db, id)
-    res.json({ message: "Symptom deleted successfully" })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
+export function symptomSummary(req, res) {
+  res.json(getSymptomSummary())
 }

@@ -1,220 +1,154 @@
-/* eslint-disable react/prop-types */
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import {
   View,
   Text,
-  ScrollView,
+  TextInput,
   TouchableOpacity,
+  ScrollView,
   StyleSheet,
 } from "react-native"
-import Animated, { FadeInUp } from "react-native-reanimated"
-import { useTheme } from "../../../theme"
+import { useNavigation } from "@react-navigation/native"
+import api from "../../../lib/api"   // ✅ FIXED IMPORT PATH
 
-export default function SymptomsScreen({ navigation }) {
-  const { colors, spacing, radii, typography } = useTheme()
+export default function SymptomsScreen() {
+  const navigation = useNavigation()
 
-  // Demo categories
-  const categories = ["All", "Heart", "Breathing", "Energy", "Pain"]
+  const [form, setForm] = useState({
+    symptom: "",
+    severity: "",
+    notes: "",
+  })
 
-  const [filter, setFilter] = useState("All")
+  const [symptoms, setSymptoms] = useState([])
 
-  // Demo symptoms list
-  const symptoms = [
-    { id: 1, name: "Shortness of breath", maori: "Hā pōkai", category: "Breathing", emoji: "🌬️" },
-    { id: 2, name: "Chest tightness", maori: "Kōpiritanga uma", category: "Heart", emoji: "❤️‍🔥" },
-    { id: 3, name: "Low energy", maori: "Ngoikore", category: "Energy", emoji: "⚡" },
-    { id: 4, name: "Dizziness", maori: "Āmaimai", category: "Heart", emoji: "🌀" },
-    { id: 5, name: "Headache", maori: "Upoko mamae", category: "Pain", emoji: "🤕" },
-    { id: 6, name: "Palpitations", maori: "Patupatu ngākau", category: "Heart", emoji: "💓" },
-  ]
+  // Fetch symptoms from backend
+  async function loadSymptoms() {
+    try {
+      const data = await api.get("/symptoms")
+      setSymptoms(data)
+    } catch (err) {
+      console.error("Error loading symptoms:", err)
+    }
+  }
 
-  const filteredSymptoms =
-    filter === "All"
-      ? symptoms
-      : symptoms.filter((s) => s.category === filter)
+  // Add a new symptom
+  async function addSymptom() {
+    if (!form.symptom.trim()) return
 
-  const styles = createStyles(colors, spacing, radii, typography)
+    try {
+      await api.post("/symptoms", {
+        date: new Date().toISOString().slice(0, 10),
+        symptom: form.symptom,
+        severity: Number(form.severity) || 1,
+        notes: form.notes,
+      })
+
+      setForm({ symptom: "", severity: "", notes: "" })
+      loadSymptoms()
+    } catch (err) {
+      console.error("Error adding symptom:", err)
+    }
+  }
+
+  useEffect(() => {
+    loadSymptoms()
+  }, [])
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <Animated.View entering={FadeInUp.duration(500).springify()}>
-        <Text style={styles.heading}>Symptoms</Text>
-        <Text style={styles.subheading}>
-          Tohu hauora — keeping track helps you understand your wellbeing.
-        </Text>
-      </Animated.View>
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>Log a Symptom</Text>
 
-      {/* Filter Pills */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ marginBottom: spacing.lg }}
-      >
-        {categories.map((cat) => (
-          <TouchableOpacity
-            key={cat}
-            onPress={() => setFilter(cat)}
-            style={[
-              styles.filterPill,
-              filter === cat && styles.filterPillActive,
-            ]}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                filter === cat && styles.filterTextActive,
-              ]}
-            >
-              {cat}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      {/* Form */}
+      <View style={styles.card}>
+        <TextInput
+          style={styles.input}
+          placeholder="Symptom name (e.g. Fatigue)"
+          value={form.symptom}
+          onChangeText={(t) => setForm({ ...form, symptom: t })}
+        />
 
-      {/* Symptom Cards */}
-      {filteredSymptoms.map((symptom, idx) => (
-        <Animated.View
-          key={symptom.id}
-          entering={FadeInUp.delay(120 + idx * 120).duration(500)}
-          style={styles.card}
-        >
-          <View>
-            <Text style={styles.name}>
-              {symptom.emoji} {symptom.name}
-            </Text>
-            <Text style={styles.maori}>{symptom.maori}</Text>
-          </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Severity (1-5)"
+          value={form.severity}
+          onChangeText={(t) => setForm({ ...form, severity: t })}
+          keyboardType="numeric"
+        />
 
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("SymptomTracker", { symptom })
-            }
-            style={styles.trackButton}
-          >
-            <Text style={styles.trackText}>Track</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      ))}
+        <TextInput
+          style={[styles.input, { height: 80 }]}
+          placeholder="Notes (optional)"
+          value={form.notes}
+          onChangeText={(t) => setForm({ ...form, notes: t })}
+          multiline
+        />
 
-      {/* Add New Symptom */}
-      <TouchableOpacity style={styles.addButton}>
-        <Text style={styles.addButtonText}>Add Symptom (demo)</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.addBtn} onPress={addSymptom}>
+          <Text style={styles.addText}>Add Symptom</Text>
+        </TouchableOpacity>
+      </View>
 
-      {/* Go To Full Tracker */}
+      {/* Tracker */}
       <TouchableOpacity
-        style={styles.fullButton}
+        style={styles.trackerBtn}
         onPress={() => navigation.navigate("SymptomTracker")}
       >
-        <Text style={styles.fullButtonText}>Open Symptom Tracker</Text>
+        <Text style={styles.trackerText}>📊 View Tracker</Text>
       </TouchableOpacity>
 
-      <View style={{ height: spacing.xl * 2 }} />
+      {/* List */}
+      <Text style={styles.subtitle}>Recent Symptoms</Text>
+
+      {symptoms.map((item) => (
+        <View key={item.id} style={styles.listItem}>
+          <Text style={styles.symptom}>{item.symptom}</Text>
+          <Text style={styles.meta}>Severity: {item.severity}</Text>
+          <Text style={styles.meta}>{item.date}</Text>
+        </View>
+      ))}
     </ScrollView>
   )
 }
 
-function createStyles(colors, spacing, radii, typography) {
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.bg,
-      paddingHorizontal: spacing.lg,
-      paddingTop: 60,
-    },
-
-    heading: {
-      fontFamily: typography.heading,
-      fontSize: 28,
-      color: colors.primary,
-    },
-    subheading: {
-      fontFamily: typography.body,
-      fontSize: 14,
-      color: colors.textLight,
-      marginTop: 4,
-      marginBottom: spacing.xl,
-    },
-
-    // Filters
-    filterPill: {
-      paddingVertical: 8,
-      paddingHorizontal: 14,
-      backgroundColor: colors.border,
-      borderRadius: 20,
-      marginRight: 10,
-    },
-    filterPillActive: {
-      backgroundColor: colors.primary,
-    },
-    filterText: {
-      fontFamily: typography.body,
-      fontSize: 14,
-      color: colors.text,
-    },
-    filterTextActive: {
-      color: "#fff",
-    },
-
-    // Symptom Card
-    card: {
-      backgroundColor: "#fff",
-      padding: spacing.md,
-      borderRadius: radii.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      marginBottom: spacing.md,
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    name: {
-      fontFamily: typography.medium,
-      fontSize: 16,
-      color: colors.text,
-    },
-    maori: {
-      fontFamily: typography.body,
-      opacity: 0.7,
-      fontSize: 13,
-    },
-
-    trackButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: 6,
-      paddingHorizontal: 14,
-      borderRadius: 20,
-    },
-    trackText: {
-      color: "#fff",
-      fontFamily: typography.medium,
-    },
-
-    addButton: {
-      backgroundColor: colors.accent2,
-      paddingVertical: spacing.md,
-      borderRadius: radii.lg,
-      alignItems: "center",
-      marginTop: spacing.xl,
-    },
-    addButtonText: {
-      color: "#fff",
-      fontFamily: typography.medium,
-      fontSize: 16,
-    },
-
-    fullButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: spacing.md,
-      borderRadius: radii.lg,
-      alignItems: "center",
-      marginTop: spacing.md,
-    },
-    fullButtonText: {
-      color: "#fff",
-      fontFamily: typography.medium,
-      fontSize: 16,
-    },
-  })
-}
+const styles = StyleSheet.create({
+  container: { padding: 18, backgroundColor: "#fff", flex: 1 },
+  title: { fontSize: 20, fontWeight: "700", marginBottom: 10 },
+  subtitle: { fontSize: 16, marginVertical: 12, fontWeight: "700" },
+  card: {
+    backgroundColor: "#f1f1f1",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  input: {
+    backgroundColor: "#fff",
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  addBtn: {
+    backgroundColor: "#267f53",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  addText: { color: "#fff", fontWeight: "700" },
+  trackerBtn: {
+    backgroundColor: "#99b7f5",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  trackerText: { color: "#fff", fontWeight: "700", fontSize: 16 },
+  listItem: {
+    backgroundColor: "#f9f9f9",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  symptom: { fontWeight: "700", fontSize: 15 },
+  meta: { opacity: 0.7, fontSize: 12 },
+})
