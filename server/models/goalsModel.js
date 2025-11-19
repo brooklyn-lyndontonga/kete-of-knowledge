@@ -1,7 +1,12 @@
 // server/models/goalsModel.js
-export async function getGoals(db) {
-  return db.all("SELECT * FROM goals")
+export async function getGoals() {
+  return [
+    { id: 1, title: "Drink 2 litres of water", progress: 40 },
+    { id: 2, title: "Walk 3x per week", progress: 60 },
+    { id: 3, title: "Take medication on time", progress: 80 }
+  ]
 }
+
 
 export async function createGoal(db, { title, description }) {
   await db.run(

@@ -37,7 +37,8 @@
     "react-native-web": "0.21.2",
     "react-native-worklets": "0.5.1",
     "sqlite3": "5.1.7",
-    "styled-components": "6.1.19"
+    "styled-components": "6.1.19",
+    "@react-native-community/slider": "5.0.1"
   },
   "devDependencies": {
     "@eslint/js": "9.38.0",

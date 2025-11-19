@@ -1,168 +1,146 @@
-/* eslint-disable react/prop-types */
-import React, { useState } from "react"
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native"
-import Animated, { FadeInUp } from "react-native-reanimated"
+/* eslint-disable no-undef */
+import React from "react"
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ImageBackground,
+} from "react-native"
 import { useNavigation } from "@react-navigation/native"
-import { useTheme } from "../../../theme"
 
 export default function HubHomeScreen() {
   const navigation = useNavigation()
-  const { colors, spacing, radii, typography } = useTheme()
 
-  // Demo data
-  const [lastSymptom] = useState({
-    name: "Fatigue",
-    level: "Moderate",
-    date: "Today",
-  })
-
-  const [nextMedicine] = useState({
-    name: "Metformin",
-    time: "8:00am",
-  })
-
-  const [hauoraFocus] = useState("Take 5 deep breaths during breaks.")
-
-  const styles = createStyles(colors, spacing, radii, typography)
+  const tools = [
+    {
+      title: "Goals",
+      emoji: "🎯",
+      screen: "Goals",
+    },
+    {
+      title: "Symptoms",
+      emoji: "📋",
+      screen: "Symptoms",
+    },
+    {
+      title: "Tracker",
+      emoji: "📊",
+      screen: "SymptomTracker",
+    },
+    {
+      title: "My Medicines",
+      emoji: "💊",
+      screen: "MyMedicines",
+    },
+    {
+      title: "Medicine List",
+      emoji: "📦",
+      screen: "MedicinesList",
+    },
+    {
+      title: "Conditions",
+      emoji: "📚",
+      screen: "ConditionList",
+    },
+    {
+      title: "Contacts",
+      emoji: "☎️",
+      screen: "Contacts",
+    },
+  ]
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      
-      {/* Header */}
-      <Animated.View entering={FadeInUp.duration(600).springify()}>
-        <Text style={styles.heading}>Tāku Manawa</Text>
-        <Text style={styles.subheading}>Your wellbeing hub</Text>
-      </Animated.View>
-
-      {/* Quick Links */}
-      <Animated.View entering={FadeInUp.delay(200).duration(600)}>
-        <View style={styles.cardRow}>
-          <HubCard
-            title="Log Symptoms"
-            emoji="📋"
-            onPress={() => navigation.navigate("Symptoms")}
-          />
-          <HubCard
-            title="My Medicines"
-            emoji="💊"
-            onPress={() => navigation.navigate("MyMedicines")}
-          />
-        </View>
-
-        <View style={styles.cardRow}>
-          <HubCard
-            title="Conditions"
-            emoji="❤️"
-            onPress={() => navigation.navigate("ConditionList")}
-          />
-          <HubCard
-            title="Goals"
-            emoji="⭐"
-            onPress={() => navigation.navigate("Goals")}
-          />
-        </View>
-      </Animated.View>
-
-      {/* Daily Overview */}
-      <Animated.View
-        entering={FadeInUp.delay(400).duration(600)}
-        style={styles.section}
+      {/* Top Header */}
+      <ImageBackground
+        source={require("../../../../assets/splash-icon.png")}
+        style={styles.header}
+        imageStyle={{ opacity: 0.08 }}
       >
-        <Text style={styles.sectionTitle}>Daily Overview</Text>
+        <Text style={styles.title}>Tāku Manawa</Text>
+        <Text style={styles.subtitle}>
+          Your wellbeing + heart care hub.
+        </Text>
+      </ImageBackground>
 
-        <View style={styles.infoCard}>
-          <Text style={styles.label}>Last Symptom Logged</Text>
-          <Text style={styles.value}>
-            {lastSymptom.name} — {lastSymptom.level}
-          </Text>
-        </View>
+      {/* Grid */}
+      <View style={styles.grid}>
+        {tools.map((tool, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.card}
+            onPress={() => navigation.navigate(tool.screen)}
+          >
+            <Text style={styles.emoji}>{tool.emoji}</Text>
+            <Text style={styles.cardTitle}>{tool.title}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-        <View style={styles.infoCard}>
-          <Text style={styles.label}>Next Medicine</Text>
-          <Text style={styles.value}>
-            {nextMedicine.name} @ {nextMedicine.time}
-          </Text>
-        </View>
-
-        <View style={styles.infoCard}>
-          <Text style={styles.label}>Your Hauora Focus</Text>
-          <Text style={styles.value}>{hauoraFocus}</Text>
-        </View>
-      </Animated.View>
-
-      <View style={{ height: spacing.xl }} />
+      <View style={{ height: 80 }} />
     </ScrollView>
   )
 }
 
-function HubCard({ title, emoji, onPress }) {
-  return (
-    <TouchableOpacity style={hubCardStyles.card} onPress={onPress}>
-      <Text style={hubCardStyles.emoji}>{emoji}</Text>
-      <Text style={hubCardStyles.title}>{title}</Text>
-    </TouchableOpacity>
-  )
-}
-
-function createStyles(colors, spacing, radii, typography) {
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.bg,
-      padding: spacing.lg,
-      paddingTop: 60,
-    },
-    heading: {
-      fontFamily: typography.heading,
-      fontSize: 28,
-      color: colors.primary,
-    },
-    subheading: {
-      fontFamily: typography.body,
-      fontSize: 15,
-      marginTop: 4,
-      color: colors.textLight,
-    },
-    section: { marginTop: spacing.xl },
-    sectionTitle: {
-      fontFamily: typography.medium,
-      fontSize: 18,
-      marginBottom: spacing.md,
-      color: colors.text,
-    },
-    cardRow: {
-      flexDirection: "row",
-      marginVertical: 6,
-      justifyContent: "space-between",
-    },
-    infoCard: {
-      backgroundColor: colors.accent1,
-      padding: spacing.md,
-      borderRadius: radii.lg,
-      marginBottom: spacing.md,
-    },
-    label: {
-      fontFamily: typography.medium,
-      fontSize: 14,
-      opacity: 0.8,
-    },
-    value: {
-      marginTop: 4,
-      fontFamily: typography.body,
-      fontSize: 15,
-    },
-  })
-}
-
-const hubCardStyles = StyleSheet.create({
-  card: {
-    backgroundColor: "#99b7f5",
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
-    marginHorizontal: 4,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 40,
+    backgroundColor: "#F8F7F3",
   },
-  emoji: { fontSize: 28 },
-  title: { marginTop: 6, fontWeight: "600", color: "#fff" },
+
+  /* HEADER */
+  header: {
+    paddingVertical: 40,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "700",
+    color: "#267f53",
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: "#444",
+    opacity: 0.8,
+  },
+
+  /* GRID */
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+
+  card: {
+    width: "48%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingVertical: 26,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+
+  emoji: {
+    fontSize: 28,
+    marginBottom: 10,
+  },
+
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#444",
+  },
 })
