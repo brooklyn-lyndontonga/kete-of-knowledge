@@ -5,6 +5,7 @@ import symptomsRoutes from "./symptoms.js"
 import goalsRoutes from "./goals.js"
 import myMedicinesRoutes from "./myMedicines.js"
 import profilesRoutes from "./profiles.js"
+import medicinesRoutes from "./medicines.js"   
 
 const router = Router()
 
@@ -12,5 +13,6 @@ router.use("/symptoms", symptomsRoutes)
 router.use("/goals", goalsRoutes)
 router.use("/mymedicines", myMedicinesRoutes)
 router.use("/profiles", profilesRoutes)
+router.use("/medicines", medicinesRoutes)
 
 export default router
