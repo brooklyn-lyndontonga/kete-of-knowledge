@@ -2,21 +2,25 @@
 import express from "express"
 import cors from "cors"
 
+import { connectDB, initTables } from "./db/init.js"
+
 // ROUTES
-import goalsRouter from "./routes/goals.js"
+import goalsRoutes from "./routes/goals.js"
+import symptomsRoutes from "./routes/symptoms.js"
+import myMedicinesRoutes from "./routes/myMedicines.js"
 
 const app = express()
 
-// Middleware
 app.use(cors())
 app.use(express.json())
 
-// Test root route
-app.get("/", (req, res) => {
-  res.send("Kete API is running 🚀")
-})
+// 🟢 INIT DB + TABLES
+const db = await connectDB()
+await initTables(db)
 
-// Mount route for /goals
-app.use("/goals", goalsRouter)
+// 🛣 ROUTES
+app.use("/goals", goalsRoutes)
+app.use("/symptoms", symptomsRoutes)
+app.use("/mymedicines", myMedicinesRoutes)
 
 export default app
