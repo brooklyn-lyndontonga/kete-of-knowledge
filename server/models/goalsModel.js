@@ -1,28 +1,25 @@
-// server/models/goalsModel.js
-export async function getGoals() {
-  return [
-    { id: 1, title: "Drink 2 litres of water", progress: 40 },
-    { id: 2, title: "Walk 3x per week", progress: 60 },
-    { id: 3, title: "Take medication on time", progress: 80 }
-  ]
+// Temporary in-memory demo data
+let demoGoals = [
+  { id: 1, title: "Drink 2 litres of water", progress: 40 },
+  { id: 2, title: "Walk 3x per week", progress: 60 },
+  { id: 3, title: "Take medication on time", progress: 80 }
+]
+
+export function getGoals() {
+  return demoGoals
 }
 
-
-export async function createGoal(db, { title, description }) {
-  await db.run(
-    "INSERT INTO goals (title, description) VALUES (?, ?)",
-    [title, description]
-  )
+export function addGoal(title) {
+  const newGoal = {
+    id: Date.now(),
+    title,
+    progress: 0,
+  }
+  demoGoals.push(newGoal)
+  return newGoal
 }
 
-export async function updateGoal(db, id, data) {
-  const { title, description } = data
-  await db.run(
-    "UPDATE goals SET title=?, description=? WHERE id=?",
-    [title, description, id]
-  )
-}
-
-export async function deleteGoal(db, id) {
-  await db.run("DELETE FROM goals WHERE id=?", [id])
+export function deleteGoal(id) {
+  demoGoals = demoGoals.filter((g) => g.id !== Number(id))
+  return true
 }

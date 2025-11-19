@@ -1,17 +1,20 @@
 // server/routes/symptoms.js
-import express from "express"
+
+import { Router } from "express"
 import {
-  getAllSymptoms,
-  addSymptom,
-  editSymptom,
+  listSymptoms,
+  createSymptom,
   removeSymptom,
+  symptomSummary
 } from "../controllers/symptomsController.js"
 
-const router = express.Router()
+const router = Router()
 
-router.get("/", getAllSymptoms)
-router.post("/", addSymptom)
-router.put("/:id", editSymptom)
+router.get("/", listSymptoms)
+router.post("/", createSymptom)
 router.delete("/:id", removeSymptom)
+
+// Summary endpoint
+router.get("/summary", symptomSummary)
 
 export default router
