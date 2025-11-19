@@ -1,44 +1,47 @@
-/* eslint-disable no-unused-vars */
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  TextInput,
   Linking,
 } from "react-native"
 import Animated, { FadeInUp } from "react-native-reanimated"
 import { useTheme } from "../../../theme"
+import api from "../../../lib/api"
 
 export default function ContactsScreen() {
   const { colors, spacing, radii, typography } = useTheme()
 
-  // --- DEMO CONTACTS (Replace with CRUD later) ---
+  // -------------------------
+  // STATIC SUPPORT SERVICES
+  // -------------------------
   const services = [
     {
-      id: 1,
+      id: "s1",
       name: "Healthline",
       desc: "24/7 free medical advice",
       phone: "0800611116",
       emoji: "🩺",
     },
     {
-      id: 2,
+      id: "s2",
       name: "Emergency Services",
       desc: "Call in life-threatening situations",
       phone: "111",
       emoji: "🚑",
     },
     {
-      id: 3,
+      id: "s3",
       name: "1737 – Need to Talk?",
       desc: "Free mental health support",
       phone: "1737",
       emoji: "💬",
     },
     {
-      id: 4,
+      id: "s4",
       name: "Quitline",
       desc: "Support to stop smoking",
       phone: "0800778778",
@@ -46,17 +49,64 @@ export default function ContactsScreen() {
     },
   ]
 
-  const whanauContacts = [
-    { id: 1, name: "Māmā", phone: "021 234 5678", emoji: "💚" },
-    { id: 2, name: "Nan", phone: "027 555 8888", emoji: "🌺" },
-    { id: 3, name: "Paora", phone: "021 777 9999", emoji: "🔥" },
-  ]
+  // -------------------------
+  // USER CONTACTS (CRUD)
+  // -------------------------
+  const [contacts, setContacts] = useState([])
 
-  const styles = createStyles(colors, spacing, radii, typography)
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    notes: "",
+  })
 
-  const handleCall = (phone) => {
+  function handleCall(phone) {
     Linking.openURL(`tel:${phone}`)
   }
+
+  // LOAD CONTACTS
+  async function loadContacts() {
+    try {
+      const data = await api.get("/contacts")
+      if (Array.isArray(data)) {
+        setContacts(data)
+      } else {
+        console.log("⚠️ Backend did not return array:", data)
+        setContacts([])
+      }
+    } catch (error) {
+      console.log("Error loading contacts:", error)
+    }
+  }
+
+  // ADD CONTACT
+  async function addContact() {
+    if (!form.name || !form.phone) return
+
+    try {
+      await api.post("/contacts", form)
+      setForm({ name: "", phone: "", notes: "" })
+      loadContacts()
+    } catch (error) {
+      console.log("Error adding contact:", error)
+    }
+  }
+
+  // DELETE CONTACT  (IMPORTANT: api.del not api.delete)
+  async function deleteContact(id) {
+    try {
+      await api.del(`/contacts/${id}`)
+      loadContacts()
+    } catch (error) {
+      console.log("Error deleting contact:", error)
+    }
+  }
+
+  useEffect(() => {
+    loadContacts()
+  }, [])
+
+  const styles = createStyles(colors, spacing, radii, typography)
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -90,18 +140,22 @@ export default function ContactsScreen() {
         </Animated.View>
       ))}
 
-      {/* Whānau / Personal Contacts */}
+      {/* Whānau Contacts */}
       <Text style={styles.sectionTitle}>Whānau Support</Text>
 
-      {whanauContacts.map((contact, idx) => (
+      {contacts.length === 0 && (
+        <Text style={{ opacity: 0.6, marginBottom: spacing.md }}>
+          No contacts added yet.
+        </Text>
+      )}
+
+      {contacts.map((contact, idx) => (
         <Animated.View
           key={contact.id}
           entering={FadeInUp.delay(200 + idx * 80).duration(500)}
           style={[styles.card, { backgroundColor: colors.accent1 }]}
         >
-          <Text style={styles.cardTitle}>
-            {contact.emoji} {contact.name}
-          </Text>
+          <Text style={styles.cardTitle}>💚 {contact.name}</Text>
 
           <TouchableOpacity
             onPress={() => handleCall(contact.phone)}
@@ -109,12 +163,42 @@ export default function ContactsScreen() {
           >
             <Text style={styles.callTextLight}>Call {contact.phone}</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => deleteContact(contact.id)}
+            style={styles.deleteButton}
+          >
+            <Text style={styles.deleteText}>Delete</Text>
+          </TouchableOpacity>
         </Animated.View>
       ))}
 
-      {/* Add Contact (Demo Only) */}
-      <TouchableOpacity style={styles.addButton}>
-        <Text style={styles.addButtonText}>Add New Contact (demo)</Text>
+      {/* Add Contact Form */}
+      <Text style={styles.sectionTitle}>Add New Contact</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Name"
+        value={form.name}
+        onChangeText={(t) => setForm({ ...form, name: t })}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Phone"
+        value={form.phone}
+        onChangeText={(t) => setForm({ ...form, phone: t })}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Notes (optional)"
+        value={form.notes}
+        onChangeText={(t) => setForm({ ...form, notes: t })}
+      />
+
+      <TouchableOpacity onPress={addContact} style={styles.addButton}>
+        <Text style={styles.addButtonText}>Add Contact</Text>
       </TouchableOpacity>
 
       <View style={{ height: spacing.xl * 2 }} />
@@ -142,7 +226,6 @@ function createStyles(colors, spacing, radii, typography) {
       marginTop: 4,
       marginBottom: spacing.xl,
     },
-
     sectionTitle: {
       fontFamily: typography.medium,
       fontSize: 18,
@@ -150,7 +233,6 @@ function createStyles(colors, spacing, radii, typography) {
       marginBottom: spacing.md,
       marginTop: spacing.md,
     },
-
     card: {
       backgroundColor: "#ffffff",
       padding: spacing.md,
@@ -171,7 +253,6 @@ function createStyles(colors, spacing, radii, typography) {
       opacity: 0.8,
       marginBottom: spacing.sm,
     },
-
     callButton: {
       backgroundColor: colors.primary,
       padding: 10,
@@ -183,7 +264,6 @@ function createStyles(colors, spacing, radii, typography) {
       color: "#fff",
       fontFamily: typography.medium,
     },
-
     callButtonLight: {
       backgroundColor: "rgba(255,255,255,0.25)",
       padding: 10,
@@ -195,7 +275,17 @@ function createStyles(colors, spacing, radii, typography) {
       color: "#fff",
       fontFamily: typography.medium,
     },
-
+    deleteButton: {
+      backgroundColor: "#b3261e",
+      padding: 10,
+      borderRadius: radii.md,
+      alignItems: "center",
+      marginTop: 10,
+    },
+    deleteText: {
+      color: "#fff",
+      fontFamily: typography.medium,
+    },
     addButton: {
       backgroundColor: colors.accent2,
       paddingVertical: spacing.md,
@@ -207,6 +297,14 @@ function createStyles(colors, spacing, radii, typography) {
       color: "#fff",
       fontFamily: typography.medium,
       fontSize: 16,
+    },
+    input: {
+      backgroundColor: "#fff",
+      padding: spacing.md,
+      borderRadius: radii.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: spacing.md,
     },
   })
 }
