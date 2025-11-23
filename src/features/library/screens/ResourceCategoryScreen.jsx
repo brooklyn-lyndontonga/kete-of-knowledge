@@ -1,45 +1,200 @@
 /* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native"
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from "react-native"
+import Animated, { FadeInUp } from "react-native-reanimated"
+import { useTheme } from "../../../theme"
 
-const resources = [
-  { id: "1", title: "Understanding Heart Health", summary: "A simple guide to caring for your manawa." },
-  { id: "2", title: "Whānau Nutrition Tips", summary: "Practical advice for better kai and balance." },
-]
+// ---------------------------------------------------------
+// DEMO CATEGORY + ARTICLE DATA
+// ---------------------------------------------------------
+const CATEGORY_DATA = {
+  tinana: {
+    title: "Tinana",
+    emoji: "🍃",
+    description: "Body and physical wellbeing.",
+    articles: [
+      {
+        id: "hydration",
+        title: "Staying Hydrated",
+        snippet: "How water supports your daily health and energy.",
+      },
+      {
+        id: "movement",
+        title: "Daily Movement",
+        snippet: "Simple ways to support physical health.",
+      },
+      {
+        id: "kai",
+        title: "Healthy Kai Choices",
+        snippet: "Nutrition basics for daily wellbeing.",
+      },
+    ],
+  },
 
+  hinengaro: {
+    title: "Hinengaro",
+    emoji: "🧠",
+    description: "Mental wellbeing and emotional balance.",
+    articles: [
+      {
+        id: "stress",
+        title: "Managing Stress",
+        snippet: "Grounding tools you can use anytime.",
+      },
+      {
+        id: "breathing",
+        title: "Breathing for Calm",
+        snippet: "Simple breathing techniques.",
+      },
+    ],
+  },
+
+  ngakau: {
+    title: "Ngākau",
+    emoji: "❤️",
+    description: "Heart health and cardiovascular wellbeing.",
+    articles: [
+      {
+        id: "blood-pressure",
+        title: "Understanding Blood Pressure",
+        snippet: "What your numbers mean.",
+      },
+      {
+        id: "heart-kai",
+        title: "Heart-Healthy Kai",
+        snippet: "Foods that support your cardiovascular system.",
+      },
+    ],
+  },
+
+  wairua: {
+    title: "Wairua",
+    emoji: "🌬️",
+    description: "Spiritual grounding and balance.",
+    articles: [
+      {
+        id: "karakia",
+        title: "Karakia for Grounding",
+        snippet: "Daily karakia to uplift your wairua.",
+      },
+      {
+        id: "values",
+        title: "Values & Purpose",
+        snippet: "Connecting to your deeper why.",
+      },
+    ],
+  },
+
+  rongoa: {
+    title: "Rongoā Māori",
+    emoji: "🌿",
+    description: "Traditional healing and plant-based support.",
+    articles: [
+      {
+        id: "kawakawa",
+        title: "Kawakawa",
+        snippet: "Uses, preparations, and healing benefits.",
+      },
+      {
+        id: "harakeke",
+        title: "Harakeke",
+        snippet: "A taonga with many uses.",
+      },
+    ],
+  },
+}
+
+// ---------------------------------------------------------
+// MAIN COMPONENT
+// ---------------------------------------------------------
 export default function ResourceCategoryScreen({ route, navigation }) {
-  const { category } = route.params || { category: "General" }
+  const { categoryId } = route.params
+  const { colors, spacing, radii, typography } = useTheme()
+  const styles = createStyles(colors, spacing, radii, typography)
+
+  const category = CATEGORY_DATA[categoryId]
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>{category}</Text>
+    <ScrollView style={styles.container}>
+      {/* Header Banner */}
+      <Animated.View entering={FadeInUp.duration(500).springify()}>
+        <Text style={styles.heading}>
+          {category.emoji} {category.title}
+        </Text>
+        <Text style={styles.subheading}>{category.description}</Text>
+      </Animated.View>
 
-      <FlatList
-        data={resources}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate("ResourceDetailScreen", { resource: item })}
+      {/* Articles */}
+      <View style={{ marginTop: spacing.md }}>
+        {category.articles.map((article, idx) => (
+          <Animated.View
+            key={article.id}
+            entering={FadeInUp.delay(150 + idx * 120)}
+            style={styles.articleCard}
           >
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.summary}>{item.summary}</Text>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("ResourceDetailScreen", {
+                  categoryId,
+                  articleId: article.id,
+                })
+              }
+            >
+              <Text style={styles.articleTitle}>{article.title}</Text>
+              <Text style={styles.articleSnippet}>{article.snippet}</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        ))}
+      </View>
+
+      <View style={{ height: spacing.xl * 2 }} />
+    </ScrollView>
   )
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
-  header: { fontFamily: "Poppins_700Bold", fontSize: 22, color: "#267f53", marginBottom: 16 },
-  card: {
-    backgroundColor: "#f6f6f6",
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 12,
-  },
-  title: { fontFamily: "Poppins_500Medium", fontSize: 16 },
-  summary: { fontFamily: "Poppins_400Regular", color: "#555" },
-})
+function createStyles(colors, spacing, radii, typography) {
+  return StyleSheet.create({
+    container: {
+      padding: spacing.lg,
+      paddingTop: 60,
+      backgroundColor: colors.bg,
+    },
+    heading: {
+      fontFamily: typography.heading,
+      fontSize: 26,
+      color: colors.primary,
+    },
+    subheading: {
+      marginTop: 4,
+      fontFamily: typography.body,
+      fontSize: 14,
+      opacity: 0.8,
+    },
+
+    articleCard: {
+      backgroundColor: "#fff",
+      padding: spacing.md,
+      borderRadius: radii.lg,
+      marginBottom: spacing.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    articleTitle: {
+      fontFamily: typography.medium,
+      fontSize: 16,
+      marginBottom: 6,
+      color: colors.text,
+    },
+    articleSnippet: {
+      fontFamily: typography.body,
+      fontSize: 13,
+      opacity: 0.7,
+    },
+  })
+}

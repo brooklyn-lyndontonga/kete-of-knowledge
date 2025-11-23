@@ -1,57 +1,149 @@
 /* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from "react-native"
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from "react-native"
+import Animated, { FadeInUp } from "react-native-reanimated"
+import { useTheme } from "../../../theme"
+
+const categories = [
+  {
+    id: "tinana",
+    name: "Tinana",
+    desc: "Body & physical health",
+    emoji: "🍃",
+    screen: "ResourceCategory",
+  },
+  {
+    id: "hinengaro",
+    name: "Hinengaro",
+    desc: "Mental wellbeing",
+    emoji: "🧠",
+    screen: "ResourceCategory",
+  },
+  {
+    id: "ngakau",
+    name: "Ngākau",
+    desc: "Heart health",
+    emoji: "❤️",
+    screen: "ResourceCategory",
+  },
+  {
+    id: "wairua",
+    name: "Wairua",
+    desc: "Spiritual balance & grounding",
+    emoji: "🌬️",
+    screen: "ResourceCategory",
+  },
+  {
+    id: "rongoa",
+    name: "Rongoā Māori",
+    desc: "Traditional healing & herbs",
+    emoji: "🌿",
+    screen: "RongoaScreen",
+  },
+  {
+    id: "conditions",
+    name: "Conditions",
+    desc: "Guides & medical information",
+    emoji: "📘",
+    screen: "ConditionListScreen",
+  },
+  {
+    id: "resources",
+    name: "Articles",
+    desc: "Tips, guides, facts & learning",
+    emoji: "🗂️",
+    screen: "LibraryGuideScreen",
+  },
+]
 
 export default function LibraryHomeScreen({ navigation }) {
+  const { colors, spacing, radii, typography } = useTheme()
+  const styles = createStyles(colors, spacing, radii, typography)
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Te Whare Rauemi (Library)</Text>
-      <Text style={styles.sub}>Explore health knowledge and whānau stories</Text>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <Text style={styles.heading}>Library</Text>
+      <Text style={styles.subheading}>
+        He taonga te mātauranga — explore trusted health information.
+      </Text>
 
-      {/* Search bar */}
-      <TextInput style={styles.search} placeholder="Search resources..." />
-
-      {/* Categories */}
       <View style={styles.grid}>
-        {[
-          { name: "Articles & Guides", target: "ResourceCategoryScreen" },
-          { name: "Videos & Podcasts", target: "ResourceCategoryScreen" },
-          { name: "Whānau Stories", target: "ResourceCategoryScreen" },
-          { name: "Whakataukī", target: "WhakataukiScreen" },
-          { name: "External Links", target: "ResourceCategoryScreen" },
-        ].map((item, i) => (
-          <TouchableOpacity
-            key={i}
-            style={styles.tile}
-            onPress={() => navigation.navigate(item.target, { category: item.name })}
+        {categories.map((cat, index) => (
+          <Animated.View
+            key={cat.id}
+            entering={FadeInUp.delay(200 + index * 100).duration(500)}
+            style={styles.card}
           >
-            <Text style={styles.tileText}>{item.name}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate(cat.screen, { categoryId: cat.id })
+              }
+            >
+              <Text style={styles.cardEmoji}>{cat.emoji}</Text>
+              <Text style={styles.cardTitle}>{cat.name}</Text>
+              <Text style={styles.cardDesc}>{cat.desc}</Text>
+            </TouchableOpacity>
+          </Animated.View>
         ))}
       </View>
+
+      <View style={{ height: spacing.xl * 2 }} />
     </ScrollView>
   )
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
-  header: { fontFamily: "Poppins_700Bold", fontSize: 24, color: "#267f53" },
-  sub: { fontFamily: "Poppins_400Regular", color: "#666", marginBottom: 20 },
-  search: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 24,
-    fontFamily: "Poppins_400Regular",
-  },
-  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" },
-  tile: {
-    width: "48%",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 14,
-    padding: 18,
-    marginBottom: 14,
-  },
-  tileText: { fontFamily: "Poppins_500Medium", color: "#333", textAlign: "center" },
-})
+function createStyles(colors, spacing, radii, typography) {
+  return StyleSheet.create({
+    container: {
+      padding: spacing.lg,
+      paddingTop: 60,
+      backgroundColor: colors.bg,
+    },
+    heading: {
+      fontFamily: typography.heading,
+      fontSize: 28,
+      color: colors.primary,
+      marginBottom: 4,
+    },
+    subheading: {
+      fontFamily: typography.body,
+      fontSize: 14,
+      opacity: 0.8,
+      marginBottom: spacing.xl,
+    },
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
+    },
+    card: {
+      width: "48%",
+      backgroundColor: "#fff",
+      padding: spacing.md,
+      borderRadius: radii.lg,
+      marginBottom: spacing.lg,
+      borderColor: colors.border,
+      borderWidth: 1,
+    },
+    cardEmoji: {
+      fontSize: 36,
+      marginBottom: 6,
+    },
+    cardTitle: {
+      fontFamily: typography.medium,
+      fontSize: 16,
+      marginBottom: 4,
+    },
+    cardDesc: {
+      fontFamily: typography.body,
+      fontSize: 12,
+      opacity: 0.7,
+    },
+  })
+}
