@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react"
 import {
   View,
@@ -5,100 +6,77 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Linking,
+  TextInput,
+  Modal,
+  Alert,
 } from "react-native"
 import Animated, { FadeInUp } from "react-native-reanimated"
 import { useTheme } from "../../../theme"
-import api from "../../../lib/api"
+import { getContacts, addContact, updateContact, deleteContact } from "../../../lib/api" // <-- CRUD API
 
 export default function ContactsScreen() {
   const { colors, spacing, radii, typography } = useTheme()
+  const styles = createStyles(colors, spacing, radii, typography)
 
-  // -------------------------
-  // STATIC SUPPORT SERVICES
-  // -------------------------
+  // --------------------------------------------------
+  // STATE
+  // --------------------------------------------------
+  const [contacts, setContacts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // Modal state
+  const [modalVisible, setModalVisible] = useState(false)
+  const [editId, setEditId] = useState(null)
+  const [name, setName] = useState("")
+  const [phone, setPhone] = useState("")
+  const [relationship, setRelationship] = useState("")
+
+  // --------------------------------------------------
+  // SUPPORT SERVICES (STATIC)
+  // --------------------------------------------------
   const services = [
     {
-      id: "s1",
+      id: 1,
       name: "Healthline",
       desc: "24/7 free medical advice",
       phone: "0800611116",
       emoji: "🩺",
     },
     {
-      id: "s2",
+      id: 2,
       name: "Emergency Services",
-      desc: "Call in life-threatening situations",
+      desc: "Life-threatening emergencies",
       phone: "111",
       emoji: "🚑",
     },
     {
-      id: "s3",
+      id: 3,
       name: "1737 – Need to Talk?",
       desc: "Free mental health support",
       phone: "1737",
       emoji: "💬",
     },
     {
-      id: "s4",
+      id: 4,
       name: "Quitline",
-      desc: "Support to stop smoking",
+      desc: "Stop smoking assistance",
       phone: "0800778778",
       emoji: "🚭",
     },
   ]
 
-  // -------------------------
-  // USER CONTACTS (CRUD)
-  // -------------------------
-  const [contacts, setContacts] = useState([])
-
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    notes: "",
-  })
-
-  function handleCall(phone) {
-    Linking.openURL(`tel:${phone}`)
-  }
-
+  // --------------------------------------------------
   // LOAD CONTACTS
+  // --------------------------------------------------
   async function loadContacts() {
     try {
-      const data = await api.get("/contacts")
-      if (Array.isArray(data)) {
-        setContacts(data)
-      } else {
-        console.log("⚠️ Backend did not return array:", data)
-        setContacts([])
-      }
-    } catch (error) {
-      console.log("Error loading contacts:", error)
-    }
-  }
-
-  // ADD CONTACT
-  async function addContact() {
-    if (!form.name || !form.phone) return
-
-    try {
-      await api.post("/contacts", form)
-      setForm({ name: "", phone: "", notes: "" })
-      loadContacts()
-    } catch (error) {
-      console.log("Error adding contact:", error)
-    }
-  }
-
-  // DELETE CONTACT  (IMPORTANT: api.del not api.delete)
-  async function deleteContact(id) {
-    try {
-      await api.del(`/contacts/${id}`)
-      loadContacts()
-    } catch (error) {
-      console.log("Error deleting contact:", error)
+      const data = await getContacts()
+      setContacts(data)
+    } catch (err) {
+      console.log("❌ Error loading contacts:", err)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -106,15 +84,99 @@ export default function ContactsScreen() {
     loadContacts()
   }, [])
 
-  const styles = createStyles(colors, spacing, radii, typography)
+  // --------------------------------------------------
+  // CALL HANDLER
+  // --------------------------------------------------
+  const handleCall = (phone) => {
+    Linking.openURL(`tel:${phone}`)
+  }
 
+  // --------------------------------------------------
+  // SAVE CONTACT (ADD OR EDIT)
+  // --------------------------------------------------
+  const handleSave = async () => {
+    if (!name.trim() || !phone.trim()) {
+      Alert.alert("Missing details", "Name and phone are required.")
+      return
+    }
+
+    try {
+      if (editId) {
+        // UPDATE
+        await updateContact(editId, { name, phone, relationship })
+      } else {
+        // CREATE
+        await addContact({ name, phone, relationship })
+      }
+
+      setModalVisible(false)
+      setEditId(null)
+      setName("")
+      setPhone("")
+      setRelationship("")
+      loadContacts()
+    } catch (err) {
+      console.log("❌ Save error:", err)
+    }
+  }
+
+  // --------------------------------------------------
+  // DELETE CONTACT
+  // --------------------------------------------------
+  const handleDelete = async (id) => {
+    Alert.alert(
+      "Delete Contact",
+      "Are you sure you want to remove this contact?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteContact(id)
+              loadContacts()
+            } catch (err) {
+              console.log("❌ Delete error:", err)
+            }
+          },
+        },
+      ]
+    )
+  }
+
+  // --------------------------------------------------
+  // OPEN EDIT MODAL
+  // --------------------------------------------------
+  const openEdit = (contact) => {
+    setEditId(contact.id)
+    setName(contact.name)
+    setPhone(contact.phone)
+    setRelationship(contact.relationship)
+    setModalVisible(true)
+  }
+
+  // --------------------------------------------------
+  // OPEN ADD MODAL
+  // --------------------------------------------------
+  const openAdd = () => {
+    setEditId(null)
+    setName("")
+    setPhone("")
+    setRelationship("")
+    setModalVisible(true)
+  }
+
+  // --------------------------------------------------
+  // RENDER
+  // --------------------------------------------------
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <Animated.View entering={FadeInUp.duration(500).springify()}>
         <Text style={styles.heading}>Contacts & Support</Text>
         <Text style={styles.subheading}>
-          He waka eke noa — you are not alone on this journey.
+          He waka eke noa — you are not alone.
         </Text>
       </Animated.View>
 
@@ -143,19 +205,15 @@ export default function ContactsScreen() {
       {/* Whānau Contacts */}
       <Text style={styles.sectionTitle}>Whānau Support</Text>
 
-      {contacts.length === 0 && (
-        <Text style={{ opacity: 0.6, marginBottom: spacing.md }}>
-          No contacts added yet.
-        </Text>
-      )}
-
       {contacts.map((contact, idx) => (
         <Animated.View
           key={contact.id}
           entering={FadeInUp.delay(200 + idx * 80).duration(500)}
           style={[styles.card, { backgroundColor: colors.accent1 }]}
         >
-          <Text style={styles.cardTitle}>💚 {contact.name}</Text>
+          <Text style={styles.cardTitle}>
+            {contact.emoji || "👤"} {contact.name}
+          </Text>
 
           <TouchableOpacity
             onPress={() => handleCall(contact.phone)}
@@ -164,44 +222,74 @@ export default function ContactsScreen() {
             <Text style={styles.callTextLight}>Call {contact.phone}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => deleteContact(contact.id)}
-            style={styles.deleteButton}
-          >
-            <Text style={styles.deleteText}>Delete</Text>
-          </TouchableOpacity>
+          <View style={styles.row}>
+            <TouchableOpacity onPress={() => openEdit(contact)}>
+              <Text style={styles.editText}>Edit</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => handleDelete(contact.id)}>
+              <Text style={styles.deleteText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       ))}
 
-      {/* Add Contact Form */}
-      <Text style={styles.sectionTitle}>Add New Contact</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Name"
-        value={form.name}
-        onChangeText={(t) => setForm({ ...form, name: t })}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Phone"
-        value={form.phone}
-        onChangeText={(t) => setForm({ ...form, phone: t })}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Notes (optional)"
-        value={form.notes}
-        onChangeText={(t) => setForm({ ...form, notes: t })}
-      />
-
-      <TouchableOpacity onPress={addContact} style={styles.addButton}>
-        <Text style={styles.addButtonText}>Add Contact</Text>
+      {/* Add Contact Button */}
+      <TouchableOpacity style={styles.addButton} onPress={openAdd}>
+        <Text style={styles.addButtonText}>+ Add Contact</Text>
       </TouchableOpacity>
 
       <View style={{ height: spacing.xl * 2 }} />
+
+      {/* ============================================= */}
+      {/* ADD / EDIT MODAL */}
+      {/* ============================================= */}
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>
+              {editId ? "Edit Contact" : "New Contact"}
+            </Text>
+
+            <TextInput
+              placeholder="Name"
+              value={name}
+              onChangeText={setName}
+              style={styles.input}
+            />
+
+            <TextInput
+              placeholder="Phone"
+              value={phone}
+              onChangeText={setPhone}
+              style={styles.input}
+            />
+
+            <TextInput
+              placeholder="Relationship (optional)"
+              value={relationship}
+              onChangeText={setRelationship}
+              style={styles.input}
+            />
+
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+              <Text style={styles.saveText}>Save</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   )
 }
@@ -275,16 +363,18 @@ function createStyles(colors, spacing, radii, typography) {
       color: "#fff",
       fontFamily: typography.medium,
     },
-    deleteButton: {
-      backgroundColor: "#b3261e",
-      padding: 10,
-      borderRadius: radii.md,
-      alignItems: "center",
+    row: {
+      flexDirection: "row",
+      justifyContent: "space-between",
       marginTop: 10,
     },
+    editText: {
+      color: "#0047AB",
+      fontWeight: "600",
+    },
     deleteText: {
-      color: "#fff",
-      fontFamily: typography.medium,
+      color: "#B00020",
+      fontWeight: "600",
     },
     addButton: {
       backgroundColor: colors.accent2,
@@ -298,13 +388,50 @@ function createStyles(colors, spacing, radii, typography) {
       fontFamily: typography.medium,
       fontSize: 16,
     },
-    input: {
+
+    // MODAL
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.4)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    modalCard: {
+      width: "85%",
       backgroundColor: "#fff",
-      padding: spacing.md,
-      borderRadius: radii.md,
+      padding: 20,
+      borderRadius: 16,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      marginBottom: 12,
+    },
+    input: {
       borderWidth: 1,
-      borderColor: colors.border,
-      marginBottom: spacing.md,
+      borderColor: "#ccc",
+      padding: 10,
+      borderRadius: 8,
+      marginBottom: 10,
+    },
+    saveButton: {
+      backgroundColor: colors.primary,
+      padding: 12,
+      borderRadius: 10,
+      alignItems: "center",
+    },
+    saveText: {
+      color: "#fff",
+      fontWeight: "600",
+      fontSize: 16,
+    },
+    cancelButton: {
+      marginTop: 10,
+      alignItems: "center",
+    },
+    cancelText: {
+      color: colors.textLight,
+      fontWeight: "600",
     },
   })
 }

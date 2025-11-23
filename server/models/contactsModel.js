@@ -1,22 +1,28 @@
-// server/models/contactsModel.js
-import { connectDB } from "../db/init.js"
-
-export async function getContacts() {
-  const db = await connectDB()
-  return db.all("SELECT * FROM contacts ORDER BY id DESC")
+export async function getAllContacts(db) {
+  return db.all(`SELECT * FROM contacts ORDER BY id DESC`)
 }
 
-export async function addContact({ name, phone, notes }) {
-  const db = await connectDB()
-  const result = await db.run(
-    "INSERT INTO contacts (name, phone, notes) VALUES (?, ?, ?)",
-    [name, phone, notes]
+export async function createContact(db, contact) {
+  const { name, phone, relationship } = contact
+
+  return db.run(
+    `INSERT INTO contacts (name, phone, relationship)
+     VALUES (?, ?, ?)`,
+    [name, phone, relationship]
   )
-  return { id: result.lastID, name, phone, notes }
 }
 
-export async function deleteContact(id) {
-  const db = await connectDB()
-  await db.run("DELETE FROM contacts WHERE id = ?", id)
-  return true
+export async function deleteContact(db, id) {
+  return db.run(`DELETE FROM contacts WHERE id = ?`, [id])
+}
+
+export async function updateContact(db, id, updates) {
+  const { name, phone, relationship } = updates
+
+  return db.run(
+    `UPDATE contacts
+     SET name = ?, phone = ?, relationship = ?
+     WHERE id = ?`,
+    [name, phone, relationship, id]
+  )
 }

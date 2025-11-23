@@ -1,15 +1,16 @@
-// server/routes/contacts.js
 import express from "express"
 import {
-  listContacts,
-  createContact,
+  getContacts,
+  addContact,
   removeContact,
+  editContact,
 } from "../controllers/contactsController.js"
 
 const router = express.Router()
 
-router.get("/", listContacts)
-router.post("/", createContact)
+router.get("/", getContacts)
+router.post("/", addContact)
 router.delete("/:id", removeContact)
+router.put("/:id", editContact)
 
 export default router
