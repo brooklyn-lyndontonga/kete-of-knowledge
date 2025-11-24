@@ -1,8 +1,8 @@
-export default function whakataukiController(db) {
+export default function reflectionsController(db) {
   return {
     async getAll(req, res) {
       try {
-        const rows = await db.all(`SELECT * FROM whakatauki`)
+        const rows = await db.all(`SELECT * FROM reflections`)
         res.json(rows)
       } catch (err) {
         res.status(500).json({ error: err.message })
@@ -10,13 +10,14 @@ export default function whakataukiController(db) {
     },
 
     async create(req, res) {
-      const { text, translation } = req.body
+      const { title, message } = req.body
       try {
         const result = await db.run(
-          `INSERT INTO whakatauki (text, translation) VALUES (?, ?)`,
-          [text, translation]
+          `INSERT INTO reflections (title, message)
+           VALUES (?, ?)`,
+          [title, message]
         )
-        res.json({ id: result.lastID, text, translation })
+        res.json({ id: result.lastID, title, message })
       } catch (err) {
         res.status(500).json({ error: err.message })
       }
@@ -24,13 +25,13 @@ export default function whakataukiController(db) {
 
     async update(req, res) {
       const { id } = req.params
-      const { text, translation } = req.body
+      const { title, message } = req.body
       try {
         await db.run(
-          `UPDATE whakatauki SET text = ?, translation = ? WHERE id = ?`,
-          [text, translation, id]
+          `UPDATE reflections SET title = ?, message = ? WHERE id = ?`,
+          [title, message, id]
         )
-        res.json({ id, text, translation })
+        res.json({ id, title, message })
       } catch (err) {
         res.status(500).json({ error: err.message })
       }
@@ -39,7 +40,7 @@ export default function whakataukiController(db) {
     async remove(req, res) {
       const { id } = req.params
       try {
-        await db.run(`DELETE FROM whakatauki WHERE id = ?`, [id])
+        await db.run(`DELETE FROM reflections WHERE id = ?`, [id])
         res.json({ success: true })
       } catch (err) {
         res.status(500).json({ error: err.message })

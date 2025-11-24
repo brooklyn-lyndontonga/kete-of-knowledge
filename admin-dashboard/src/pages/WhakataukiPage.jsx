@@ -1,97 +1,146 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable no-unused-vars */
-import { useState, useEffect } from "react"
-import {
-  getWhakatauki,
-  addWhakatauki,
-  updateWhakatauki,
-  deleteWhakatauki,
-} from "../api/whakatauki"
+// admin-dashboard/src/pages/WhakataukiPage.jsx
+import React, { useEffect, useState } from "react"
+import "./AdminTable.css"
+import { whakataukiAPI } from "../api/whakatauki"
 
 export default function WhakataukiPage() {
-  const [rows, setRows] = useState([])
-  const [modal, setModal] = useState(false)
-  const [editing, setEditing] = useState(null)
-  const [expanded, setExpanded] = useState(null)
+  const [list, setList] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const [form, setForm] = useState({
-    text: "",
-    translation: "",
-    theme: "",
-  })
+  // Modal state
+  const [showModal, setShowModal] = useState(false)
+  const [editId, setEditId] = useState(null)
 
-  async function load() {
-    setRows(await getWhakatauki())
+  // Form fields
+  const [maori, setMaori] = useState("")
+  const [english, setEnglish] = useState("")
+  const [context, setContext] = useState("")
+
+  // -------------------
+  // LOAD DATA
+  // -------------------
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      const data = await whakataukiAPI.list()
+      setList(data)
+      setError(null)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
-    load()
+    loadData()
   }, [])
 
+  // -------------------
+  // OPEN ADD
+  // -------------------
   const openAdd = () => {
-    setEditing(null)
-    setForm({ text: "", translation: "", theme: "" })
-    setModal(true)
+    setEditId(null)
+    setMaori("")
+    setEnglish("")
+    setContext("")
+    setShowModal(true)
   }
 
-  const openEdit = (row) => {
-    setEditing(row.id)
-    setForm(row)
-    setModal(true)
+  // -------------------
+  // OPEN EDIT
+  // -------------------
+  const openEdit = (item) => {
+    setEditId(item.id)
+    setMaori(item.maori)
+    setEnglish(item.english)
+    setContext(item.context)
+    setShowModal(true)
   }
 
-  const save = async () => {
-    if (editing) {
-      await updateWhakatauki(editing, form)
-    } else {
-      await addWhakatauki(form)
+  // -------------------
+  // SAVE ITEM
+  // -------------------
+  const saveItem = async () => {
+    const payload = {
+      maori,
+      english,
+      context,
     }
-    setModal(false)
-    load()
+
+    try {
+      if (editId) {
+        await whakataukiAPI.update(editId, payload)
+      } else {
+        await whakataukiAPI.create(payload)
+      }
+
+      setShowModal(false)
+      loadData()
+    } catch (err) {
+      alert("Error saving: " + err.message)
+    }
   }
 
-  return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Whakataukī</h2>
+  // -------------------
+  // DELETE
+  // -------------------
+  const deleteItem = async (id) => {
+    if (!window.confirm("Delete this whakataukī?")) return
+    try {
+      await whakataukiAPI.remove(id)
+      loadData()
+    } catch (err) {
+      alert("Error deleting: " + err.message)
+    }
+  }
 
-      <button
-        onClick={openAdd}
-        className="px-4 py-2 bg-green-600 text-white rounded mb-4"
-      >
+  // -------------------
+  // UI
+  // -------------------
+  return (
+    <div className="admin-page">
+      <h1 className="page-title">Whakataukī</h1>
+      <p className="page-subtitle">
+        Manage all whakataukī displayed in the app.
+      </p>
+
+      <button className="add-btn" onClick={openAdd}>
         + Add Whakataukī
       </button>
 
-      <table className="w-full border bg-white">
-        <thead className="bg-gray-100">
+      {loading && <p>Loading…</p>}
+      {error && <p className="error">{error}</p>}
+
+      {/* TABLE */}
+      <table className="admin-table">
+        <thead>
           <tr>
-            <th className="border p-2">Māori Text</th>
-            <th className="border p-2">English</th>
-            <th className="border p-2">Theme</th>
-            <th className="border p-2">Actions</th>
+            <th>ID</th>
+            <th>Māori</th>
+            <th>English</th>
+            <th>Context</th>
+            <th style={{ width: "150px" }}>Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.id}>
-              <td className="border p-2 font-medium">{row.text}</td>
-              <td className="border p-2">{row.translation}</td>
-              <td className="border p-2">{row.theme}</td>
+          {list.map((item) => (
+            <tr key={item.id}>
+              <td>{item.id}</td>
+              <td className="truncate">{item.maori}</td>
+              <td className="truncate">{item.english}</td>
+              <td className="truncate">{item.context}</td>
 
-              <td className="border p-2 space-x-2">
-                <button
-                  className="px-3 py-1 bg-yellow-500 text-white rounded"
-                  onClick={() => openEdit(row)}
-                >
+              <td className="action-col">
+                <button className="edit-btn" onClick={() => openEdit(item)}>
                   Edit
                 </button>
 
                 <button
-                  className="px-3 py-1 bg-red-600 text-white rounded"
-                  onClick={async () => {
-                    await deleteWhakatauki(row.id)
-                    load()
-                  }}
+                  className="delete-btn"
+                  onClick={() => deleteItem(item.id)}
                 >
                   Delete
                 </button>
@@ -101,60 +150,51 @@ export default function WhakataukiPage() {
         </tbody>
       </table>
 
-      {modal && (
-        <Modal
-          title={editing ? "Edit Whakataukī" : "Add Whakataukī"}
-          form={form}
-          setForm={setForm}
-          onClose={() => setModal(false)}
-          onSave={save}
-        />
-      )}
-    </div>
-  )
-}
+      {/* MODAL */}
+      {showModal && (
+        <div className="modal-backdrop">
+          <div className="modal big-modal">
+            <h2>{editId ? "Edit Whakataukī" : "Add Whakataukī"}</h2>
 
-function Modal({ title, form, setForm, onClose, onSave }) {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-      <div className="bg-white p-6 rounded w-96">
-        <h3 className="text-xl font-bold mb-4">{title}</h3>
+            <label>Māori</label>
+            <textarea
+              rows="2"
+              value={maori}
+              onChange={(e) => setMaori(e.target.value)}
+              placeholder="Enter the whakataukī"
+            />
 
-        <textarea
-          className="border p-2 w-full mb-2 h-20"
-          placeholder="Māori Text"
-          value={form.text}
-          onChange={(e) => setForm({ ...form, text: e.target.value })}
-        />
+            <label>English translation</label>
+            <textarea
+              rows="2"
+              value={english}
+              onChange={(e) => setEnglish(e.target.value)}
+              placeholder="Translate the whakataukī"
+            />
 
-        <textarea
-          className="border p-2 w-full mb-2 h-20"
-          placeholder="English Translation"
-          value={form.translation}
-          onChange={(e) =>
-            setForm({ ...form, translation: e.target.value })
-          }
-        />
+            <label>Context (optional)</label>
+            <textarea
+              rows="3"
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
+              placeholder="When or why this whakataukī is used"
+            />
 
-        <input
-          className="border p-2 w-full mb-2"
-          placeholder="Theme (optional)"
-          value={form.theme}
-          onChange={(e) =>
-            setForm({ ...form, theme: e.target.value })
-          }
-        />
+            <div className="modal-actions">
+              <button className="save-btn" onClick={saveItem}>
+                Save
+              </button>
 
-        <div className="flex justify-end space-x-2 mt-3">
-          <button onClick={onClose}>Cancel</button>
-          <button
-            onClick={onSave}
-            className="px-4 py-2 bg-green-600 text-white rounded"
-          >
-            Save
-          </button>
+              <button
+                className="cancel-btn"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

@@ -2,7 +2,8 @@
 import React, { useEffect } from "react"
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native"
 import { useNavigation } from "@react-navigation/native"
-import { useAuth } from "../../../context/AuthContext" // your hook
+import { useAuth } from "../../../app/providers/AuthProvider"
+
 
 export default function LaunchScreen() {
   const navigation = useNavigation()

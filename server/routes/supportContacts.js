@@ -1,10 +1,10 @@
 import express from "express"
-import conditionsController from "../controllers/conditionsController.js"
+import supportContactsController from "../controllers/supportContactsController.js"
 
 const router = express.Router()
 
 export default (db) => {
-  const controller = conditionsController(db)
+  const controller = supportContactsController(db)
 
   router.get("/", controller.getAll)
   router.post("/", controller.create)
