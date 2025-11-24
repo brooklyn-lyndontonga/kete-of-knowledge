@@ -24,9 +24,9 @@ export async function initTables(db) {
   console.log("📦 Initializing tables...")
 
   try {
-    // ================================
-    // USER-GENERATED CONTENT (Admin CANNOT edit)
-    // ================================
+    // ====================================================
+    // USER-GENERATED CONTENT (admin cannot modify)
+    // ====================================================
     await db.exec(`
       CREATE TABLE IF NOT EXISTS goals (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,9 +57,9 @@ export async function initTables(db) {
       );
     `)
 
-    // ================================
+    // ====================================================
     // ADMIN-EDITABLE STATIC CONTENT
-    // ================================
+    // ====================================================
     await db.exec(`
       CREATE TABLE IF NOT EXISTS resource_categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -117,9 +117,9 @@ export async function initTables(db) {
       );
     `)
 
-    // ================================
+    // ====================================================
     // DEFAULT SEED DATA
-    // ================================
+    // ====================================================
     await seedDefaults(db)
 
     console.log("✅ Tables initialized & defaults seeded")
@@ -131,10 +131,11 @@ export async function initTables(db) {
 async function seedDefaults(db) {
   console.log("🌱 Seeding default admin content...")
 
-  // Insert support contacts only if empty
-  const count = await db.get("SELECT COUNT(*) as total FROM support_contacts")
-
-  if (count.total === 0) {
+  // ---- Support contacts ----
+  const supportCount = await db.get(
+    "SELECT COUNT(*) as total FROM support_contacts"
+  )
+  if (supportCount.total === 0) {
     await db.run(`
       INSERT INTO support_contacts (name, desc, phone, emoji) VALUES
       ("Healthline", "24/7 free medical advice", "0800611116", "🩺"),
@@ -144,8 +145,10 @@ async function seedDefaults(db) {
     `)
   }
 
-  // Insert a default reflection
-  const reflections = await db.get("SELECT COUNT(*) as total FROM reflections")
+  // ---- Reflection ----
+  const reflections = await db.get(
+    "SELECT COUNT(*) as total FROM reflections"
+  )
   if (reflections.total === 0) {
     await db.run(`
       INSERT INTO reflections (title, message)
@@ -153,7 +156,7 @@ async function seedDefaults(db) {
     `)
   }
 
-  // Insert a default snapshot
+  // ---- Snapshot ----
   const snaps = await db.get("SELECT COUNT(*) as total FROM snapshots")
   if (snaps.total === 0) {
     await db.run(`
@@ -162,25 +165,16 @@ async function seedDefaults(db) {
     `)
   }
 
-  // Insert sample whakatauki
+  // ---- Whakataukī ----
   const w = await db.get("SELECT COUNT(*) as total FROM whakatauki")
   if (w.total === 0) {
     await db.run(`
-      INSERT INTO whakatauki (text, translation)
-      VALUES 
+      INSERT INTO whakatauki (text, translation) VALUES
       ("He kakano ahau i ruia mai i Rangiātea", "I am a seed born of greatness"),
       ("Whaia te iti kahurangi", "Pursue excellence"),
       ("Ko te pae tawhiti whaia kia tata", "Seek out the distant horizon")
     `)
   }
-
-  CREATE TABLE IF NOT EXISTS whakatauki (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  maori TEXT,
-  english TEXT,
-  context TEXT
-);
-
 
   console.log("🌿 Default content ready")
 }
