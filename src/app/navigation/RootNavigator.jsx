@@ -1,9 +1,15 @@
+ 
+/* eslint-disable no-unused-vars */
 import React from "react"
 import { NavigationContainer } from "@react-navigation/native"
-import { navigationRef } from "./navigationRef"
 import AppTabs from "./tabs/AppTabs"
 import OnboardingStack from "./stacks/OnboardingStack"
-import { useAuth } from "../../context/AuthContext"
+import { useOnboarding } from "../providers/OnboardingProvider"
+import { useAuth } from "../providers/AuthProvider"
+import { navigationRef } from "./navigationRef"
+
+
+
 
 export default function RootNavigator() {
   const { session } = useAuth()

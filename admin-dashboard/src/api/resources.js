@@ -1,8 +1,10 @@
-import { request } from "./client"
+import { api } from "./client"
 
-export const getResources = () => request("/resources")
-export const addResource = (data) => request("/resources", "POST", data)
-export const updateResource = (id, data) =>
-  request(`/resources/${id}`, "PUT", data)
-export const deleteResource = (id) =>
-  request(`/resources/${id}`, "DELETE")
+export const resourcesAPI = {
+  list: () => api.get("/resources"),
+  listByCategory: (categoryId) =>
+    api.get(`/resources/category/${categoryId}`),
+  create: (data) => api.post("/resources", data),
+  update: (id, data) => api.put(`/resources/${id}`, data),
+  remove: (id) => api.delete(`/resources/${id}`),
+}

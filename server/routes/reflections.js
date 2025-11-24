@@ -1,10 +1,10 @@
 import express from "express"
-import conditionsController from "../controllers/conditionsController.js"
+import reflectionsController from "../controllers/reflectionsController.js"
 
 const router = express.Router()
 
 export default (db) => {
-  const controller = conditionsController(db)
+  const controller = reflectionsController(db)
 
   router.get("/", controller.getAll)
   router.post("/", controller.create)
