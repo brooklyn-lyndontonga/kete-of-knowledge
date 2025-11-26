@@ -80,9 +80,11 @@ export async function initTables(db) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         description TEXT,
-        symptoms TEXT,
-        treatments TEXT
+        triggers TEXT,        -- JSON array
+        treatments TEXT,      -- JSON array
+        images TEXT           -- JSON array of URLs
       );
+
 
       CREATE TABLE IF NOT EXISTS whakatauki (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,15 +94,21 @@ export async function initTables(db) {
 
       CREATE TABLE IF NOT EXISTS reflections (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        message TEXT
+        title TEXT NOT NULL,
+        story TEXT,
+        caption TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
+
 
       CREATE TABLE IF NOT EXISTS snapshots (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        label TEXT,
-        percentage INTEGER
+        label TEXT NOT NULL,
+        percentage INTEGER NOT NULL,
+        color TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
+
 
       CREATE TABLE IF NOT EXISTS support_contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
