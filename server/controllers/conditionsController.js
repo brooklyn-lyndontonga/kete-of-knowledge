@@ -1,59 +1,54 @@
-export default function conditionsController(db) {
-  return {
-    async getAll(req, res) {
-      try {
-        const rows = await db.all(`SELECT * FROM conditions`)
-        res.json(rows)
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+import {
+  getAllConditions,
+  getConditionById,
+  createCondition,
+  updateCondition,
+  deleteCondition
+} from "../models/conditionsModel.js";
 
-    async create(req, res) {
-      const { name, description, symptoms, treatments } = req.body
-      try {
-        const result = await db.run(
-          `INSERT INTO conditions (name, description, symptoms, treatments)
-           VALUES (?, ?, ?, ?)`,
-          [name, description, symptoms, treatments]
-        )
-        res.json({
-          id: result.lastID,
-          name,
-          description,
-          symptoms,
-          treatments,
-        })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function getConditions(req, res) {
+  try {
+    const conditions = await getAllConditions();
+    res.json(conditions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
-    async update(req, res) {
-      const { id } = req.params
-      const { name, description, symptoms, treatments } = req.body
+export async function getCondition(req, res) {
+  try {
+    const condition = await getConditionById(req.params.id);
+    if (!condition) return res.status(404).json({ error: "Condition not found" });
+    res.json(condition);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
-      try {
-        await db.run(
-          `UPDATE conditions SET
-            name = ?, description = ?, symptoms = ?, treatments = ?
-           WHERE id = ?`,
-          [name, description, symptoms, treatments, id]
-        )
-        res.json({ id, name, description, symptoms, treatments })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function postCondition(req, res) {
+  try {
+    const newCondition = await createCondition(req.body);
+    res.status(201).json(newCondition);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
 
-    async remove(req, res) {
-      const { id } = req.params
-      try {
-        await db.run(`DELETE FROM conditions WHERE id = ?`, [id])
-        res.json({ success: true })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function putCondition(req, res) {
+  try {
+    const updated = await updateCondition(req.params.id, req.body);
+    if (!updated) return res.status(404).json({ error: "Condition not found" });
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+export async function removeCondition(req, res) {
+  try {
+    await deleteCondition(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 }

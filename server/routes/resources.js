@@ -1,16 +1,18 @@
-import express from "express"
-import resourcesController from "../controllers/resourcesController.js"
+import express from "express";
+import {
+  getResources,
+  getResource,
+  postResource,
+  putResource,
+  removeResource
+} from "../controllers/resourcesController.js";
 
-const router = express.Router()
+const router = express.Router();
 
-export default (db) => {
-  const controller = resourcesController(db)
+router.get("/", getResources);
+router.get("/:id", getResource);
+router.post("/", postResource);
+router.put("/:id", putResource);
+router.delete("/:id", removeResource);
 
-  router.get("/", controller.getAll)
-  router.get("/category/:categoryId", controller.getByCategory)
-  router.post("/", controller.create)
-  router.put("/:id", controller.update)
-  router.delete("/:id", controller.remove)
-
-  return router
-}
+export default router;

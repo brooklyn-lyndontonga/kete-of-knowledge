@@ -1,36 +1,73 @@
-// server/models/conditionsModel.js
+import db from "../db/database.js";
 
-const demoConditions = [
-  {
-    id: 1,
-    name: "Hypertension (High Blood Pressure)",
-    category: "Cardiovascular",
-    description: "A condition where blood pressure remains consistently high.",
-    symptoms: "Headaches, shortness of breath, dizziness.",
-    management: "Regular exercise, reduced salt intake, medications as prescribed.",
-  },
-  {
-    id: 2,
-    name: "Type 2 Diabetes",
-    category: "Metabolic",
-    description: "A chronic condition affecting the body's ability to process sugar.",
-    symptoms: "Fatigue, thirst, frequent urination, blurred vision.",
-    management: "Diet, exercise, blood sugar monitoring, medications.",
-  },
-  {
-    id: 3,
-    name: "Asthma",
-    category: "Respiratory",
-    description: "A respiratory condition causing difficulty breathing.",
-    symptoms: "Wheezing, chest tightness, coughing.",
-    management: "Avoid triggers, inhalers, regular check-ups.",
-  }
-]
+export async function getAllConditions() {
+  const rows = await db.all("SELECT * FROM conditions ORDER BY name ASC");
 
-export function getAllConditions() {
-  return demoConditions
+  return rows.map((row) => ({
+    ...row,
+    triggers: row.triggers ? JSON.parse(row.triggers) : [],
+    treatments: row.treatments ? JSON.parse(row.treatments) : [],
+    images: row.images ? JSON.parse(row.images) : [],
+  }));
 }
 
-export function getConditionById(id) {
-  return demoConditions.find(c => c.id === Number(id)) || null
+export async function getConditionById(id) {
+  const row = await db.get("SELECT * FROM conditions WHERE id = ?", [id]);
+  if (!row) return null;
+
+  return {
+    ...row,
+    triggers: row.triggers ? JSON.parse(row.triggers) : [],
+    treatments: row.treatments ? JSON.parse(row.treatments) : [],
+    images: row.images ? JSON.parse(row.images) : [],
+  };
+}
+
+export async function createCondition(data) {
+  const { name, description, triggers = [], treatments = [], images = [] } = data;
+
+  const result = await db.run(
+    `INSERT INTO conditions (name, description, triggers, treatments, images)
+     VALUES (?, ?, ?, ?, ?)`,
+    [
+      name,
+      description,
+      JSON.stringify(triggers),
+      JSON.stringify(treatments),
+      JSON.stringify(images)
+    ]
+  );
+
+  return getConditionById(result.lastID);
+}
+
+export async function updateCondition(id, data) {
+  const existing = await getConditionById(id);
+  if (!existing) return null;
+
+  const updated = {
+    ...existing,
+    ...data,
+  };
+
+  await db.run(
+    `UPDATE conditions
+     SET name = ?, description = ?, triggers = ?, treatments = ?, images = ?
+     WHERE id = ?`,
+    [
+      updated.name,
+      updated.description,
+      JSON.stringify(updated.triggers),
+      JSON.stringify(updated.treatments),
+      JSON.stringify(updated.images),
+      id
+    ]
+  );
+
+  return getConditionById(id);
+}
+
+export async function deleteCondition(id) {
+  await db.run("DELETE FROM conditions WHERE id = ?", [id]);
+  return true;
 }

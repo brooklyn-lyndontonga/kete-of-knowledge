@@ -1,49 +1,64 @@
-export default function whakataukiController(db) {
-  return {
-    async getAll(req, res) {
-      try {
-        const rows = await db.all(`SELECT * FROM whakatauki`)
-        res.json(rows)
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+import {
+  getAllWhakatauki,
+  getWhakataukiById,
+  getRandomWhakatauki,
+  createWhakatauki,
+  updateWhakatauki,
+  deleteWhakatauki
+} from "../models/whakataukiModel.js";
 
-    async create(req, res) {
-      const { text, translation } = req.body
-      try {
-        const result = await db.run(
-          `INSERT INTO whakatauki (text, translation) VALUES (?, ?)`,
-          [text, translation]
-        )
-        res.json({ id: result.lastID, text, translation })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function getWhakataukiList(req, res) {
+  try {
+    const items = await getAllWhakatauki();
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
-    async update(req, res) {
-      const { id } = req.params
-      const { text, translation } = req.body
-      try {
-        await db.run(
-          `UPDATE whakatauki SET text = ?, translation = ? WHERE id = ?`,
-          [text, translation, id]
-        )
-        res.json({ id, text, translation })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function getWhakataukiItem(req, res) {
+  try {
+    const item = await getWhakataukiById(req.params.id);
+    if (!item) return res.status(404).json({ error: "Not found" });
+    res.json(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
-    async remove(req, res) {
-      const { id } = req.params
-      try {
-        await db.run(`DELETE FROM whakatauki WHERE id = ?`, [id])
-        res.json({ success: true })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function getWhakataukiRandom(req, res) {
+  try {
+    const item = await getRandomWhakatauki();
+    res.json(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function postWhakatauki(req, res) {
+  try {
+    const newItem = await createWhakatauki(req.body);
+    res.status(201).json(newItem);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+export async function putWhakatauki(req, res) {
+  try {
+    const updated = await updateWhakatauki(req.params.id, req.body);
+    if (!updated) return res.status(404).json({ error: "Not found" });
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+export async function removeWhakatauki(req, res) {
+  try {
+    await deleteWhakatauki(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 }

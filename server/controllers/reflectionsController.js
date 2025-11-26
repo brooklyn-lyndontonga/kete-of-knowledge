@@ -1,50 +1,54 @@
-export default function reflectionsController(db) {
-  return {
-    async getAll(req, res) {
-      try {
-        const rows = await db.all(`SELECT * FROM reflections`)
-        res.json(rows)
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+import {
+  getAllResources,
+  getResourceById,
+  createResource,
+  updateResource,
+  deleteResource
+} from "../models/resourcesModel.js";
 
-    async create(req, res) {
-      const { title, message } = req.body
-      try {
-        const result = await db.run(
-          `INSERT INTO reflections (title, message)
-           VALUES (?, ?)`,
-          [title, message]
-        )
-        res.json({ id: result.lastID, title, message })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function getResources(req, res) {
+  try {
+    const resources = await getAllResources();
+    res.json(resources);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
-    async update(req, res) {
-      const { id } = req.params
-      const { title, message } = req.body
-      try {
-        await db.run(
-          `UPDATE reflections SET title = ?, message = ? WHERE id = ?`,
-          [title, message, id]
-        )
-        res.json({ id, title, message })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function getResource(req, res) {
+  try {
+    const resource = await getResourceById(req.params.id);
+    if (!resource) return res.status(404).json({ error: "Resource not found" });
+    res.json(resource);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
-    async remove(req, res) {
-      const { id } = req.params
-      try {
-        await db.run(`DELETE FROM reflections WHERE id = ?`, [id])
-        res.json({ success: true })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function postResource(req, res) {
+  try {
+    const newResource = await createResource(req.body);
+    res.status(201).json(newResource);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+export async function putResource(req, res) {
+  try {
+    const updated = await updateResource(req.params.id, req.body);
+    if (!updated) return res.status(404).json({ error: "Resource not found" });
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+export async function removeResource(req, res) {
+  try {
+    await deleteResource(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 }

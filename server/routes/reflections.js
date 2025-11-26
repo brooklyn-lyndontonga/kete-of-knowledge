@@ -1,15 +1,23 @@
-import express from "express"
-import reflectionsController from "../controllers/reflectionsController.js"
+import express from "express";
+import {
+  getReflections,
+  getReflection,
+  getLatest,
+  postReflection,
+  putReflection,
+  removeReflection
+} from "../controllers/reflectionsController.js";
 
-const router = express.Router()
+const router = express.Router();
 
-export default (db) => {
-  const controller = reflectionsController(db)
+// public for app
+router.get("/", getReflections);
+router.get("/latest", getLatest);
+router.get("/:id", getReflection);
 
-  router.get("/", controller.getAll)
-  router.post("/", controller.create)
-  router.put("/:id", controller.update)
-  router.delete("/:id", controller.remove)
+// admin CRUD
+router.post("/", postReflection);
+router.put("/:id", putReflection);
+router.delete("/:id", removeReflection);
 
-  return router
-}
+export default router;
