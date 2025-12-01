@@ -1,15 +1,42 @@
-import React from "react"
-import { View, Text, StyleSheet } from "react-native"
-
+/* eslint-disable react/jsx-no-undef */
+/* eslint-disable react/react-in-jsx-scope */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 export default function LibraryScreen() {
+  const [resources, setResources] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  async function load() {
+    try {
+      setLoading(true)
+      const data = await apiGet("/library")
+      setResources(data)
+    } catch (err) {
+      setError("Failed to load resources")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  if (loading) return <Text>Loading…</Text>
+  if (error) return <Text>{error}</Text>
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>LibraryScreen Placeholder</Text>
-    </View>
+    <FlatList
+      data={resources}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={({ item }) => (
+        <TouchableOpacity
+          onPress={() => navigation.navigate("ResourceScreen", { resource: item })}
+        >
+          <Text>{item.title}</Text>
+        </TouchableOpacity>
+      )}
+    />
   )
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" },
-  text: { fontSize: 20, fontWeight: "600", color: "#333" }
-})
