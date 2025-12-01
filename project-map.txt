@@ -1,5 +1,4 @@
 .
-├── ├──
 ├── admin-dashboard
 │   ├── eslint.config.js
 │   ├── index.html
@@ -1597,7 +1596,6 @@
 ├── eas.json
 ├── eslint.config.cjs
 ├── eslint.config.mjs
-├── file-map.txt
 ├── index.expo.js
 ├── index.js
 ├── jsconfig.json
@@ -24598,6 +24596,9 @@
 │   │   ├── medicinesModel.js
 │   │   ├── myMedicinesModel.js
 │   │   ├── profilesModel.js
+│   │   ├── reflectionsModel.js
+│   │   ├── resourcesModel.js
+│   │   ├── snapshotsModel.js
 │   │   ├── symptomsModel.js
 │   │   └── whakataukiModel.js
 │   ├── node_modules
@@ -26388,7 +26389,12 @@
 │   │   ├── lib
 │   │   └── supabaseClient.js
 │   ├── components
+│   │   ├── Sidebar.jsx
 │   │   └── ui
+│   │       ├── CrudModal.jsx
+│   │       ├── CrudTable.jsx
+│   │       ├── ErrorBoundary.jsx
+│   │       └── ToastProvider.jsx
 │   ├── context
 │   ├── data
 │   │   ├── conditions.json
@@ -26557,4 +26563,4 @@
 ├── theme.js
 └── WhakataukiAdmin.jsx
 
-4554 directories, 22004 files
+4554 directories, 22010 files
