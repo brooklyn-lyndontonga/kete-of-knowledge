@@ -1,26 +1,44 @@
-import React from "react"
+/* eslint-disable react/react-in-jsx-scope */
+import { useEffect, useState } from "react"
 import { View, Text, StyleSheet } from "react-native"
+import { apiGet } from "../utils/api"
 
 export default function ReflectionTile() {
+  const [reflection, setReflection] = useState(null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    apiGet("/reflections/latest")
+      .then((data) => setReflection(data))
+      .catch(() => setError("Unable to load reflection"))
+  }, [])
+
+  if (error) return <Text>{error}</Text>
+  if (!reflection) return <Text>Loading reflection…</Text>
+
   return (
-    <View style={styles.tile}>
-      <Text style={styles.title}>Reflection</Text>
-      <Text style={styles.story}>
-        “Last week our whānau walked each morning — even Nan joined in!”
-      </Text>
-      <Text style={styles.caption}>Keep going — your māia inspires others 💚</Text>
+    <View style={styles.card}>
+      <Text style={styles.title}>{reflection.title}</Text>
+      <Text style={styles.message}>{reflection.message}</Text>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  tile: {
-    backgroundColor: "#f5793b",
+  card: {
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 20,
   },
-  title: { color: "white", fontWeight: "700", fontSize: 16 },
-  story: { color: "white", marginTop: 8 },
-  caption: { marginTop: 6, color: "white", opacity: 0.9, fontStyle: "italic" },
+  title: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  message: {
+    fontSize: 15,
+    marginTop: 8,
+    color: "#444",
+    lineHeight: 22,
+  },
 })
