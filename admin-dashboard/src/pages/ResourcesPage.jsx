@@ -1,246 +1,181 @@
-// admin-dashboard/src/pages/ResourcesPage.jsx
-import React, { useEffect, useState } from "react"
-import "./AdminTable.css"
-import { resourcesAPI } from "../api/resources"
-import { resourceCategoriesAPI } from "../api/resourceCategories"
+/* eslint-disable no-unused-vars */
+import { useEffect, useState } from "react"
+import CrudTable from "../components/ui/CrudTable"
+import CrudModal from "../components/ui/CrudModal"
+import DeleteConfirmModal from "../components/ui/DeleteConfirmModal"
+import LoadingSpinner from "../components/ui/LoadingSpinner"
+import ErrorState from "../components/ui/ErrorState"
+import { useToast } from "../components/ui/ToastProvider"
 
-export default function ResourcesPage() {
-  const [resources, setResources] = useState([])
-  const [categories, setCategories] = useState([])
+export default function LibraryPage() {
+  const toast = useToast()
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [data, setData] = useState([])
 
-  // Modal state
-  const [showModal, setShowModal] = useState(false)
-  const [editId, setEditId] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
-  // Form fields
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState("")
-  const [imageUrl, setImageUrl] = useState("")
-  const [categoryId, setCategoryId] = useState("")
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState({
+    title: "",
+    category_id: "",
+    content: "",
+    image_url: "",
+  })
 
-  // -------------------------
-  // FETCH DATA
-  // -------------------------
-  const loadData = async () => {
+  // -----------------------------------------
+  // FETCH RESOURCES
+  // -----------------------------------------
+  async function load() {
     try {
       setLoading(true)
-      const [resList, catList] = await Promise.all([
-        resourcesAPI.list(),
-        resourceCategoriesAPI.list(),
-      ])
-
-      setResources(resList)
-      setCategories(catList)
-      setError(null)
+      const res = await fetch("/api/library")
+      const json = await res.json()
+      setData(json)
     } catch (err) {
-      console.error(err)
-      setError(err.message)
+      setError("Failed to load resources.")
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadData()
+    load()
   }, [])
 
-  // -------------------------
-  // OPEN ADD / EDIT MODAL
-  // -------------------------
-  const openAddModal = () => {
-    setEditId(null)
-    setTitle("")
-    setContent("")
-    setImageUrl("")
-    setCategoryId("")
-    setShowModal(true)
-  }
-
-  const openEditModal = (item) => {
-    setEditId(item.id)
-    setTitle(item.title)
-    setContent(item.content)
-    setImageUrl(item.image_url || "")
-    setCategoryId(item.category_id)
-    setShowModal(true)
-  }
-
-  // -------------------------
-  // SUBMIT FORM
-  // -------------------------
-  const saveResource = async () => {
+  // -----------------------------------------
+  // HANDLE SAVE (Create + Update)
+  // -----------------------------------------
+  async function save() {
     try {
-      const data = {
-        title,
-        content,
-        image_url: imageUrl,
-        category_id: Number(categoryId),
-      }
+      const method = editing ? "PUT" : "POST"
+      const url = editing
+        ? `/api/library/${editing.id}`
+        : "/api/library"
 
-      if (editId) {
-        await resourcesAPI.update(editId, data)
-      } else {
-        await resourcesAPI.create(data)
-      }
+      await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      })
 
-      setShowModal(false)
-      await loadData()
+      toast.showToast("Saved successfully")
+      setModalOpen(false)
+      load()
     } catch (err) {
-      alert("Error saving resource: " + err.message)
+      toast.showToast("Error saving resource", "error")
     }
   }
 
-  // -------------------------
+  // -----------------------------------------
   // DELETE
-  // -------------------------
-  const deleteResource = async (id) => {
-    if (!window.confirm("Delete this resource?")) return
-
+  // -----------------------------------------
+  async function deleteItem() {
     try {
-      await resourcesAPI.remove(id)
-      await loadData()
+      await fetch(`/api/library/${editing.id}`, { method: "DELETE" })
+
+      toast.showToast("Deleted")
+      setDeleteOpen(false)
+      load()
     } catch (err) {
-      alert("Error deleting resource: " + err.message)
+      toast.showToast("Error deleting", "error")
     }
   }
 
-  // -------------------------
-  // UI
-  // -------------------------
+  // -----------------------------------------
+  // TABLE COLUMNS
+  // -----------------------------------------
+  const columns = [
+    { key: "title", label: "Title" },
+    { key: "category_id", label: "Category" },
+    {
+      key: "content",
+      label: "Content",
+      render: (val) => val?.slice(0, 50) + "…",
+    },
+  ]
+
+  if (loading) return <LoadingSpinner />
+  if (error) return <ErrorState message={error} />
+
   return (
-    <div className="admin-page">
-      <h1 className="page-title">Library Resources</h1>
-      <p className="page-subtitle">
-        Manage the educational content that appears inside the app.
-      </p>
+    <div>
+      <div className="flex justify-between mb-6">
+        <h1 className="text-2xl font-semibold">Library Resources</h1>
 
-      <button className="add-btn" onClick={openAddModal}>
-        + Add Resource
-      </button>
+        <button
+          onClick={() => {
+            setEditing(null)
+            setForm({
+              title: "",
+              category_id: "",
+              content: "",
+              image_url: "",
+            })
+            setModalOpen(true)
+          }}
+          className="bg-indigo-600 text-white px-4 py-2 rounded"
+        >
+          + Add Resource
+        </button>
+      </div>
 
-      {loading && <p>Loading…</p>}
-      {error && <p className="error">{error}</p>}
+      <CrudTable
+        columns={columns}
+        data={data}
+        onEdit={(item) => {
+          setEditing(item)
+          setForm(item)
+          setModalOpen(true)
+        }}
+        onDelete={(item) => {
+          setEditing(item)
+          setDeleteOpen(true)
+        }}
+      />
 
-      {/* TABLE */}
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Category</th>
-            <th>Title</th>
-            <th>Preview</th>
-            <th style={{ width: "160px" }}>Actions</th>
-          </tr>
-        </thead>
+      {/* Create/Edit Modal */}
+      <CrudModal
+        open={modalOpen}
+        title={editing ? "Edit Resource" : "Add Resource"}
+        onClose={() => setModalOpen(false)}
+        onSubmit={save}
+      >
+        <div className="grid gap-3">
+          <input
+            className="input"
+            placeholder="Title"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+          />
 
-        <tbody>
-          {resources.map((item) => (
-            <tr key={item.id}>
-              <td>{item.id}</td>
-              <td>
-                {
-                  categories.find((cat) => cat.id === item.category_id)
-                    ?.name
-                }
-              </td>
-              <td>{item.title}</td>
+          <input
+            className="input"
+            placeholder="Category ID"
+            value={form.category_id}
+            onChange={(e) =>
+              setForm({ ...form, category_id: e.target.value })
+            }
+          />
 
-              <td>
-                <div
-                  style={{
-                    maxWidth: "240px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {item.content}
-                </div>
-              </td>
-
-              <td className="action-col">
-                <button
-                  className="edit-btn"
-                  onClick={() => openEditModal(item)}
-                >
-                  Edit
-                </button>
-
-                <button
-                  className="delete-btn"
-                  onClick={() => deleteResource(item.id)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* MODAL */}
-      {showModal && (
-        <div className="modal-backdrop">
-          <div className="modal big-modal">
-            <h2>{editId ? "Edit Resource" : "Add Resource"}</h2>
-
-            {/* Category */}
-            <label>Category</label>
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-            >
-              <option value="">Select category</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.icon} {cat.name}
-                </option>
-              ))}
-            </select>
-
-            {/* Title */}
-            <label>Title</label>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Resource title"
-            />
-
-            {/* Content */}
-            <label>Content</label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Resource body text"
-              rows="6"
-            />
-
-            {/* Image */}
-            <label>Image URL (optional)</label>
-            <input
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-            />
-
-            {/* Actions */}
-            <div className="modal-actions">
-              <button className="save-btn" onClick={saveResource}>
-                Save
-              </button>
-
-              <button
-                className="cancel-btn"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+          <textarea
+            className="input h-32"
+            placeholder="Content"
+            value={form.content}
+            onChange={(e) => setForm({ ...form, content: e.target.value })}
+          />
         </div>
-      )}
+      </CrudModal>
+
+      {/* Delete modal */}
+      <DeleteConfirmModal
+        open={deleteOpen}
+        title={`Delete "${editing?.title}"?`}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={deleteItem}
+      />
     </div>
   )
 }
