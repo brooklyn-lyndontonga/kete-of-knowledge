@@ -1,23 +1,13 @@
-import express from "express";
-import {
-  getWhakataukiList,
-  getWhakataukiItem,
-  getWhakataukiRandom,
-  postWhakatauki,
-  putWhakatauki,
-  removeWhakatauki
-} from "../controllers/whakataukiController.js";
+import { Router } from "express"
+import * as C from "../controllers/whakataukiController.js"
 
-const router = express.Router();
+const router = Router()
 
-// Public
-router.get("/", getWhakataukiList);
-router.get("/random", getWhakataukiRandom);
-router.get("/:id", getWhakataukiItem);
+router.get("/", C.index)
+router.get("/random", C.random)
+router.get("/:id", C.show)
+router.post("/", C.create)
+router.put("/:id", C.update)
+router.delete("/:id", C.remove)
 
-// Admin
-router.post("/", postWhakatauki);
-router.put("/:id", putWhakatauki);
-router.delete("/:id", removeWhakatauki);
-
-export default router;
+export default router

@@ -1,54 +1,11 @@
-import {
-  getAllResources,
-  getResourceById,
-  createResource,
-  updateResource,
-  deleteResource
-} from "../models/resourcesModel.js";
+import * as R from "../models/reflectionsModel.js"
 
-export async function getResources(req, res) {
-  try {
-    const resources = await getAllResources();
-    res.json(resources);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-export async function getResource(req, res) {
-  try {
-    const resource = await getResourceById(req.params.id);
-    if (!resource) return res.status(404).json({ error: "Resource not found" });
-    res.json(resource);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-export async function postResource(req, res) {
-  try {
-    const newResource = await createResource(req.body);
-    res.status(201).json(newResource);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-}
-
-export async function putResource(req, res) {
-  try {
-    const updated = await updateResource(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ error: "Resource not found" });
-    res.json(updated);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-}
-
-export async function removeResource(req, res) {
-  try {
-    await deleteResource(req.params.id);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
+export const latest = async (req, res) => res.json(await R.getLatest())
+export const index = async (req, res) => res.json(await R.getAll())
+export const show = async (req, res) => res.json(await R.get(req.params.id))
+export const create = async (req, res) =>
+  res.status(201).json(await R.create(req.body))
+export const update = async (req, res) =>
+  res.json(await R.update(req.params.id, req.body))
+export const remove = async (req, res) =>
+  res.json(await R.remove(req.params.id))
