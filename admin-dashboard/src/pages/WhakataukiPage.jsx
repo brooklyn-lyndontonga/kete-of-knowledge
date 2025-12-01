@@ -1,200 +1,167 @@
-// admin-dashboard/src/pages/WhakataukiPage.jsx
-import React, { useEffect, useState } from "react"
-import "./AdminTable.css"
-import { whakataukiAPI } from "../api/whakatauki"
+/* eslint-disable no-unused-vars */
+import { useEffect, useState } from "react"
+import CrudTable from "../components/ui/CrudTable"
+import CrudModal from "../components/ui/CrudModal"
+import DeleteConfirmModal from "../components/ui/DeleteConfirmModal"
+import LoadingSpinner from "../components/ui/LoadingSpinner"
+import ErrorState from "../components/ui/ErrorState"
+import { useToast } from "../components/ui/ToastProvider"
 
 export default function WhakataukiPage() {
-  const [list, setList] = useState([])
+  const toast = useToast()
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [data, setData] = useState([])
 
-  // Modal state
-  const [showModal, setShowModal] = useState(false)
-  const [editId, setEditId] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
-  // Form fields
-  const [maori, setMaori] = useState("")
-  const [english, setEnglish] = useState("")
-  const [context, setContext] = useState("")
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState({
+    text: "",
+    translation: "",
+  })
 
-  // -------------------
-  // LOAD DATA
-  // -------------------
-  const loadData = async () => {
+  // ------------------------------------------------
+  // FETCH DATA
+  // ------------------------------------------------
+  async function load() {
     try {
       setLoading(true)
-      const data = await whakataukiAPI.list()
-      setList(data)
-      setError(null)
+      const res = await fetch("/api/whakatauki")
+      const json = await res.json()
+      setData(json)
     } catch (err) {
-      setError(err.message)
+      setError("Failed to load whakataukī.")
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadData()
+    load()
   }, [])
 
-  // -------------------
-  // OPEN ADD
-  // -------------------
-  const openAdd = () => {
-    setEditId(null)
-    setMaori("")
-    setEnglish("")
-    setContext("")
-    setShowModal(true)
-  }
-
-  // -------------------
-  // OPEN EDIT
-  // -------------------
-  const openEdit = (item) => {
-    setEditId(item.id)
-    setMaori(item.maori)
-    setEnglish(item.english)
-    setContext(item.context)
-    setShowModal(true)
-  }
-
-  // -------------------
-  // SAVE ITEM
-  // -------------------
-  const saveItem = async () => {
-    const payload = {
-      maori,
-      english,
-      context,
-    }
-
+  // ------------------------------------------------
+  // SAVE (CREATE/UPDATE)
+  // ------------------------------------------------
+  async function save() {
     try {
-      if (editId) {
-        await whakataukiAPI.update(editId, payload)
-      } else {
-        await whakataukiAPI.create(payload)
-      }
+      const method = editing ? "PUT" : "POST"
+      const url = editing
+        ? `/api/whakatauki/${editing.id}`
+        : "/api/whakatauki"
 
-      setShowModal(false)
-      loadData()
+      await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      })
+
+      toast.showToast("Saved successfully")
+      setModalOpen(false)
+      load()
     } catch (err) {
-      alert("Error saving: " + err.message)
+      toast.showToast("Error saving", "error")
     }
   }
 
-  // -------------------
+  // ------------------------------------------------
   // DELETE
-  // -------------------
-  const deleteItem = async (id) => {
-    if (!window.confirm("Delete this whakataukī?")) return
+  // ------------------------------------------------
+  async function deleteItem() {
     try {
-      await whakataukiAPI.remove(id)
-      loadData()
+      await fetch(`/api/whakatauki/${editing.id}`, { method: "DELETE" })
+      toast.showToast("Deleted")
+      setDeleteOpen(false)
+      load()
     } catch (err) {
-      alert("Error deleting: " + err.message)
+      toast.showToast("Error deleting", "error")
     }
   }
 
-  // -------------------
-  // UI
-  // -------------------
+  // ------------------------------------------------
+  // TABLE COLUMNS
+  // ------------------------------------------------
+  const columns = [
+    { key: "text", label: "Whakataukī" },
+    {
+      key: "translation",
+      label: "Translation",
+      render: (val) => (val ? val.slice(0, 50) + "…" : ""),
+    },
+  ]
+
+  if (loading) return <LoadingSpinner />
+  if (error) return <ErrorState message={error} />
+
   return (
-    <div className="admin-page">
-      <h1 className="page-title">Whakataukī</h1>
-      <p className="page-subtitle">
-        Manage all whakataukī displayed in the app.
-      </p>
+    <div>
+      <div className="flex justify-between mb-6">
+        <h1 className="text-2xl font-semibold">Whakataukī</h1>
 
-      <button className="add-btn" onClick={openAdd}>
-        + Add Whakataukī
-      </button>
+        <button
+          onClick={() => {
+            setEditing(null)
+            setForm({ text: "", translation: "" })
+            setModalOpen(true)
+          }}
+          className="bg-indigo-600 text-white px-4 py-2 rounded"
+        >
+          + Add Whakataukī
+        </button>
+      </div>
 
-      {loading && <p>Loading…</p>}
-      {error && <p className="error">{error}</p>}
+      <CrudTable
+        columns={columns}
+        data={data}
+        onEdit={(item) => {
+          setEditing(item)
+          setForm(item)
+          setModalOpen(true)
+        }}
+        onDelete={(item) => {
+          setEditing(item)
+          setDeleteOpen(true)
+        }}
+      />
 
-      {/* TABLE */}
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Māori</th>
-            <th>English</th>
-            <th>Context</th>
-            <th style={{ width: "150px" }}>Actions</th>
-          </tr>
-        </thead>
+      {/* Modal: Create/Edit */}
+      <CrudModal
+        open={modalOpen}
+        title={editing ? "Edit Whakataukī" : "Add Whakataukī"}
+        onClose={() => setModalOpen(false)}
+        onSubmit={save}
+      >
+        <div className="grid gap-3">
+          <textarea
+            className="input h-24"
+            placeholder="Whakataukī text"
+            value={form.text}
+            onChange={(e) =>
+              setForm({ ...form, text: e.target.value })
+            }
+          />
 
-        <tbody>
-          {list.map((item) => (
-            <tr key={item.id}>
-              <td>{item.id}</td>
-              <td className="truncate">{item.maori}</td>
-              <td className="truncate">{item.english}</td>
-              <td className="truncate">{item.context}</td>
-
-              <td className="action-col">
-                <button className="edit-btn" onClick={() => openEdit(item)}>
-                  Edit
-                </button>
-
-                <button
-                  className="delete-btn"
-                  onClick={() => deleteItem(item.id)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* MODAL */}
-      {showModal && (
-        <div className="modal-backdrop">
-          <div className="modal big-modal">
-            <h2>{editId ? "Edit Whakataukī" : "Add Whakataukī"}</h2>
-
-            <label>Māori</label>
-            <textarea
-              rows="2"
-              value={maori}
-              onChange={(e) => setMaori(e.target.value)}
-              placeholder="Enter the whakataukī"
-            />
-
-            <label>English translation</label>
-            <textarea
-              rows="2"
-              value={english}
-              onChange={(e) => setEnglish(e.target.value)}
-              placeholder="Translate the whakataukī"
-            />
-
-            <label>Context (optional)</label>
-            <textarea
-              rows="3"
-              value={context}
-              onChange={(e) => setContext(e.target.value)}
-              placeholder="When or why this whakataukī is used"
-            />
-
-            <div className="modal-actions">
-              <button className="save-btn" onClick={saveItem}>
-                Save
-              </button>
-
-              <button
-                className="cancel-btn"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+          <textarea
+            className="input h-24"
+            placeholder="Translation (optional)"
+            value={form.translation}
+            onChange={(e) =>
+              setForm({ ...form, translation: e.target.value })
+            }
+          />
         </div>
-      )}
+      </CrudModal>
+
+      {/* Delete Confirmation */}
+      <DeleteConfirmModal
+        open={deleteOpen}
+        title={`Delete this whakataukī?`}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={deleteItem}
+      />
     </div>
   )
 }
