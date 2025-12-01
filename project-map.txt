@@ -24572,6 +24572,7 @@
 │   │   ├── contactsController.js
 │   │   ├── goalsController.js
 │   │   ├── libraryCategoriesControllers.js
+│   │   ├── libraryController.js
 │   │   ├── libraryResourcesController.js
 │   │   ├── medicinesController.js
 │   │   ├── myMedicinesController.js
@@ -24585,13 +24586,15 @@
 │   │   ├── symptomsController.js
 │   │   └── whakataukiControllers.js
 │   ├── db
-│   │   ├── database.db
-│   │   └── init.js
+│   │   ├── connection.js
+│   │   ├── init.js
+│   │   └── seeds
 │   ├── models
 │   │   ├── conditionsModel.js
 │   │   ├── contactsModel.js
 │   │   ├── goalsModel.js
 │   │   ├── libraryCategoriesModel.js
+│   │   ├── libraryModel.js
 │   │   ├── libraryResources.Model.js
 │   │   ├── medicinesModel.js
 │   │   ├── myMedicinesModel.js
@@ -26393,7 +26396,10 @@
 │   │   └── ui
 │   │       ├── CrudModal.jsx
 │   │       ├── CrudTable.jsx
+│   │       ├── DeleteConfirmModal.jsx
 │   │       ├── ErrorBoundary.jsx
+│   │       ├── ErrorState.jsx
+│   │       ├── LoadingSpinner.jsx
 │   │       └── ToastProvider.jsx
 │   ├── context
 │   ├── data
@@ -26537,30 +26543,32 @@
 │   │   ├── createStyle.js
 │   │   ├── homeScreenStyles.js
 │   │   └── index.js
-│   └── ui
-│       ├── components
-│       │   ├── BackButton.jsx
-│       │   ├── BottomNav.jsx
-│       │   ├── Button.jsx
-│       │   ├── ButtonPrimary.jsx
-│       │   ├── Buttons.jsx
-│       │   ├── Card.jsx
-│       │   ├── Cards.jsx
-│       │   ├── GoalInput.jsx
-│       │   ├── Header.jsx
-│       │   ├── InputModal.jsx
-│       │   ├── ModePill.jsx
-│       │   ├── Placeholder.jsx
-│       │   ├── ProfileCard.jsx
-│       │   ├── ProgressCard.jsx
-│       │   ├── ReminderToggle.jsx
-│       │   ├── SearchBar.jsx
-│       │   ├── Spacer.jsx
-│       │   ├── Text.jsx
-│       │   ├── TileGrid.jsx
-│       │   └── WhakataukiCard.jsx
-│       └── index.js
+│   ├── ui
+│   │   ├── components
+│   │   │   ├── BackButton.jsx
+│   │   │   ├── BottomNav.jsx
+│   │   │   ├── Button.jsx
+│   │   │   ├── ButtonPrimary.jsx
+│   │   │   ├── Buttons.jsx
+│   │   │   ├── Card.jsx
+│   │   │   ├── Cards.jsx
+│   │   │   ├── GoalInput.jsx
+│   │   │   ├── Header.jsx
+│   │   │   ├── InputModal.jsx
+│   │   │   ├── ModePill.jsx
+│   │   │   ├── Placeholder.jsx
+│   │   │   ├── ProfileCard.jsx
+│   │   │   ├── ProgressCard.jsx
+│   │   │   ├── ReminderToggle.jsx
+│   │   │   ├── SearchBar.jsx
+│   │   │   ├── Spacer.jsx
+│   │   │   ├── Text.jsx
+│   │   │   ├── TileGrid.jsx
+│   │   │   └── WhakataukiCard.jsx
+│   │   └── index.js
+│   └── utils
+│       └── api.js
 ├── theme.js
 └── WhakataukiAdmin.jsx
 
-4554 directories, 22010 files
+4556 directories, 22016 files

@@ -1,11 +1,17 @@
 // server/routes/medicines.js
+import express from "express"
+import {
+  listMedicines,
+  createMedicine,
+  updateMedicine,
+  deleteMedicine,
+} from "../controllers/medicinesController.js"
 
-import { Router } from "express"
-import { listMedicines, getSingleMedicine } from "../controllers/medicinesController.js"
-
-const router = Router()
+const router = express.Router()
 
 router.get("/", listMedicines)
-router.get("/:id", getSingleMedicine)
+router.post("/", createMedicine)
+router.put("/:id", updateMedicine)
+router.delete("/:id", deleteMedicine)
 
 export default router

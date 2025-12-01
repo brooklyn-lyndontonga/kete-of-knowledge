@@ -1,13 +1,14 @@
-import { Router } from "express"
-import * as C from "../controllers/snapshotController.js"
+import express from "express"
+import {
+  listSnapshots,
+  createSnapshot,
+  removeSnapshot,
+} from "../controllers/snapshotsController.js"
 
-const router = Router()
+const router = express.Router()
 
-router.get("/", C.index)
-router.get("/latest", C.latest)
-router.get("/:id", C.show)
-router.post("/", C.create)
-router.put("/:id", C.update)
-router.delete("/:id", C.remove)
+router.get("/", listSnapshots)
+router.post("/", createSnapshot)
+router.delete("/:id", removeSnapshot)
 
 export default router

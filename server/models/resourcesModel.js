@@ -1,61 +1,32 @@
-import db from "../db/database.js";
-
-export async function getAllResources() {
-  return await db.all(`
-    SELECT resources.*, resource_categories.name AS category_name
-    FROM resources
-    LEFT JOIN resource_categories ON resources.category_id = resource_categories.id
-    ORDER BY resources.id DESC
-  `);
+export async function getResources(db) {
+  return db.all(`
+    SELECT r.*, c.name AS category_name
+    FROM resources r
+    LEFT JOIN resource_categories c ON r.category_id = c.id
+    ORDER BY r.id DESC
+  `)
 }
 
-export async function getResourceById(id) {
-  return await db.get(`
-    SELECT resources.*, resource_categories.name AS category_name
-    FROM resources
-    LEFT JOIN resource_categories ON resources.category_id = resource_categories.id
-    WHERE resources.id = ?
-  `, [id]);
+export async function getResourcesByCategory(db, category_id) {
+  return db.all("SELECT * FROM resources WHERE category_id = ?", [category_id])
 }
 
-export async function createResource(data) {
-  const { title, content, category_id, image_url } = data;
-
+export async function addResource(db, { category_id, title, content, image_url }) {
   const result = await db.run(
-    `INSERT INTO resources (title, content, category_id, image_url)
-     VALUES (?, ?, ?, ?)`,
-    [title, content, category_id, image_url]
-  );
+    "INSERT INTO resources (category_id, title, content, image_url) VALUES (?, ?, ?, ?)",
+    [category_id, title, content, image_url]
+  )
 
-  return getResourceById(result.lastID);
+  return {
+    id: result.lastID,
+    category_id,
+    title,
+    content,
+    image_url,
+  }
 }
 
-export async function updateResource(id, data) {
-  const existing = await getResourceById(id);
-  if (!existing) return null;
-
-  const updated = {
-    ...existing,
-    ...data,
-  };
-
-  await db.run(
-    `UPDATE resources
-     SET title = ?, content = ?, category_id = ?, image_url = ?
-     WHERE id = ?`,
-    [
-      updated.title,
-      updated.content,
-      updated.category_id,
-      updated.image_url,
-      id
-    ]
-  );
-
-  return getResourceById(id);
-}
-
-export async function deleteResource(id) {
-  await db.run("DELETE FROM resources WHERE id = ?", [id]);
-  return true;
+export async function deleteResource(db, id) {
+  await db.run("DELETE FROM resources WHERE id = ?", [id])
+  return true
 }

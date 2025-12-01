@@ -1,4 +1,4 @@
-import * as R from "../models/reflectionsModel.js"
+import * as R from '../models/reflectionsTemplatesModel.js'
 
 export const latest = async (req, res) => res.json(await R.getLatest())
 export const index = async (req, res) => res.json(await R.getAll())

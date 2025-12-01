@@ -1,64 +1,35 @@
 import {
-  getAllReflections,
-  getLatestReflection,
-  getReflectionById,
-  createReflection,
-  updateReflection,
-  deleteReflection
-} from "../models/reflectionsModel.js";
+  getResourceCategories,
+  addResourceCategory,
+  deleteResourceCategory,
+} from "../models/resourceCategoriesModel.js"
 
-export async function getReflections(req, res) {
+export async function listResourceCategories(req, res) {
   try {
-    const items = await getAllReflections();
-    res.json(items);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const db = req.app.get("db")
+    const data = await getResourceCategories(db)
+    res.json(data)
+  } catch {
+    res.status(500).json({ error: "Failed to load resource categories" })
   }
 }
 
-export async function getReflection(req, res) {
+export async function createResourceCategory(req, res) {
   try {
-    const item = await getReflectionById(req.params.id);
-    if (!item) return res.status(404).json({ error: "Not found" });
-    res.json(item);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const db = req.app.get("db")
+    const category = await addResourceCategory(db, req.body)
+    res.json(category)
+  } catch {
+    res.status(500).json({ error: "Failed to add resource category" })
   }
 }
 
-export async function getLatest(req, res) {
+export async function removeResourceCategory(req, res) {
   try {
-    const item = await getLatestReflection();
-    res.json(item);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-export async function postReflection(req, res) {
-  try {
-    const newItem = await createReflection(req.body);
-    res.status(201).json(newItem);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-}
-
-export async function putReflection(req, res) {
-  try {
-    const updated = await updateReflection(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ error: "Not found" });
-    res.json(updated);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-}
-
-export async function removeReflection(req, res) {
-  try {
-    await deleteReflection(req.params.id);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const db = req.app.get("db")
+    await deleteResourceCategory(db, req.params.id)
+    res.json({ success: true })
+  } catch {
+    res.status(500).json({ error: "Failed to delete resource category" })
   }
 }

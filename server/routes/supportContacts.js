@@ -1,15 +1,16 @@
 import express from "express"
-import supportContactsController from "../controllers/supportContactsController.js"
+import {
+  listSupportContacts,
+  createSupportContact,
+  editSupportContact,
+  removeSupportContact,
+} from "../controllers/supportContactsController.js"
 
 const router = express.Router()
 
-export default (db) => {
-  const controller = supportContactsController(db)
+router.get("/", listSupportContacts)
+router.post("/", createSupportContact)
+router.put("/:id", editSupportContact)
+router.delete("/:id", removeSupportContact)
 
-  router.get("/", controller.getAll)
-  router.post("/", controller.create)
-  router.put("/:id", controller.update)
-  router.delete("/:id", controller.remove)
-
-  return router
-}
+export default router

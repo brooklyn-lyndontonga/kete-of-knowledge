@@ -1,4 +1,3 @@
-// server/db/init.js
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
 import path from "path"
@@ -24,9 +23,9 @@ export async function initTables(db) {
   console.log("📦 Initializing tables...")
 
   try {
-    // ====================================================
-    // USER-GENERATED CONTENT (admin cannot modify)
-    // ====================================================
+    // ------------------------------------
+    // USER-GENERATED CONTENT
+    // ------------------------------------
     await db.exec(`
       CREATE TABLE IF NOT EXISTS goals (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,11 +54,20 @@ export async function initTables(db) {
         phone TEXT,
         relationship TEXT
       );
+
+      CREATE TABLE IF NOT EXISTS user_reflections (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        template_id INTEGER,
+        user_id TEXT,
+        response TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (template_id) REFERENCES reflection_templates(id)
+      );
     `)
 
-    // ====================================================
-    // ADMIN-EDITABLE STATIC CONTENT
-    // ====================================================
+    // ------------------------------------
+    // ADMIN EDITABLE CONTENT
+    // ------------------------------------
     await db.exec(`
       CREATE TABLE IF NOT EXISTS resource_categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,35 +88,16 @@ export async function initTables(db) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         description TEXT,
-        triggers TEXT,        -- JSON array
-        treatments TEXT,      -- JSON array
-        images TEXT           -- JSON array of URLs
+        triggers TEXT,
+        treatments TEXT,
+        images TEXT
       );
-
 
       CREATE TABLE IF NOT EXISTS whakatauki (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         text TEXT NOT NULL,
         translation TEXT
       );
-
-      CREATE TABLE IF NOT EXISTS reflections (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        story TEXT,
-        caption TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      );
-
-
-      CREATE TABLE IF NOT EXISTS snapshots (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        label TEXT NOT NULL,
-        percentage INTEGER NOT NULL,
-        color TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      );
-
 
       CREATE TABLE IF NOT EXISTS support_contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -118,32 +107,36 @@ export async function initTables(db) {
         emoji TEXT
       );
 
-      CREATE TABLE IF NOT EXISTS profile_seeds (
+      CREATE TABLE IF NOT EXISTS reflection_templates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category TEXT NOT NULL,   -- daily | weekly
+        title TEXT NOT NULL,
+        prompt TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS snapshots (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         label TEXT NOT NULL,
-        value TEXT
+        percentage INTEGER NOT NULL,
+        color TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
     `)
 
-    // ====================================================
-    // DEFAULT SEED DATA
-    // ====================================================
     await seedDefaults(db)
 
-    console.log("✅ Tables initialized & defaults seeded")
+    console.log("✅ Tables initialized + seeded")
   } catch (err) {
     console.error("❌ TABLE INIT ERROR:", err)
   }
 }
 
 async function seedDefaults(db) {
-  console.log("🌱 Seeding default admin content...")
+  console.log("🌱 Seeding defaults...")
 
-  // ---- Support contacts ----
-  const supportCount = await db.get(
-    "SELECT COUNT(*) as total FROM support_contacts"
-  )
-  if (supportCount.total === 0) {
+  // ---- Support services ----
+  const support = await db.get("SELECT COUNT(*) AS total FROM support_contacts")
+  if (support.total === 0) {
     await db.run(`
       INSERT INTO support_contacts (name, desc, phone, emoji) VALUES
       ("Healthline", "24/7 free medical advice", "0800611116", "🩺"),
@@ -153,28 +146,18 @@ async function seedDefaults(db) {
     `)
   }
 
-  // ---- Reflection ----
-  const reflections = await db.get(
-    "SELECT COUNT(*) as total FROM reflections"
-  )
-  if (reflections.total === 0) {
+  // ---- Reflection templates ----
+  const refl = await db.get("SELECT COUNT(*) AS total FROM reflection_templates")
+  if (refl.total === 0) {
     await db.run(`
-      INSERT INTO reflections (title, message)
-      VALUES ("Weekly Reflection", "Your whānau is on a hauora journey — each step counts.")
+      INSERT INTO reflection_templates (category, title, prompt) VALUES
+      ("daily", "Daily Reflection", "What is one thing you did today that supported your hauora?"),
+      ("weekly", "Weekly Review", "Looking back on your week, what are you proud of?")
     `)
   }
 
-  // ---- Snapshot ----
-  const snaps = await db.get("SELECT COUNT(*) as total FROM snapshots")
-  if (snaps.total === 0) {
-    await db.run(`
-      INSERT INTO snapshots (label, percentage)
-      VALUES ("Weekly Check-ins", 40)
-    `)
-  }
-
-  // ---- Whakataukī ----
-  const w = await db.get("SELECT COUNT(*) as total FROM whakatauki")
+  // ---- Whakatauki ----
+  const w = await db.get("SELECT COUNT(*) AS total FROM whakatauki")
   if (w.total === 0) {
     await db.run(`
       INSERT INTO whakatauki (text, translation) VALUES
@@ -184,5 +167,5 @@ async function seedDefaults(db) {
     `)
   }
 
-  console.log("🌿 Default content ready")
+  console.log("🌿 Default content seeded")
 }

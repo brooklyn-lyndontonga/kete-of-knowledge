@@ -1,18 +1,14 @@
-import express from "express";
+import express from "express"
 import {
-  getConditions,
-  getCondition,
-  postCondition,
-  putCondition,
-  removeCondition
-} from "../controllers/conditionsController.js";
+  listConditions,
+  createCondition,
+  removeCondition,
+} from "../controllers/conditionsController.js"
 
-const router = express.Router();
+const router = express.Router()
 
-router.get("/", getConditions);
-router.get("/:id", getCondition);
-router.post("/", postCondition);
-router.put("/:id", putCondition);
-router.delete("/:id", removeCondition);
+router.get("/", listConditions)
+router.post("/", createCondition)
+router.delete("/:id", removeCondition)
 
-export default router;
+export default router

@@ -1,18 +1,16 @@
-import express from "express";
+import express from "express"
 import {
-  getResources,
-  getResource,
-  postResource,
-  putResource,
-  removeResource
-} from "../controllers/resourcesController.js";
+  listResources,
+  listResourcesByCategory,
+  createResource,
+  removeResource,
+} from "../controllers/resourcesController.js"
 
-const router = express.Router();
+const router = express.Router()
 
-router.get("/", getResources);
-router.get("/:id", getResource);
-router.post("/", postResource);
-router.put("/:id", putResource);
-router.delete("/:id", removeResource);
+router.get("/", listResources)
+router.get("/category/:category_id", listResourcesByCategory)
+router.post("/", createResource)
+router.delete("/:id", removeResource)
 
-export default router;
+export default router
