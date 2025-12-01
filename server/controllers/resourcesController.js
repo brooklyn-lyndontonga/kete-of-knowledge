@@ -1,71 +1,46 @@
-export default function resourcesController(db) {
-  return {
-    async getAll(req, res) {
-      try {
-        const rows = await db.all(`
-        SELECT resources.*, resource_categories.name AS category_name
-        FROM resources
-        LEFT JOIN resource_categories ON resources.category_id = resource_categories.id
-        `)
-        res.json(rows)
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+import {
+  getResources,
+  getResourcesByCategory,
+  addResource,
+  deleteResource,
+} from "../models/resourcesModel.js"
 
-    async getByCategory(req, res) {
-      const { categoryId } = req.params
-      try {
-        const rows = await db.all(
-          `SELECT * FROM resources WHERE category_id = ?`,
-          [categoryId]
-        )
-        res.json(rows)
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function listResources(req, res) {
+  try {
+    const db = req.app.get("db")
+    const data = await getResources(db)
+    res.json(data)
+  } catch {
+    res.status(500).json({ error: "Failed to load resources" })
+  }
+}
 
-    async create(req, res) {
-      const { category_id, title, content, image_url } = req.body
+export async function listResourcesByCategory(req, res) {
+  try {
+    const db = req.app.get("db")
+    const data = await getResourcesByCategory(db, req.params.category_id)
+    res.json(data)
+  } catch {
+    res.status(500).json({ error: "Failed to load resources" })
+  }
+}
 
-      try {
-        const result = await db.run(
-          `INSERT INTO resources (category_id, title, content, image_url)
-          VALUES (?, ?, ?, ?)`,
-          [category_id, title, content, image_url]
-        )
-        res.json({ id: result.lastID, category_id, title, content, image_url })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function createResource(req, res) {
+  try {
+    const db = req.app.get("db")
+    const item = await addResource(db, req.body)
+    res.json(item)
+  } catch {
+    res.status(500).json({ error: "Failed to add resource" })
+  }
+}
 
-    async update(req, res) {
-      const { id } = req.params
-      const { category_id, title, content, image_url } = req.body
-
-      try {
-        await db.run(
-          `UPDATE resources
-           SET category_id = ?, title = ?, content = ?, image_url = ?
-           WHERE id = ?`,
-          [category_id, title, content, image_url, id]
-        )
-        res.json({ id, category_id, title, content, image_url })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
-
-    async remove(req, res) {
-      const { id } = req.params
-      try {
-        await db.run(`DELETE FROM resources WHERE id = ?`, [id])
-        res.json({ success: true })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function removeResource(req, res) {
+  try {
+    const db = req.app.get("db")
+    await deleteResource(db, req.params.id)
+    res.json({ success: true })
+  } catch {
+    res.status(500).json({ error: "Failed to delete resource" })
   }
 }

@@ -1,4 +1,4 @@
-// server/controllers/myMedicinesController.js
+/* eslint-disable no-unused-vars */
 import {
   getMedicines,
   addMedicine,
@@ -7,27 +7,30 @@ import {
 
 export async function listMedicines(req, res) {
   try {
-    const rows = await getMedicines()
-    res.json(rows)
+    const db = req.app.get("db")
+    const meds = await getMedicines(db)
+    res.json(meds)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: "Failed to load medicines" })
   }
 }
 
 export async function createMedicine(req, res) {
   try {
-    const newMed = await addMedicine(req.body)
-    res.json(newMed)
+    const db = req.app.get("db")
+    const med = await addMedicine(db, req.body)
+    res.json(med)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: "Failed to add medicine" })
   }
 }
 
 export async function removeMedicine(req, res) {
   try {
-    await deleteMedicine(req.params.id)
+    const db = req.app.get("db")
+    await deleteMedicine(db, req.params.id)
     res.json({ success: true })
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: "Failed to delete medicine" })
   }
 }

@@ -1,32 +1,32 @@
-// server/controllers/symptomsController.js
+/* eslint-disable no-unused-vars */
+import { getGoals, addGoal, deleteGoal } from "../models/goalsModel.js"
 
-import {
-  getAllSymptoms,
-  addSymptom,
-  deleteSymptom,
-  getSymptomSummary
-} from "../models/symptomsModel.js"
-
-export function listSymptoms(req, res) {
-  res.json(getAllSymptoms())
-}
-
-export function createSymptom(req, res) {
-  const { date, symptom, severity, notes } = req.body
-
-  if (!symptom) {
-    return res.status(400).json({ error: "Symptom name is required" })
+export async function listGoals(req, res) {
+  try {
+    const db = req.app.get("db")
+    const goals = await getGoals(db)
+    res.json(goals)
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load goals" })
   }
-
-  const entry = addSymptom({ date, symptom, severity, notes })
-  res.json(entry)
 }
 
-export function removeSymptom(req, res) {
-  deleteSymptom(req.params.id)
-  res.json({ success: true })
+export async function createGoal(req, res) {
+  try {
+    const db = req.app.get("db")
+    const goal = await addGoal(db, req.body)
+    res.json(goal)
+  } catch (err) {
+    res.status(500).json({ error: "Failed to add goal" })
+  }
 }
 
-export function symptomSummary(req, res) {
-  res.json(getSymptomSummary())
+export async function removeGoal(req, res) {
+  try {
+    const db = req.app.get("db")
+    await deleteGoal(db, req.params.id)
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete goal" })
+  }
 }

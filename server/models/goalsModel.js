@@ -1,25 +1,16 @@
-// Temporary in-memory demo data
-let demoGoals = [
-  { id: 1, title: "Drink 2 litres of water", progress: 40 },
-  { id: 2, title: "Walk 3x per week", progress: 60 },
-  { id: 3, title: "Take medication on time", progress: 80 }
-]
-
-export function getGoals() {
-  return demoGoals
+export async function getGoals(db) {
+  return db.all("SELECT * FROM goals");
 }
 
-export function addGoal(title) {
-  const newGoal = {
-    id: Date.now(),
-    title,
-    progress: 0,
-  }
-  demoGoals.push(newGoal)
-  return newGoal
+export async function addGoal(db, title, description = "") {
+  const result = await db.run(
+    "INSERT INTO goals (title, description) VALUES (?, ?)",
+    [title, description]
+  );
+  return { id: result.lastID, title, description };
 }
 
-export function deleteGoal(id) {
-  demoGoals = demoGoals.filter((g) => g.id !== Number(id))
-  return true
+export async function deleteGoal(db, id) {
+  await db.run("DELETE FROM goals WHERE id = ?", [id]);
+  return true;
 }

@@ -1,53 +1,47 @@
-export default function supportContactsController(db) {
-  return {
-    async getAll(req, res) {
-      try {
-        const rows = await db.all(`SELECT * FROM support_contacts`)
-        res.json(rows)
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+/* eslint-disable no-unused-vars */
+import {
+  getSupportContacts,
+  addSupportContact,
+  updateSupportContact,
+  deleteSupportContact,
+} from "../models/supportContactsModel.js"
 
-    async create(req, res) {
-      const { name, desc, phone, emoji } = req.body
-      try {
-        const result = await db.run(
-          `INSERT INTO support_contacts (name, desc, phone, emoji)
-          VALUES (?, ?, ?, ?)`,
-          [name, desc, phone, emoji]
-        )
-        res.json({ id: result.lastID, name, desc, phone, emoji })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function listSupportContacts(req, res) {
+  try {
+    const db = req.app.get("db")
+    const contacts = await getSupportContacts(db)
+    res.json(contacts)
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load support contacts" })
+  }
+}
 
-    async update(req, res) {
-      const { id } = req.params
-      const { name, desc, phone, emoji } = req.body
+export async function createSupportContact(req, res) {
+  try {
+    const db = req.app.get("db")
+    const item = await addSupportContact(db, req.body)
+    res.json(item)
+  } catch {
+    res.status(500).json({ error: "Failed to add support contact" })
+  }
+}
 
-      try {
-        await db.run(
-          `UPDATE support_contacts
-           SET name = ?, desc = ?, phone = ?, emoji = ?
-           WHERE id = ?`,
-          [name, desc, phone, emoji, id]
-        )
-        res.json({ id, name, desc, phone, emoji })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function editSupportContact(req, res) {
+  try {
+    const db = req.app.get("db")
+    await updateSupportContact(db, req.params.id, req.body)
+    res.json({ success: true })
+  } catch {
+    res.status(500).json({ error: "Failed to update support contact" })
+  }
+}
 
-    async remove(req, res) {
-      const { id } = req.params
-      try {
-        await db.run(`DELETE FROM support_contacts WHERE id = ?`, [id])
-        res.json({ success: true })
-      } catch (err) {
-        res.status(500).json({ error: err.message })
-      }
-    },
+export async function removeSupportContact(req, res) {
+  try {
+    const db = req.app.get("db")
+    await deleteSupportContact(db, req.params.id)
+    res.json({ success: true })
+  } catch {
+    res.status(500).json({ error: "Failed to delete support contact" })
   }
 }
