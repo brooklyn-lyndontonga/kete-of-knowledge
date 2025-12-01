@@ -1,6 +1,10 @@
-/* eslint-disable no-undef */
+ 
+import ReactDOM from "react-dom/client"
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
+
 import AdminLayout from "./layout/AdminLayout"
+import ErrorBoundary from "./components/ErrorBoundary"
+import { ToastProvider } from "./components/ui/ToastProvider"
 
 import ConditionsPage from "./pages/ConditionsPage"
 import ContactsPage from "./pages/ContactsPage"
@@ -15,6 +19,8 @@ const router = createBrowserRouter([
     path: "/",
     element: <AdminLayout />,
     children: [
+      // optional dashboard: { index: true, element: <DashboardPage /> },
+
       { path: "conditions", element: <ConditionsPage /> },
       { path: "library", element: <LibraryPage /> },
       { path: "whakatauki", element: <WhakataukiPage /> },
@@ -27,5 +33,9 @@ const router = createBrowserRouter([
 ])
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <RouterProvider router={router} />
+  <ErrorBoundary>
+    <ToastProvider>
+      <RouterProvider router={router} />
+    </ToastProvider>
+  </ErrorBoundary>
 )
