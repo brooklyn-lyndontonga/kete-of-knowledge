@@ -1,13 +1,13 @@
-import express from "express"
-import snapshotsController from "../controllers/snapshotsController.js"
+import { Router } from "express"
+import * as C from "../controllers/snapshotController.js"
 
-const router = express.Router()
+const router = Router()
 
-export default (db) => {
-  const controller = snapshotsController(db)
+router.get("/", C.index)
+router.get("/latest", C.latest)
+router.get("/:id", C.show)
+router.post("/", C.create)
+router.put("/:id", C.update)
+router.delete("/:id", C.remove)
 
-  router.get("/", controller.getAll)
-  router.put("/:id", controller.update)
-
-  return router
-}
+export default router

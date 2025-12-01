@@ -1,61 +1,39 @@
-import db from "../db/database.js";
+import { connectDB } from "../db/init.js"
 
-export async function getAllReflections() {
-  const rows = await db.all(
-    "SELECT * FROM reflections ORDER BY created_at DESC"
-  );
-  return rows;
+export async function getLatest() {
+  const db = await connectDB()
+  return db.get("SELECT * FROM reflections ORDER BY id DESC LIMIT 1")
 }
 
-export async function getLatestReflection() {
-  return await db.get(
-    `SELECT * FROM reflections
-     ORDER BY created_at DESC
-     LIMIT 1`
-  );
+export async function getAll() {
+  const db = await connectDB()
+  return db.all("SELECT * FROM reflections")
 }
 
-export async function getReflectionById(id) {
-  return await db.get("SELECT * FROM reflections WHERE id = ?", [id]);
-}
-
-export async function createReflection(data) {
-  const { title, story, caption } = data;
-
+export async function create(data) {
+  const db = await connectDB()
   const result = await db.run(
-    `INSERT INTO reflections (title, story, caption)
-     VALUES (?, ?, ?)`,
-    [title, story, caption]
-  );
-
-  return getReflectionById(result.lastID);
+    "INSERT INTO reflections (title, message) VALUES (?, ?)",
+    [data.title, data.message]
+  )
+  return { id: result.lastID, ...data }
 }
 
-export async function updateReflection(id, data) {
-  const existing = await getReflectionById(id);
-  if (!existing) return null;
-
-  const updated = {
-    ...existing,
-    ...data,
-  };
-
+export async function update(id, data) {
+  const db = await connectDB()
   await db.run(
-    `UPDATE reflections
-     SET title = ?, story = ?, caption = ?
-     WHERE id = ?`,
-    [
-      updated.title,
-      updated.story,
-      updated.caption,
-      id
-    ]
-  );
-
-  return getReflectionById(id);
+    "UPDATE reflections SET title=?, message=? WHERE id=?",
+    [data.title, data.message, id]
+  )
+  return get(id)
 }
 
-export async function deleteReflection(id) {
-  await db.run("DELETE FROM reflections WHERE id = ?", [id]);
-  return true;
+export async function remove(id) {
+  const db = await connectDB()
+  return db.run("DELETE FROM reflections WHERE id=?", id)
+}
+
+export async function get(id) {
+  const db = await connectDB()
+  return db.get("SELECT * FROM reflections WHERE id=?", id)
 }

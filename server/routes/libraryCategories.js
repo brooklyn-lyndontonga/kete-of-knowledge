@@ -1,14 +1,12 @@
-import express from "express"
-import {
-  getCategories,
-  addCategory,
-  removeCategory,
-} from "../controllers/libraryCategoriesController.js"
+import { Router } from "express"
+import * as Library from "../controllers/libraryController.js"
 
-const router = express.Router()
+const router = Router()
 
-router.get("/", getCategories)
-router.post("/", addCategory)
-router.delete("/:id", removeCategory)
+router.get("/", Library.index)
+router.get("/:id", Library.show)
+router.post("/", Library.create)
+router.put("/:id", Library.update)
+router.delete("/:id", Library.remove)
 
 export default router
