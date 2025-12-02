@@ -1,17 +1,18 @@
-// server/routes/resourceCategories.js
 import express from "express"
 import {
-  listCategories,
-  createCategory,
-  updateCategory,
-  deleteCategory,
+  listResourceCategories,
+  getResourceCategory,
+  createResourceCategory,
+  updateResourceCategoryController,
+  deleteResourceCategoryController,
 } from "../controllers/resourceCategoriesController.js"
 
 const router = express.Router()
 
-router.get("/", listCategories)
-router.post("/", createCategory)
-router.put("/:id", updateCategory)
-router.delete("/:id", deleteCategory)
+router.get("/", listResourceCategories)
+router.get("/:id", getResourceCategory)
+router.post("/", createResourceCategory)
+router.put("/:id", updateResourceCategoryController)
+router.delete("/:id", deleteResourceCategoryController)
 
 export default router
