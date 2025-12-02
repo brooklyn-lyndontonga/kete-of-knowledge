@@ -108,4 +108,3 @@ function createStyles(colors, spacing, radii, typography) {
     },
   })
 }
-
