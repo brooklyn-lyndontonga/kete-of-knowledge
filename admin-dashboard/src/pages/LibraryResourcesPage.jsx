@@ -1,152 +1,81 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect } from "react"
-import {
-  getResources,
-  addResource,
-  updateResource,
-  deleteResource,
-} from "../api/resources"
+import React, { useEffect, useState } from "react"
+import { api } from "../api/client"
+import CrudTable from "../components/CrudTable"
 
-export default function LibraryPage() {
-  const [rows, setRows] = useState([])
-  const [modal, setModal] = useState(false)
-  const [editing, setEditing] = useState(null)
-  const [form, setForm] = useState({
-    title: "",
-    type: "",
-    content: "",
-    category: "",
-  })
+export default function LibraryResourcesPage() {
+  const [resources, setResources] = useState([])
+  const [title, setTitle] = useState("")
+  const [content, setContent] = useState("")
+  const [categoryId, setCategoryId] = useState("")
+  const [categories, setCategories] = useState([])
 
   async function load() {
-    setRows(await getResources())
+    const res = await api.get("/admin/resources")
+    setResources(res)
+
+    const cats = await api.get("/admin/resource-categories")
+    setCategories(cats)
+  }
+
+  async function create() {
+    await api.post("/admin/resources", {
+      title,
+      content,
+      category_id: Number(categoryId),
+    })
+    setTitle("")
+    setContent("")
+    setCategoryId("")
+    load()
+  }
+
+  async function remove(id) {
+    await api.delete(`/admin/resources/${id}`)
+    load()
   }
 
   useEffect(() => {
     load()
   }, [])
 
-  const openAdd = () => {
-    setEditing(null)
-    setForm({ title: "", type: "", content: "", category: "" })
-    setModal(true)
-  }
-
-  const openEdit = (row) => {
-    setEditing(row.id)
-    setForm(row)
-    setModal(true)
-  }
-
-  const save = async () => {
-    if (editing) {
-      await updateResource(editing, form)
-    } else {
-      await addResource(form)
-    }
-    setModal(false)
-    load()
-  }
-
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Library Resources</h2>
+      <h1>Library Resources</h1>
 
-      <button
-        onClick={openAdd}
-        className="px-4 py-2 bg-blue-600 text-white rounded mb-4"
-      >
-        + Add Resource
-      </button>
+      <div className="form-row">
+        <input
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
 
-      <table className="w-full border bg-white">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-2 border">Title</th>
-            <th className="p-2 border">Type</th>
-            <th className="p-2 border">Category</th>
-            <th className="p-2 border">Actions</th>
-          </tr>
-        </thead>
+        <textarea
+          placeholder="Content"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+        />
 
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.id}>
-              <td className="p-2 border">{row.title}</td>
-              <td className="p-2 border">{row.type}</td>
-              <td className="p-2 border">{row.category}</td>
-              <td className="p-2 border space-x-2">
-                <button
-                  className="px-2 py-1 bg-yellow-500 text-white rounded"
-                  onClick={() => openEdit(row)}
-                >
-                  Edit
-                </button>
-                <button
-                  className="px-2 py-1 bg-red-600 text-white rounded"
-                  onClick={async () => {
-                    await deleteResource(row.id)
-                    load()
-                  }}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
+        <select
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
+        >
+          <option value="">Choose category</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
           ))}
-        </tbody>
-      </table>
+        </select>
 
-      {/* MODAL */}
-      {modal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded w-96">
-            <h3 className="text-xl font-bold mb-4">
-              {editing ? "Edit Resource" : "Add Resource"}
-            </h3>
+        <button onClick={create}>Add Resource</button>
+      </div>
 
-            <input
-              className="border p-2 w-full mb-2"
-              placeholder="Title"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-            />
-
-            <input
-              className="border p-2 w-full mb-2"
-              placeholder="Type (PDF, video, guide...)"
-              value={form.type}
-              onChange={(e) => setForm({ ...form, type: e.target.value })}
-            />
-
-            <textarea
-              className="border p-2 w-full mb-2"
-              placeholder="Content URL or text"
-              value={form.content}
-              onChange={(e) => setForm({ ...form, content: e.target.value })}
-            />
-
-            <input
-              className="border p-2 w-full mb-4"
-              placeholder="Category"
-              value={form.category}
-              onChange={(e) =>
-                setForm({ ...form, category: e.target.value })
-              }
-            />
-
-            <div className="flex justify-end space-x-2">
-              <button onClick={() => setModal(false)}>Cancel</button>
-              <button
-                onClick={save}
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CrudTable
+        columns={["id", "title", "content", "category_id"]}
+        data={resources}
+        onDelete={remove}
+      />
     </div>
   )
 }

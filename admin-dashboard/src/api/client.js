@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
-// admin-dashboard/src/api/client.js
-export const API_URL = "http://localhost:3000"  // change if needed
+export const API_URL = "http://localhost:3000"
 
 async function request(path, options = {}) {
   const url = `${API_URL}${path}`
@@ -17,10 +15,9 @@ async function request(path, options = {}) {
     throw new Error(`API Error: ${message}`)
   }
 
-  // Parse JSON safely
   try {
     return await response.json()
-  } catch (err) {
+  } catch {
     return null
   }
 }
