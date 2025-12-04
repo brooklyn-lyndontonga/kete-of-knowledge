@@ -1,178 +1,171 @@
-// admin-dashboard/src/pages/ResourceCategoriesPage.jsx
-import React, { useEffect, useState } from "react"
-import "./AdminTable.css"
-import { resourceCategoriesAPI } from "../api/resourceCategories"
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/set-state-in-effect */
+// src/pages/ResourceCategoriesPage.jsx
+import React, { useEffect, useState } from "react";
+import AdminTable from "../components/AdminTable";
+import AdminModal from "../components/AdminModal";
+
+import {
+  fetchResourceCategories,
+  createResourceCategory,
+  updateResourceCategory,
+  deleteResourceCategory,
+} from "../api/resourceCategories";
 
 export default function ResourceCategoriesPage() {
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Modal State
-  const [showModal, setShowModal] = useState(false)
-  const [editId, setEditId] = useState(null)
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
 
-  // Form Fields
-  const [name, setName] = useState("")
-  const [icon, setIcon] = useState("")
+  // Form
+  const [formData, setFormData] = useState({
+    name: "",
+    icon: "",
+  });
 
-  // -------------------------
-  // FETCH DATA
-  // -------------------------
-  const loadCategories = async () => {
+  // -----------------------------
+  // Load data on mount
+  // -----------------------------
+  async function loadData() {
+    setLoading(true);
     try {
-      setLoading(true)
-      const data = await resourceCategoriesAPI.list()
-      setCategories(data)
-      setError(null)
+      const data = await fetchResourceCategories();
+      setCategories(data);
     } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+      console.error(err);
+      alert("Failed to load categories");
     }
+    setLoading(false);
   }
 
   useEffect(() => {
-    loadCategories()
-  }, [])
+    loadData();
+  }, []);
 
-  // -------------------------
-  // OPEN MODAL (Add / Edit)
-  // -------------------------
-  const openAddModal = () => {
-    setEditId(null)
-    setName("")
-    setIcon("")
-    setShowModal(true)
+  // -----------------------------
+  // Open modals
+  // -----------------------------
+  function openAddModal() {
+    setEditing(null);
+    setFormData({ name: "", icon: "" });
+    setIsModalOpen(true);
   }
 
-  const openEditModal = (category) => {
-    setEditId(category.id)
-    setName(category.name)
-    setIcon(category.icon)
-    setShowModal(true)
+  function openEditModal(data) {
+    setEditing(data);
+    setFormData({
+      name: data.name,
+      icon: data.icon || "",
+    });
+    setIsModalOpen(true);
   }
 
-  // -------------------------
-  // SUBMIT FORM
-  // -------------------------
-  const submitForm = async () => {
+  // -----------------------------
+  // Save
+  // -----------------------------
+  async function handleSave() {
+    if (!formData.name.trim()) {
+      return alert("A category name is required");
+    }
+
+    const payload = {
+      name: formData.name.trim(),
+      icon: formData.icon.trim(),
+    };
+
     try {
-      if (editId) {
-        await resourceCategoriesAPI.update(editId, { name, icon })
+      if (editing) {
+        await updateResourceCategory(editing.id, payload);
       } else {
-        await resourceCategoriesAPI.create({ name, icon })
+        await createResourceCategory(payload);
       }
 
-      setShowModal(false)
-      await loadCategories()
+      setIsModalOpen(false);
+      loadData();
     } catch (err) {
-      alert("Error saving category: " + err.message)
+      console.error(err);
+      alert("Failed to save category");
     }
   }
 
-  // -------------------------
-  // DELETE
-  // -------------------------
-  const deleteCategory = async (id) => {
-    if (!window.confirm("Are you sure? This cannot be undone.")) return
+  // -----------------------------
+  // Delete
+  // -----------------------------
+  async function handleDelete(id) {
+    if (!confirm("Delete this category? All linked resources remain but will lose this category.")) return;
 
     try {
-      await resourceCategoriesAPI.remove(id)
-      await loadCategories()
+      await deleteResourceCategory(id);
+      loadData();
     } catch (err) {
-      alert("Error deleting category: " + err.message)
+      alert("Failed to delete category");
     }
   }
 
-  // -------------------------
-  // UI
-  // -------------------------
-  return (
-    <div className="admin-page">
-      <h1 className="page-title">Resource Categories</h1>
-      <p className="page-subtitle">
-        Manage the categories used in the app’s Library section.
-      </p>
+  // -----------------------------
+  // Table columns
+  // -----------------------------
+  const columns = [
+    { key: "icon", label: "Icon" },
+    { key: "name", label: "Category Name" },
+  ];
 
-      <button className="add-btn" onClick={openAddModal}>
+  // -----------------------------
+  // Render
+  // -----------------------------
+  return (
+    <div className="page">
+      <h1>Resource Categories</h1>
+      <p className="subtitle">Manage the top-level categories in the app's library.</p>
+
+      <button className="primary-btn" onClick={openAddModal}>
         + Add Category
       </button>
 
-      {loading && <p>Loading…</p>}
-      {error && <p className="error">{error}</p>}
-
-      {/* TABLE */}
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Icon</th>
-            <th>Name</th>
-            <th style={{ width: "160px" }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map((cat) => (
-            <tr key={cat.id}>
-              <td>{cat.id}</td>
-              <td>{cat.icon || "—"}</td>
-              <td>{cat.name}</td>
-
-              <td className="action-col">
-                <button
-                  className="edit-btn"
-                  onClick={() => openEditModal(cat)}
-                >
-                  Edit
-                </button>
-
-                <button
-                  className="delete-btn"
-                  onClick={() => deleteCategory(cat.id)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* MODAL */}
-      {showModal && (
-        <div className="modal-backdrop">
-          <div className="modal">
-            <h2>{editId ? "Edit Category" : "Add Category"}</h2>
-
-            <label>Name</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Heart Health"
-            />
-
-            <label>Icon (Emoji)</label>
-            <input
-              value={icon}
-              onChange={(e) => setIcon(e.target.value)}
-              placeholder="❤️"
-            />
-
-            <div className="modal-actions">
-              <button className="save-btn" onClick={submitForm}>
-                Save
-              </button>
-              <button
-                className="cancel-btn"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+      {loading ? (
+        <p>Loading…</p>
+      ) : (
+        <AdminTable
+          columns={columns}
+          data={categories}
+          onEdit={openEditModal}
+          onDelete={handleDelete}
+        />
       )}
+
+      {/* Modal */}
+      <AdminModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSave}
+        title={editing ? "Edit Category" : "Add Category"}
+      >
+        <div className="form-group">
+          <label>Emoji Icon</label>
+          <input
+            placeholder="📘"
+            value={formData.icon}
+            onChange={(e) =>
+              setFormData({ ...formData, icon: e.target.value })
+            }
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Category Name*</label>
+          <input
+            required
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({ ...formData, name: e.target.value })
+            }
+            placeholder="Nutrition, Movement, Rongoā…"
+          />
+        </div>
+      </AdminModal>
     </div>
-  )
+  );
 }

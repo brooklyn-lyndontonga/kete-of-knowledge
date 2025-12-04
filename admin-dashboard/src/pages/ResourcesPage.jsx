@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useState } from "react"
-import CrudTable from "../components/ui/CrudTable"
-import CrudModal from "../components/ui/CrudModal"
-import DeleteConfirmModal from "../components/ui/DeleteConfirmModal"
-import LoadingSpinner from "../components/ui/LoadingSpinner"
-import ErrorState from "../components/ui/ErrorState"
-import { useToast } from "../components/ui/ToastProvider"
+import { useEffect, useState } from 'react'
+import CrudTable from '../components/CrudTable'
+import CrudModal from '../components/CrudModal'
+import DeleteConfirmModal from '../components/DeleteConfirmModal'
+import LoadingSpinner from '../components/LoadingSpinner'
+import ErrorState from '../components/ErrorState'
+import { useToast } from '../components/ToastProvider'
 
 export default function LibraryPage() {
   const toast = useToast()
@@ -19,10 +19,10 @@ export default function LibraryPage() {
 
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({
-    title: "",
-    category_id: "",
-    content: "",
-    image_url: "",
+    title: '',
+    category_id: '',
+    content: '',
+    image_url: '',
   })
 
   // -----------------------------------------
@@ -31,11 +31,11 @@ export default function LibraryPage() {
   async function load() {
     try {
       setLoading(true)
-      const res = await fetch("/api/library")
+      const res = await fetch('/api/library')
       const json = await res.json()
       setData(json)
     } catch (err) {
-      setError("Failed to load resources.")
+      setError('Failed to load resources.')
     } finally {
       setLoading(false)
     }
@@ -50,22 +50,20 @@ export default function LibraryPage() {
   // -----------------------------------------
   async function save() {
     try {
-      const method = editing ? "PUT" : "POST"
-      const url = editing
-        ? `/api/library/${editing.id}`
-        : "/api/library"
+      const method = editing ? 'PUT' : 'POST'
+      const url = editing ? `/api/library/${editing.id}` : '/api/library'
 
       await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
 
-      toast.showToast("Saved successfully")
+      toast.showToast('Saved successfully')
       setModalOpen(false)
       load()
     } catch (err) {
-      toast.showToast("Error saving resource", "error")
+      toast.showToast('Error saving resource', 'error')
     }
   }
 
@@ -74,13 +72,13 @@ export default function LibraryPage() {
   // -----------------------------------------
   async function deleteItem() {
     try {
-      await fetch(`/api/library/${editing.id}`, { method: "DELETE" })
+      await fetch(`/api/library/${editing.id}`, { method: 'DELETE' })
 
-      toast.showToast("Deleted")
+      toast.showToast('Deleted')
       setDeleteOpen(false)
       load()
     } catch (err) {
-      toast.showToast("Error deleting", "error")
+      toast.showToast('Error deleting', 'error')
     }
   }
 
@@ -88,12 +86,12 @@ export default function LibraryPage() {
   // TABLE COLUMNS
   // -----------------------------------------
   const columns = [
-    { key: "title", label: "Title" },
-    { key: "category_id", label: "Category" },
+    { key: 'title', label: 'Title' },
+    { key: 'category_id', label: 'Category' },
     {
-      key: "content",
-      label: "Content",
-      render: (val) => val?.slice(0, 50) + "…",
+      key: 'content',
+      label: 'Content',
+      render: (val) => val?.slice(0, 50) + '…',
     },
   ]
 
@@ -109,10 +107,10 @@ export default function LibraryPage() {
           onClick={() => {
             setEditing(null)
             setForm({
-              title: "",
-              category_id: "",
-              content: "",
-              image_url: "",
+              title: '',
+              category_id: '',
+              content: '',
+              image_url: '',
             })
             setModalOpen(true)
           }}
@@ -139,7 +137,7 @@ export default function LibraryPage() {
       {/* Create/Edit Modal */}
       <CrudModal
         open={modalOpen}
-        title={editing ? "Edit Resource" : "Add Resource"}
+        title={editing ? 'Edit Resource' : 'Add Resource'}
         onClose={() => setModalOpen(false)}
         onSubmit={save}
       >
@@ -155,9 +153,7 @@ export default function LibraryPage() {
             className="input"
             placeholder="Category ID"
             value={form.category_id}
-            onChange={(e) =>
-              setForm({ ...form, category_id: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, category_id: e.target.value })}
           />
 
           <textarea

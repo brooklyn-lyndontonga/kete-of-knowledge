@@ -1,0 +1,30 @@
+.crud-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.crud-table th,
+.crud-table td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px;
+}
+
+.crud-table th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+.crud-table tr:last-child td {
+  border-bottom: none;
+}
+
+button {
+  background: #ef4444;
+  color: white;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+}

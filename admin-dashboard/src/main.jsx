@@ -1,41 +1,39 @@
- 
+import React from "react"
 import ReactDOM from "react-dom/client"
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
 
-import AdminLayout from "./layout/AdminLayout"
-import ErrorBoundary from "./components/ErrorBoundary"
-import { ToastProvider } from "./components/ui/ToastProvider"
+import App from "./App"
 
-import ConditionsPage from "./pages/ConditionsPage"
-import ContactsPage from "./pages/ContactsPage"
-import LibraryPage from "./pages/LibraryPage"
-import MedicinesPage from "./pages/MedicinesPage"
+import HomeContentPage from "./pages/HomeContentPage"
+import SupportContactsPage from "./pages/SupportContactsPage"
+import ResourceCategoriesPage from "./pages/ResourceCategoriesPage"
+import ResourcesPage from "./pages/ResourcesPage"
 import WhakataukiPage from "./pages/WhakataukiPage"
-import GoalsPage from "./pages/GoalsPage"
-import SymptomsPage from "./pages/SymptomsPage"
+import ConditionsPage from "./pages/ConditionsPage"
+import ReflectionTemplatesPage from "./pages/ReflectionTemplatesPage"
+import SnapshotsPage from "./pages/SnapshotsPage"
+import ProfileSeedsPage from "./pages/ProfileSeedsPage"
+
+import "./index.css"
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <AdminLayout />,
+    element: <App />,
     children: [
-      // optional dashboard: { index: true, element: <DashboardPage /> },
-
-      { path: "conditions", element: <ConditionsPage /> },
-      { path: "library", element: <LibraryPage /> },
-      { path: "whakatauki", element: <WhakataukiPage /> },
-      { path: "medicines", element: <MedicinesPage /> },
-      { path: "contacts", element: <ContactsPage /> },
-      { path: "goals", element: <GoalsPage /> },
-      { path: "symptoms", element: <SymptomsPage /> },
+      { path: "/", element: <HomeContentPage /> },
+      { path: "/support-contacts", element: <SupportContactsPage /> },
+      { path: "/resource-categories", element: <ResourceCategoriesPage /> },
+      { path: "/resources", element: <ResourcesPage /> },
+      { path: "/whakatauki", element: <WhakataukiPage /> },
+      { path: "/conditions", element: <ConditionsPage /> },
+      { path: "/reflection-templates", element: <ReflectionTemplatesPage /> },
+      { path: "/snapshots", element: <SnapshotsPage /> },
+      { path: "/profile-seeds", element: <ProfileSeedsPage /> },
     ],
   },
 ])
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <ErrorBoundary>
-    <ToastProvider>
-      <RouterProvider router={router} />
-    </ToastProvider>
-  </ErrorBoundary>
+  <RouterProvider router={router} />
 )

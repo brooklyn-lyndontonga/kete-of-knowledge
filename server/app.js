@@ -7,7 +7,7 @@ import { connectDB, initTables } from "./db/init.js"
 // USER ROUTES
 import goalsRoutes from "./routes/goals.js"
 import symptomsRoutes from "./routes/symptoms.js"
-import myMedicinesRoutes from "./routes/medicines.js"
+import medicinesRoutes from "./routes/medicines.js"
 import contactsRoutes from "./routes/contacts.js"
 import userReflectionsRoutes from "./routes/userReflections.js"
 
@@ -26,7 +26,6 @@ app.use(express.json())
 
 // DB INIT
 let db
-
 try {
   console.log("🔌 Connecting to DB...")
   db = await connectDB()
@@ -44,20 +43,33 @@ app.set("db", db)
 // =========================
 // ROUTES
 // =========================
+const router = express.Router()
 
-// USER-GENERATED CONTENT
-app.use("/goals", goalsRoutes)
-app.use("/symptoms", symptomsRoutes)
-app.use("/mymedicines", myMedicinesRoutes)
-app.use("/contacts", contactsRoutes)
-app.use("/reflections", userReflectionsRoutes)
+// USER DATA
+router.use("/user/goals", goalsRoutes)
+router.use("/user/symptoms", symptomsRoutes)
+router.use("/user/medicines", medicinesRoutes)
+router.use("/user/contacts", contactsRoutes)
+router.use("/user/reflections", userReflectionsRoutes)
 
-// ADMIN (STATIC CONTENT)
-app.use("/admin/support", supportContactsRoutes)
-app.use("/admin/resource-categories", resourceCategoriesRoutes)
-app.use("/admin/resources", resourcesRoutes)
-app.use("/admin/conditions", conditionsRoutes)
-app.use("/admin/whakatauki", whakataukiRoutes)
-app.use("/admin/snapshots", snapshotsRoutes)
+// ADMIN CONTENT
+router.use("/admin/support", supportContactsRoutes)
+router.use("/admin/resource-categories", resourceCategoriesRoutes)
+router.use("/admin/resources", resourcesRoutes)
+router.use("/admin/conditions", conditionsRoutes)
+router.use("/admin/whakatauki", whakataukiRoutes)
+router.use("/admin/snapshots", snapshotsRoutes)
+
+// Attach router under /api
+app.use("/api", router)
+
+// API homepage
+app.get("/", (req, res) => {
+  res.json({
+    message: "Kete of Knowledge API is running 🚀",
+    admin: "/api/admin/*",
+    user: "/api/user/*",
+  })
+})
 
 export default app
