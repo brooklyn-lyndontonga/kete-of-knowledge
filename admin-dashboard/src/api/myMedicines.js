@@ -1,9 +1,7 @@
-import { request } from "./client"
+import { API_URL } from "./client";
 
-export const getMyMedicines = () => request("/mymedicines")
-export const addMyMedicine = (data) =>
-  request("/mymedicines", "POST", data)
-export const updateMyMedicine = (id, data) =>
-  request(`/mymedicines/${id}`, "PUT", data)
-export const deleteMyMedicine = (id) =>
-  request(`/mymedicines/${id}`, "DELETE")
+export async function fetchUserMedicines() {
+  const res = await fetch(`${API_URL}/mymedicines`);
+  if (!res.ok) throw new Error("Failed to load user medicines");
+  return res.json();
+}

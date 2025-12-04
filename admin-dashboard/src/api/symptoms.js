@@ -1,10 +1,7 @@
-import { request } from "./client"
+import { API_URL } from "./client";
 
-export const getSymptoms = () => request("/symptoms")
-export const addSymptom = (data) => request("/symptoms", "POST", data)
-export const updateSymptom = (id, data) =>
-  request(`/symptoms/${id}`, "PUT", data)
-export const deleteSymptom = (id) => request(`/symptoms/${id}`, "DELETE")
-
-// Summary (grouped by day)
-export const getSymptomSummary = () => request("/symptoms/summary")
+export async function fetchUserSymptoms() {
+  const res = await fetch(`${API_URL}/symptoms`);
+  if (!res.ok) throw new Error("Failed to load symptoms");
+  return res.json();
+}

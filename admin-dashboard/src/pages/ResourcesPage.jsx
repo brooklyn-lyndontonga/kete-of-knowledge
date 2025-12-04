@@ -1,177 +1,209 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useState } from 'react'
-import CrudTable from '../components/CrudTable'
-import CrudModal from '../components/CrudModal'
-import DeleteConfirmModal from '../components/DeleteConfirmModal'
-import LoadingSpinner from '../components/LoadingSpinner'
-import ErrorState from '../components/ErrorState'
-import { useToast } from '../components/ToastProvider'
+/* eslint-disable react-hooks/set-state-in-effect */
+// src/pages/ResourcesPage.jsx
+import React, { useEffect, useState } from "react";
+import AdminTable from "../components/AdminTable";
+import AdminModal from "../components/AdminModal";
 
-export default function LibraryPage() {
-  const toast = useToast()
+import {
+  fetchResources,
+  createResource,
+  updateResource,
+  deleteResource,
+  fetchResourceCategories,
+} from "../api/resources";
 
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [data, setData] = useState([])
+export default function ResourcesPage() {
+  const [resources, setResources] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [modalOpen, setModalOpen] = useState(false)
-  const [deleteOpen, setDeleteOpen] = useState(false)
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
 
-  const [editing, setEditing] = useState(null)
-  const [form, setForm] = useState({
-    title: '',
-    category_id: '',
-    content: '',
-    image_url: '',
-  })
+  // Form state
+  const [formData, setFormData] = useState({
+    category_id: "",
+    title: "",
+    content: "",
+    image_url: "",
+  });
 
-  // -----------------------------------------
-  // FETCH RESOURCES
-  // -----------------------------------------
-  async function load() {
+  // ----------------------
+  // Load data
+  // ----------------------
+  async function loadData() {
+    setLoading(true);
     try {
-      setLoading(true)
-      const res = await fetch('/api/library')
-      const json = await res.json()
-      setData(json)
+      const [resData, catData] = await Promise.all([
+        fetchResources(),
+        fetchResourceCategories(),
+      ]);
+      setResources(resData);
+      setCategories(catData);
     } catch (err) {
-      setError('Failed to load resources.')
-    } finally {
-      setLoading(false)
+      console.error(err);
+      alert("Failed to load resources");
     }
+    setLoading(false);
   }
 
   useEffect(() => {
-    load()
-  }, [])
+    loadData();
+  }, []);
 
-  // -----------------------------------------
-  // HANDLE SAVE (Create + Update)
-  // -----------------------------------------
-  async function save() {
+  // ----------------------
+  // Open Add Modal
+  // ----------------------
+  function openAddModal() {
+    setEditing(null);
+    setFormData({
+      category_id: "",
+      title: "",
+      content: "",
+      image_url: "",
+    });
+    setIsModalOpen(true);
+  }
+
+  // ----------------------
+  // Open Edit Modal
+  // ----------------------
+  function openEditModal(item) {
+    setEditing(item);
+    setFormData({
+      category_id: item.category_id,
+      title: item.title,
+      content: item.content || "",
+      image_url: item.image_url || "",
+    });
+    setIsModalOpen(true);
+  }
+
+  // ----------------------
+  // Save
+  // ----------------------
+  async function handleSave() {
+    if (!formData.title.trim()) return alert("A title is required");
+    if (!formData.category_id) return alert("Select a category");
+
     try {
-      const method = editing ? 'PUT' : 'POST'
-      const url = editing ? `/api/library/${editing.id}` : '/api/library'
+      if (editing) {
+        await updateResource(editing.id, formData);
+      } else {
+        await createResource(formData);
+      }
 
-      await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-
-      toast.showToast('Saved successfully')
-      setModalOpen(false)
-      load()
+      setIsModalOpen(false);
+      loadData();
     } catch (err) {
-      toast.showToast('Error saving resource', 'error')
+      console.error(err);
+      alert("Failed to save resource");
     }
   }
 
-  // -----------------------------------------
-  // DELETE
-  // -----------------------------------------
-  async function deleteItem() {
+  // ----------------------
+  // Delete
+  // ----------------------
+  async function handleDelete(id) {
+    if (!confirm("Delete this resource?")) return;
     try {
-      await fetch(`/api/library/${editing.id}`, { method: 'DELETE' })
-
-      toast.showToast('Deleted')
-      setDeleteOpen(false)
-      load()
+      await deleteResource(id);
+      loadData();
     } catch (err) {
-      toast.showToast('Error deleting', 'error')
+      alert("Failed to delete resource");
     }
   }
 
-  // -----------------------------------------
-  // TABLE COLUMNS
-  // -----------------------------------------
   const columns = [
-    { key: 'title', label: 'Title' },
-    { key: 'category_id', label: 'Category' },
-    {
-      key: 'content',
-      label: 'Content',
-      render: (val) => val?.slice(0, 50) + '…',
-    },
-  ]
-
-  if (loading) return <LoadingSpinner />
-  if (error) return <ErrorState message={error} />
+    { key: "title", label: "Title" },
+    { key: "category_name", label: "Category" },
+    { key: "image_url", label: "Image" },
+  ];
 
   return (
-    <div>
-      <div className="flex justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Library Resources</h1>
+    <div className="page">
+      <h1>Library Resources</h1>
+      <p className="subtitle">Manage all educational resources for the app.</p>
 
-        <button
-          onClick={() => {
-            setEditing(null)
-            setForm({
-              title: '',
-              category_id: '',
-              content: '',
-              image_url: '',
-            })
-            setModalOpen(true)
-          }}
-          className="bg-indigo-600 text-white px-4 py-2 rounded"
-        >
-          + Add Resource
-        </button>
-      </div>
+      <button className="primary-btn" onClick={openAddModal}>
+        + Add Resource
+      </button>
 
-      <CrudTable
-        columns={columns}
-        data={data}
-        onEdit={(item) => {
-          setEditing(item)
-          setForm(item)
-          setModalOpen(true)
-        }}
-        onDelete={(item) => {
-          setEditing(item)
-          setDeleteOpen(true)
-        }}
-      />
+      {loading ? (
+        <p>Loading…</p>
+      ) : (
+        <AdminTable
+          columns={columns}
+          data={resources}
+          onEdit={openEditModal}
+          onDelete={handleDelete}
+        />
+      )}
 
-      {/* Create/Edit Modal */}
-      <CrudModal
-        open={modalOpen}
-        title={editing ? 'Edit Resource' : 'Add Resource'}
-        onClose={() => setModalOpen(false)}
-        onSubmit={save}
+      {/* Modal */}
+      <AdminModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSave}
+        title={editing ? "Edit Resource" : "Add Resource"}
       >
-        <div className="grid gap-3">
-          <input
-            className="input"
-            placeholder="Title"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-          />
+        {/* Category */}
+        <div className="form-group">
+          <label>Category*</label>
+          <select
+            value={formData.category_id}
+            onChange={(e) =>
+              setFormData({ ...formData, category_id: Number(e.target.value) })
+            }
+          >
+            <option value="">Select category</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.icon} {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
+        {/* Title */}
+        <div className="form-group">
+          <label>Title*</label>
           <input
-            className="input"
-            placeholder="Category ID"
-            value={form.category_id}
-            onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-          />
-
-          <textarea
-            className="input h-32"
-            placeholder="Content"
-            value={form.content}
-            onChange={(e) => setForm({ ...form, content: e.target.value })}
+            value={formData.title}
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
+            placeholder="Resource title"
           />
         </div>
-      </CrudModal>
 
-      {/* Delete modal */}
-      <DeleteConfirmModal
-        open={deleteOpen}
-        title={`Delete "${editing?.title}"?`}
-        onCancel={() => setDeleteOpen(false)}
-        onConfirm={deleteItem}
-      />
+        {/* Content */}
+        <div className="form-group">
+          <label>Content</label>
+          <textarea
+            rows="6"
+            value={formData.content}
+            onChange={(e) =>
+              setFormData({ ...formData, content: e.target.value })
+            }
+            placeholder="Main resource content..."
+          />
+        </div>
+
+        {/* Image URL */}
+        <div className="form-group">
+          <label>Image URL</label>
+          <input
+            value={formData.image_url}
+            onChange={(e) =>
+              setFormData({ ...formData, image_url: e.target.value })
+            }
+            placeholder="https://example.com/image.jpg"
+          />
+        </div>
+      </AdminModal>
     </div>
-  )
+  );
 }
