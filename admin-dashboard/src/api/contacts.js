@@ -1,7 +1,7 @@
-import { request } from "./client"
+import { API_URL } from "./client";
 
-export const getContacts = () => request("/contacts")
-export const addContact = (data) => request("/contacts", "POST", data)
-export const updateContact = (id, data) =>
-  request(`/contacts/${id}`, "PUT", data)
-export const deleteContact = (id) => request(`/contacts/${id}`, "DELETE")
+export async function fetchUserContacts() {
+  const res = await fetch(`${API_URL}/contacts`);
+  if (!res.ok) throw new Error("Failed to load user contacts");
+  return res.json();
+}

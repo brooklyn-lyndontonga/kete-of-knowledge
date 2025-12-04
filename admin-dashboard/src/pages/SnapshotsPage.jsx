@@ -1,58 +1,124 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react"
-import { api } from "../api/client"
-import CrudTable from "../components/CrudTable"
+import React, { useEffect, useState } from "react";
+import AdminTable from "../components/AdminTable";
+import AdminModal from "../components/AdminModal";
+import {
+  fetchSnapshots,
+  createSnapshot,
+  updateSnapshot,
+  deleteSnapshot,
+} from "../api/snapshots";
 
 export default function SnapshotsPage() {
-  const [items, setItems] = useState([])
-  const [label, setLabel] = useState("")
-  const [percentage, setPercentage] = useState("")
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  async function load() {
-    const res = await api.get("/admin/snapshots")
-    setItems(res)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+
+  const [formData, setFormData] = useState({
+    label: "",
+    percentage: "",
+    color: "",
+  });
+
+  async function loadData() {
+    setLoading(true);
+    const data = await fetchSnapshots();
+    setItems(data);
+    setLoading(false);
   }
 
-  async function create() {
-    await api.post("/admin/snapshots", {
-      label,
-      percentage: Number(percentage),
-    })
-    setLabel("")
-    setPercentage("")
-    load()
+  useEffect(() => { loadData(); }, []);
+
+  function openAdd() {
+    setEditing(null);
+    setFormData({ label: "", percentage: "", color: "" });
+    setIsModalOpen(true);
   }
 
-  async function remove(id) {
-    await api.delete(`/admin/snapshots/${id}`)
-    load()
+  function openEdit(item) {
+    setEditing(item);
+    setFormData({
+      label: item.label,
+      percentage: item.percentage,
+      color: item.color || "",
+    });
+    setIsModalOpen(true);
   }
 
-  useEffect(() => {
-    load()
-  }, [])
+  async function handleSave() {
+    const payload = {
+      label: formData.label,
+      percentage: Number(formData.percentage),
+      color: formData.color,
+    };
+
+    if (editing) await updateSnapshot(editing.id, payload);
+    else await createSnapshot(payload);
+
+    setIsModalOpen(false);
+    loadData();
+  }
+
+  async function handleDelete(id) {
+    if (!confirm("Delete this snapshot?")) return;
+    await deleteSnapshot(id);
+    loadData();
+  }
+
+  const columns = [
+    { key: "label", label: "Label" },
+    { key: "percentage", label: "Percent" },
+    { key: "color", label: "Color" },
+  ];
 
   return (
-    <div>
+    <div className="page">
       <h1>Progress Snapshots</h1>
+      <button className="primary-btn" onClick={openAdd}>+ Add Snapshot</button>
 
-      <div className="form-row">
-        <input placeholder="Label" value={label} onChange={(e) => setLabel(e.target.value)} />
-        <input
-          placeholder="Percentage"
-          type="number"
-          value={percentage}
-          onChange={(e) => setPercentage(e.target.value)}
+      {loading ? <p>Loading…</p> : (
+        <AdminTable 
+          columns={columns} 
+          data={items}
+          onEdit={openEdit}
+          onDelete={handleDelete}
         />
+      )}
 
-        <button onClick={create}>Add Snapshot</button>
-      </div>
+      <AdminModal
+        isOpen={isModalOpen}
+        onSave={handleSave}
+        onClose={() => setIsModalOpen(false)}
+        title={editing ? "Edit Snapshot" : "Add Snapshot"}
+      >
+        <div className="form-group">
+          <label>Label</label>
+          <input 
+            value={formData.label}
+            onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+          />
+        </div>
 
-      <CrudTable
-        columns={["id", "label", "percentage", "created_at"]}
-        data={items}
-        onDelete={remove}
-      />
+        <div className="form-group">
+          <label>Percentage</label>
+          <input 
+            type="number"
+            value={formData.percentage}
+            onChange={(e) => setFormData({ ...formData, percentage: e.target.value })}
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Color</label>
+          <input 
+            value={formData.color}
+            placeholder="#ffcc00"
+            onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+          />
+        </div>
+      </AdminModal>
     </div>
-  )
+  );
 }

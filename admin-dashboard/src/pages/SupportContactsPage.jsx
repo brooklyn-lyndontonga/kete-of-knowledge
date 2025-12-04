@@ -1,25 +1,21 @@
-/* eslint-disable no-unused-vars */
-// src/pages/SupportContactsPage.jsx
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useEffect, useState } from "react";
 import AdminTable from "../components/AdminTable";
 import AdminModal from "../components/AdminModal";
 import {
   fetchSupportContacts,
-  createSupportContact,
-  updateSupportContact,
-  deleteSupportContact,
-} from "../api/supportContacts";
+  createSupport,
+  updateSupport,
+  deleteSupport,
+} from "../api/support";
 
 export default function SupportContactsPage() {
-  const [contacts, setContacts] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
 
-  // Form fields
   const [formData, setFormData] = useState({
     name: "",
     desc: "",
@@ -27,87 +23,53 @@ export default function SupportContactsPage() {
     emoji: "",
   });
 
-  // -----------------------------
-  // Load contacts on mount
-  // -----------------------------
   async function loadData() {
-    try {
-      setLoading(true);
-      const data = await fetchSupportContacts();
-      setContacts(data);
-    } catch (err) {
-      setError("Unable to load support contacts");
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    const data = await fetchSupportContacts();
+    setItems(data);
+    setLoading(false);
   }
 
   useEffect(() => {
     loadData();
   }, []);
 
-  // -----------------------------
-  // Open modal (add or edit)
-  // -----------------------------
-  function openAddModal() {
+  function openAdd() {
     setEditing(null);
     setFormData({ name: "", desc: "", phone: "", emoji: "" });
     setIsModalOpen(true);
   }
 
-  function openEditModal(contact) {
-    setEditing(contact);
-    setFormData(contact);
+  function openEdit(item) {
+    setEditing(item);
+    setFormData({
+      name: item.name,
+      desc: item.desc || "",
+      phone: item.phone || "",
+      emoji: item.emoji || "",
+    });
     setIsModalOpen(true);
   }
 
-  // -----------------------------
-  // Save (create or update)
-  // -----------------------------
   async function handleSave() {
-    try {
-      const payload = {
-        name: formData.name.trim(),
-        desc: formData.desc.trim(),
-        phone: formData.phone.trim(),
-        emoji: formData.emoji.trim(),
-      };
+    if (!formData.name.trim()) return alert("Name required");
 
-      if (!payload.name) {
-        alert("Name is required");
-        return;
-      }
-
-      if (editing) {
-        await updateSupportContact(editing.id, payload);
-      } else {
-        await createSupportContact(payload);
-      }
-
-      setIsModalOpen(false);
-      loadData();
-    } catch (err) {
-      alert("Save failed, check backend logs");
+    if (editing) {
+      await updateSupport(editing.id, formData);
+    } else {
+      await createSupport(formData);
     }
+
+    setIsModalOpen(false);
+    loadData();
   }
 
-  // -----------------------------
-  // Delete
-  // -----------------------------
   async function handleDelete(id) {
-    if (!confirm("Delete this contact?")) return;
-
-    try {
-      await deleteSupportContact(id);
-      loadData();
-    } catch (err) {
-      alert("Delete failed");
-    }
+    if (!confirm("Delete this support contact?")) return;
+    await deleteSupport(id);
+    loadData();
   }
 
-  // -----------------------------
-  // Table columns
-  // -----------------------------
   const columns = [
     { key: "emoji", label: "Emoji" },
     { key: "name", label: "Name" },
@@ -115,47 +77,28 @@ export default function SupportContactsPage() {
     { key: "phone", label: "Phone" },
   ];
 
-  // -----------------------------
-  // Render
-  // -----------------------------
   return (
     <div className="page">
       <h1>Support Contacts</h1>
-      <p className="subtitle">Edit the help services shown in the app.</p>
-
-      <button className="primary-btn" onClick={openAddModal}>
-        + Add Support Contact
-      </button>
+      <button className="primary-btn" onClick={openAdd}>+ Add Contact</button>
 
       {loading ? (
         <p>Loading…</p>
       ) : (
         <AdminTable
           columns={columns}
-          data={contacts}
-          onEdit={openEditModal}
+          data={items}
+          onEdit={openEdit}
           onDelete={handleDelete}
         />
       )}
 
-      {/* ----------------------- */}
-      {/* Modal */}
-      {/* ----------------------- */}
       <AdminModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editing ? "Edit Contact" : "Add Contact"}
         onSave={handleSave}
+        title={editing ? "Edit Contact" : "Add Contact"}
       >
-        <div className="form-group">
-          <label>Emoji</label>
-          <input
-            value={formData.emoji}
-            onChange={(e) => setFormData({ ...formData, emoji: e.target.value })}
-            placeholder="🩺"
-          />
-        </div>
-
         <div className="form-group">
           <label>Name*</label>
           <input
@@ -163,7 +106,6 @@ export default function SupportContactsPage() {
             onChange={(e) =>
               setFormData({ ...formData, name: e.target.value })
             }
-            required
           />
         </div>
 
@@ -184,6 +126,17 @@ export default function SupportContactsPage() {
             onChange={(e) =>
               setFormData({ ...formData, phone: e.target.value })
             }
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Emoji</label>
+          <input
+            value={formData.emoji}
+            onChange={(e) =>
+              setFormData({ ...formData, emoji: e.target.value })
+            }
+            placeholder="💬"
           />
         </div>
       </AdminModal>
