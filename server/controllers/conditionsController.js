@@ -1,35 +1,42 @@
-import {
-  getConditions,
-  addCondition,
-  deleteCondition,
-} from "../models/conditionsModel.js"
-
+// READ
 export async function listConditions(req, res) {
+  const db = req.app.get("db");
   try {
-    const db = req.app.get("db")
-    const data = await getConditions(db)
-    res.json(data)
+    const rows = await db.all("SELECT * FROM conditions");
+
+    const parsed = rows.map((c) => ({
+      ...c,
+      triggers: c.triggers ? JSON.parse(c.triggers) : [],
+      treatments: c.treatments ? JSON.parse(c.treatments) : [],
+      images: c.images ? JSON.parse(c.images) : [],
+    }));
+
+    res.json(parsed);
   } catch {
-    res.status(500).json({ error: "Failed to load conditions" })
+    res.status(500).json({ error: "Failed to fetch conditions" });
   }
 }
 
+// CREATE
 export async function createCondition(req, res) {
-  try {
-    const db = req.app.get("db")
-    const item = await addCondition(db, req.body)
-    res.json(item)
-  } catch {
-    res.status(500).json({ error: "Failed to add condition" })
-  }
-}
+  const db = req.app.get("db");
+  const { name, description, triggers, treatments, images } = req.body;
 
-export async function removeCondition(req, res) {
   try {
-    const db = req.app.get("db")
-    await deleteCondition(db, req.params.id)
-    res.json({ success: true })
+    const result = await db.run(
+      `INSERT INTO conditions (name, description, triggers, treatments, images)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        name,
+        description,
+        JSON.stringify(triggers || []),
+        JSON.stringify(treatments || []),
+        JSON.stringify(images || []),
+      ]
+    );
+
+    res.json({ id: result.lastID });
   } catch {
-    res.status(500).json({ error: "Failed to delete condition" })
+    res.status(500).json({ error: "Failed to create condition" });
   }
 }

@@ -1,15 +1,16 @@
-import express from "express"
-import profileSeedsController from "../controllers/profileSeedsController.js"
+import express from "express";
+import {
+  listProfileSeeds,
+  createProfileSeed,
+  updateProfileSeed,
+  deleteProfileSeed,
+} from "../controllers/profileSeedsController.js";
 
-const router = express.Router()
+const router = express.Router();
 
-export default (db) => {
-  const controller = profileSeedsController(db)
+router.get("/", listProfileSeeds);
+router.post("/", createProfileSeed);
+router.put("/:id", updateProfileSeed);
+router.delete("/:id", deleteProfileSeed);
 
-  router.get("/", controller.getAll)
-  router.post("/", controller.create)
-  router.put("/:id", controller.update)
-  router.delete("/:id", controller.remove)
-
-  return router
-}
+export default router;

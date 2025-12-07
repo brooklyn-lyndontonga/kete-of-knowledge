@@ -1,65 +1,55 @@
 /* eslint-disable no-unused-vars */
 // server/controllers/reflectionTemplatesController.js
-import {
-  getAllReflectionTemplates,
-  getReflectionTemplateById,
-  createReflectionTemplate,
-  updateReflectionTemplate,
-  deleteReflectionTemplate,
-} from "../models/reflectionTemplatesModel.js"
 
 export async function listReflectionTemplates(req, res) {
+  const db = req.app.get("db");
   try {
-    const db = req.app.get("db")
-    const reflections = await getAllReflectionTemplates(db)
-    res.json(reflections)
+    const rows = await db.all("SELECT * FROM reflection_templates");
+    res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch reflection templates" })
+    res.status(500).json({ error: "Failed to fetch templates" });
   }
 }
 
-export async function getReflectionTemplate(req, res) {
+export async function createReflectionTemplate(req, res) {
+  const db = req.app.get("db");
+  const { title, message } = req.body;
+
   try {
-    const db = req.app.get("db")
-    const reflection = await getReflectionTemplateById(db, req.params.id)
-    res.json(reflection)
+    const result = await db.run(
+      `INSERT INTO reflection_templates (title, message) VALUES (?, ?)`,
+      [title, message]
+    );
+    res.json({ id: result.lastID, title, message });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch reflection template" })
+    res.status(500).json({ error: "Failed to create template" });
   }
 }
 
-export async function addReflectionTemplate(req, res) {
+export async function updateReflectionTemplate(req, res) {
+  const db = req.app.get("db");
+  const { id } = req.params;
+  const { title, message } = req.body;
+
   try {
-    const db = req.app.get("db")
-    const { title, story, caption } = req.body
-
-    await createReflectionTemplate(db, { title, story, caption })
-
-    res.json({ success: true })
+    await db.run(
+      `UPDATE reflection_templates SET title = ?, message = ? WHERE id = ?`,
+      [title, message, id]
+    );
+    res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: "Failed to add reflection template" })
+    res.status(500).json({ error: "Failed to update template" });
   }
 }
 
-export async function editReflectionTemplate(req, res) {
+export async function deleteReflectionTemplate(req, res) {
+  const db = req.app.get("db");
+  const { id } = req.params;
+
   try {
-    const db = req.app.get("db")
-    const { title, story, caption } = req.body
-
-    await updateReflectionTemplate(db, req.params.id, { title, story, caption })
-
-    res.json({ success: true })
+    await db.run(`DELETE FROM reflection_templates WHERE id = ?`, [id]);
+    res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: "Failed to update reflection template" })
-  }
-}
-
-export async function removeReflectionTemplate(req, res) {
-  try {
-    const db = req.app.get("db")
-    await deleteReflectionTemplate(db, req.params.id)
-    res.json({ success: true })
-  } catch (err) {
-    res.status(500).json({ error: "Failed to delete reflection template" })
+    res.status(500).json({ error: "Failed to delete template" });
   }
 }

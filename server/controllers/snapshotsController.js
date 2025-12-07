@@ -1,35 +1,21 @@
-import {
-  getSnapshots,
-  addSnapshot,
-  deleteSnapshot,
-} from "../models/snapshotsModel.js"
-
-export async function listSnapshots(req, res) {
-  try {
-    const db = req.app.get("db")
-    const data = await getSnapshots(db)
-    res.json(data)
-  } catch {
-    res.status(500).json({ error: "Failed to load snapshots" })
-  }
-}
-
 export async function createSnapshot(req, res) {
-  try {
-    const db = req.app.get("db")
-    const item = await addSnapshot(db, req.body)
-    res.json(item)
-  } catch {
-    res.status(500).json({ error: "Failed to add snapshot" })
-  }
-}
+  const db = req.app.get("db");
+  const { label, percentage, color } = req.body;
 
-export async function removeSnapshot(req, res) {
+  const pct = parseInt(percentage, 10);
+
+  if (isNaN(pct)) {
+    return res.status(400).json({ error: "Percentage must be a number" });
+  }
+
   try {
-    const db = req.app.get("db")
-    await deleteSnapshot(db, req.params.id)
-    res.json({ success: true })
+    const result = await db.run(
+      `INSERT INTO snapshots (label, percentage, color) VALUES (?, ?, ?)`,
+      [label, pct, color]
+    );
+
+    res.json({ id: result.lastID });
   } catch {
-    res.status(500).json({ error: "Failed to delete snapshot" })
+    res.status(500).json({ error: "Failed to create snapshot" });
   }
 }
