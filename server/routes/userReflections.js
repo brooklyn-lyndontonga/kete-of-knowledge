@@ -1,14 +1,14 @@
 import express from "express"
 import {
   listUserReflections,
-  createUserReflection,
+  addUserReflection,
   removeUserReflection,
 } from "../controllers/userReflectionsController.js"
 
 const router = express.Router()
 
 router.get("/", listUserReflections)
-router.post("/", createUserReflection)
+router.post("/", addUserReflection)
 router.delete("/:id", removeUserReflection)
 
 export default router
