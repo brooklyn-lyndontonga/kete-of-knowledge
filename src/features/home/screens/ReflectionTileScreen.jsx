@@ -1,44 +1,56 @@
-/* eslint-disable react/react-in-jsx-scope */
-import { useEffect, useState } from "react"
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from "react"
 import { View, Text, StyleSheet } from "react-native"
-import { apiGet } from "../utils/api"
+import { useTheme } from "../../../theme"
+import { API_URL } from "../../../lib/api"
 
 export default function ReflectionTile() {
+  const { colors, spacing, radii, typography } = useTheme()
   const [reflection, setReflection] = useState(null)
-  const [error, setError] = useState(null)
+
+  async function loadReflection() {
+    try {
+      const res = await fetch(`${API_URL}/admin/reflection-templates`)
+      const data = await res.json()
+      setReflection(data[0]) // show newest
+    } catch (err) {
+      console.log("Reflection error:", err)
+    }
+  }
 
   useEffect(() => {
-    apiGet("/reflections/latest")
-      .then((data) => setReflection(data))
-      .catch(() => setError("Unable to load reflection"))
+    loadReflection()
   }, [])
 
-  if (error) return <Text>{error}</Text>
-  if (!reflection) return <Text>Loading reflection…</Text>
+  if (!reflection) return null
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.tile, { backgroundColor: colors.accent3 }]}>
       <Text style={styles.title}>{reflection.title}</Text>
-      <Text style={styles.message}>{reflection.message}</Text>
+      <Text style={styles.story}>{reflection.story}</Text>
+      <Text style={styles.caption}>{reflection.caption}</Text>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#fff",
-    padding: 16,
+  tile: {
     borderRadius: 12,
-    marginBottom: 20,
+    padding: 16,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
+    color: "#fff",
   },
-  message: {
-    fontSize: 15,
-    marginTop: 8,
-    color: "#444",
-    lineHeight: 22,
+  story: {
+    color: "#fff",
+    marginTop: 6,
+  },
+  caption: {
+    color: "#fff",
+    fontStyle: "italic",
+    marginTop: 6,
+    fontSize: 12,
   },
 })

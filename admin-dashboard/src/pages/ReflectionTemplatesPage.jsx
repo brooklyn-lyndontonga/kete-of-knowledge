@@ -1,123 +1,84 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react";
-import AdminTable from "../components/AdminTable";
-import AdminModal from "../components/AdminModal";
-import {
-  fetchReflectionTemplates,
-  createReflectionTemplate,
-  updateReflectionTemplate,
-  deleteReflectionTemplate,
-} from "../api/reflectionTemplates";
+import React, { useEffect, useState } from "react"
+import { api } from "../api/client"
+import AdminTable from "../components/AdminTable"
 
 export default function ReflectionTemplatesPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [templates, setTemplates] = useState([])
+  const [formState, setFormState] = useState({ title: "", story: "", caption: "" })
+  const [editingId, setEditingId] = useState(null)
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
-
-  const [formData, setFormData] = useState({
-    title: "",
-    story: "",
-    caption: "",
-  });
-
-  async function loadData() {
-    setLoading(true);
-    const data = await fetchReflectionTemplates();
-    setItems(data);
-    setLoading(false);
+  async function loadTemplates() {
+    const data = await api.get("/admin/reflection-templates")
+    setTemplates(data || [])
   }
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadTemplates()
+  }, [])
 
-  function openAdd() {
-    setEditing(null);
-    setFormData({ title: "", story: "", caption: "" });
-    setIsModalOpen(true);
-  }
+  async function handleSubmit(e) {
+    e.preventDefault()
 
-  function openEdit(item) {
-    setEditing(item);
-    setFormData({
-      title: item.title,
-      story: item.story || "",
-      caption: item.caption || "",
-    });
-    setIsModalOpen(true);
-  }
-
-  async function handleSave() {
-    if (!formData.title) return alert("Title required");
-
-    if (editing) {
-      await updateReflectionTemplate(editing.id, formData);
+    if (editingId) {
+      await api.put(`/admin/reflection-templates/${editingId}`, formState)
+      setEditingId(null)
     } else {
-      await createReflectionTemplate(formData);
+      await api.post("/admin/reflection-templates", formState)
     }
 
-    setIsModalOpen(false);
-    loadData();
+    setFormState({ title: "", story: "", caption: "" })
+    loadTemplates()
+  }
+
+  function startEdit(t) {
+    setEditingId(t.id)
+    setFormState({
+      title: t.title,
+      story: t.story,
+      caption: t.caption,
+    })
   }
 
   async function handleDelete(id) {
-    if (!confirm("Delete this reflection template?")) return;
-    await deleteReflectionTemplate(id);
-    loadData();
+    await api.delete(`/admin/reflection-templates/${id}`)
+    loadTemplates()
   }
-
-  const columns = [
-    { key: "title", label: "Title" },
-    { key: "caption", label: "Caption" },
-  ];
 
   return (
     <div className="page">
       <h1>Reflection Templates</h1>
-      <button className="primary-btn" onClick={openAdd}>+ Add Template</button>
 
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <AdminTable 
-          columns={columns} 
-          data={items}
-          onEdit={openEdit}
-          onDelete={handleDelete}
+      {/* Form */}
+      <form className="admin-form" onSubmit={handleSubmit}>
+        <input
+          placeholder="Title"
+          value={formState.title}
+          onChange={(e) => setFormState({ ...formState, title: e.target.value })}
         />
-      )}
+        <textarea
+          placeholder="Story"
+          value={formState.story}
+          onChange={(e) => setFormState({ ...formState, story: e.target.value })}
+        />
+        <input
+          placeholder="Caption"
+          value={formState.caption}
+          onChange={(e) => setFormState({ ...formState, caption: e.target.value })}
+        />
 
-      <AdminModal
-        isOpen={isModalOpen}
-        title={editing ? "Edit Template" : "Add Template"}
-        onSave={handleSave}
-        onClose={() => setIsModalOpen(false)}
-      >
-        <div className="form-group">
-          <label>Title*</label>
-          <input
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          />
-        </div>
+        <button type="submit">
+          {editingId ? "Update Template" : "Add Template"}
+        </button>
+      </form>
 
-        <div className="form-group">
-          <label>Story</label>
-          <textarea
-            rows="4"
-            value={formData.story}
-            onChange={(e) => setFormData({ ...formData, story: e.target.value })}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Caption</label>
-          <input
-            value={formData.caption}
-            onChange={(e) => setFormData({ ...formData, caption: e.target.value })}
-          />
-        </div>
-      </AdminModal>
+      {/* Table */}
+      <AdminTable
+        data={templates}
+        fields={["title", "story", "caption"]}
+        onEdit={startEdit}
+        onDelete={handleDelete}
+      />
     </div>
-  );
+  )
 }
