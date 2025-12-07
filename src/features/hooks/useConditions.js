@@ -1,22 +1,25 @@
-import { useState, useEffect } from "react"
-import api from "../lib/api"
+import { useEffect, useState } from "react"
+import { API_URL } from "../lib/api"
 
 export function useConditions() {
   const [conditions, setConditions] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  async function loadConditions() {
-    const res = await api.get("/conditions")
-    setConditions(res.data)
-  }
-
-  async function getCondition(id) {
-    const res = await api.get(`/conditions/${id}`)
-    return res.data
+  async function load() {
+    try {
+      const res = await fetch(`${API_URL}/conditions`)
+      const data = await res.json()
+      setConditions(data)
+    } catch (err) {
+      console.log("Error loading conditions:", err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
-    loadConditions()
+    load()
   }, [])
 
-  return { conditions, getCondition, reload: loadConditions }
+  return { conditions, loading, reload: load }
 }
