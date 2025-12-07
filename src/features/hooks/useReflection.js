@@ -1,36 +1,22 @@
-import { useState, useEffect } from "react"
-import api from "../lib/api"
+import { useEffect, useState } from "react"
+import { API_URL } from "../lib/api"
 
-export function useReflections() {
-  const [reflections, setReflections] = useState([])
-
-  async function loadReflections() {
-    const res = await api.get("/user-reflections")
-    setReflections(res.data)
-  }
-
-  async function addReflection(title, story, caption) {
-    const res = await api.post("/user-reflections", {
-      title,
-      story,
-      caption
-    })
-    setReflections(prev => [...prev, res.data])
-  }
-
-  async function deleteReflection(id) {
-    await api.delete(`/user-reflections/${id}`)
-    setReflections(prev => prev.filter(r => r.id !== id))
-  }
+export function useReflectionTile() {
+  const [tile, setTile] = useState(null)
 
   useEffect(() => {
-    loadReflections()
+    async function loadTile() {
+      try {
+        const res = await fetch(`${API_URL}/reflections/latest`)
+        const json = await res.json()
+        setTile(json)
+      } catch (err) {
+        console.log("Error loading reflection tile:", err)
+      }
+    }
+
+    loadTile()
   }, [])
 
-  return {
-    reflections,
-    addReflection,
-    deleteReflection,
-    reload: loadReflections
-  }
+  return tile
 }

@@ -1,17 +1,21 @@
-import { useState, useEffect } from "react"
-import api from "../lib/api"
+import { useEffect, useState } from "react"
+import { API_URL } from "../lib/api"
 
 export function useSnapshots() {
   const [snapshots, setSnapshots] = useState([])
 
-  async function loadSnapshots() {
-    const res = await api.get("/snapshots")
-    setSnapshots(res.data)
-  }
-
   useEffect(() => {
-    loadSnapshots()
+    async function load() {
+      try {
+        const res = await fetch(`${API_URL}/admin/snapshots`)
+        const json = await res.json()
+        setSnapshots(json)
+      } catch (err) {
+        console.error("Error loading snapshots:", err)
+      }
+    }
+    load()
   }, [])
 
-  return { snapshots, reload: loadSnapshots }
+  return snapshots
 }

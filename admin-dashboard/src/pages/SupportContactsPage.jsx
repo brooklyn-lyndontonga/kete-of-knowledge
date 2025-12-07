@@ -1,145 +1,67 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react";
-import AdminTable from "../components/AdminTable";
-import AdminModal from "../components/AdminModal";
-import {
-  fetchSupportContacts,
-  createSupport,
-  updateSupport,
-  deleteSupport,
-} from "../api/support";
+// admin-dashboard/src/pages/SupportContactsPage.jsx
+import React, { useEffect, useState } from "react"
+import AdminTable from "../components/AdminTable"
+import "./AdminTable.css"
+
+const API = "http://localhost:3000/admin/support"
 
 export default function SupportContactsPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
+  async function loadRows() {
+    setLoading(true)
+    const res = await fetch(API)
+    setRows(await res.json())
+    setLoading(false)
+  }
 
-  const [formData, setFormData] = useState({
-    name: "",
-    desc: "",
-    phone: "",
-    emoji: "",
-  });
+  async function addRow(body) {
+    await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+    loadRows()
+  }
 
-  async function loadData() {
-    setLoading(true);
-    const data = await fetchSupportContacts();
-    setItems(data);
-    setLoading(false);
+  async function updateRow(id, body) {
+    await fetch(`${API}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+    loadRows()
+  }
+
+  async function deleteRow(id) {
+    await fetch(`${API}/${id}`, { method: "DELETE" })
+    loadRows()
   }
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  function openAdd() {
-    setEditing(null);
-    setFormData({ name: "", desc: "", phone: "", emoji: "" });
-    setIsModalOpen(true);
-  }
-
-  function openEdit(item) {
-    setEditing(item);
-    setFormData({
-      name: item.name,
-      desc: item.desc || "",
-      phone: item.phone || "",
-      emoji: item.emoji || "",
-    });
-    setIsModalOpen(true);
-  }
-
-  async function handleSave() {
-    if (!formData.name.trim()) return alert("Name required");
-
-    if (editing) {
-      await updateSupport(editing.id, formData);
-    } else {
-      await createSupport(formData);
-    }
-
-    setIsModalOpen(false);
-    loadData();
-  }
-
-  async function handleDelete(id) {
-    if (!confirm("Delete this support contact?")) return;
-    await deleteSupport(id);
-    loadData();
-  }
-
-  const columns = [
-    { key: "emoji", label: "Emoji" },
-    { key: "name", label: "Name" },
-    { key: "desc", label: "Description" },
-    { key: "phone", label: "Phone" },
-  ];
+    loadRows()
+  }, [])
 
   return (
-    <div className="page">
-      <h1>Support Contacts</h1>
-      <button className="primary-btn" onClick={openAdd}>+ Add Contact</button>
+    <div className="page-container">
+      <h1 className="page-title">Support Contacts</h1>
 
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <AdminTable
-          columns={columns}
-          data={items}
-          onEdit={openEdit}
-          onDelete={handleDelete}
-        />
-      )}
-
-      <AdminModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSave}
-        title={editing ? "Edit Contact" : "Add Contact"}
-      >
-        <div className="form-group">
-          <label>Name*</label>
-          <input
-            value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Description</label>
-          <input
-            value={formData.desc}
-            onChange={(e) =>
-              setFormData({ ...formData, desc: e.target.value })
-            }
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Phone</label>
-          <input
-            value={formData.phone}
-            onChange={(e) =>
-              setFormData({ ...formData, phone: e.target.value })
-            }
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Emoji</label>
-          <input
-            value={formData.emoji}
-            onChange={(e) =>
-              setFormData({ ...formData, emoji: e.target.value })
-            }
-            placeholder="💬"
-          />
-        </div>
-      </AdminModal>
+      <AdminTable
+        loading={loading}
+        columns={[
+          { key: "id", label: "ID", width: 60 },
+          { key: "name", label: "Name" },
+          { key: "desc", label: "Description" },
+          { key: "phone", label: "Phone" },
+          { key: "emoji", label: "Emoji" },
+        ]}
+        data={rows}
+        onAdd={addRow}
+        onUpdate={updateRow}
+        onDelete={deleteRow}
+      />
     </div>
-  );
+  )
 }

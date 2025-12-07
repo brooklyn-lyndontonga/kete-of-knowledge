@@ -1,118 +1,65 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react";
-import AdminTable from "../components/AdminTable";
-import AdminModal from "../components/AdminModal";
-import {
-  fetchWhakatauki,
-  createWhakatauki,
-  updateWhakatauki,
-  deleteWhakatauki,
-} from "../api/whakatauki";
+// admin-dashboard/src/pages/WhakataukiPage.jsx
+import React, { useEffect, useState } from "react"
+import AdminTable from "../components/AdminTable"
+import "./AdminTable.css"
+
+const API = "http://localhost:3000/admin/whakatauki"
 
 export default function WhakataukiPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
+  async function loadRows() {
+    setLoading(true)
+    const res = await fetch(API)
+    setRows(await res.json())
+    setLoading(false)
+  }
 
-  const [formData, setFormData] = useState({
-    text: "",
-    translation: "",
-  });
+  async function addRow(body) {
+    await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+    loadRows()
+  }
 
-  async function loadData() {
-    setLoading(true);
-    const data = await fetchWhakatauki();
-    setItems(data);
-    setLoading(false);
+  async function updateRow(id, body) {
+    await fetch(`${API}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+    loadRows()
+  }
+
+  async function deleteRow(id) {
+    await fetch(`${API}/${id}`, { method: "DELETE" })
+    loadRows()
   }
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  function openAdd() {
-    setEditing(null);
-    setFormData({ text: "", translation: "" });
-    setIsModalOpen(true);
-  }
-
-  function openEdit(item) {
-    setEditing(item);
-    setFormData({
-      text: item.text,
-      translation: item.translation || "",
-    });
-    setIsModalOpen(true);
-  }
-
-  async function handleSave() {
-    if (!formData.text.trim()) return alert("Text required");
-
-    if (editing) {
-      await updateWhakatauki(editing.id, formData);
-    } else {
-      await createWhakatauki(formData);
-    }
-
-    setIsModalOpen(false);
-    loadData();
-  }
-
-  async function handleDelete(id) {
-    if (!confirm("Delete this whakataukī?")) return;
-    await deleteWhakatauki(id);
-    loadData();
-  }
-
-  const columns = [
-    { key: "text", label: "Text" },
-    { key: "translation", label: "Translation" },
-  ];
+    loadRows()
+  }, [])
 
   return (
-    <div className="page">
-      <h1>Whakataukī</h1>
-      <button className="primary-btn" onClick={openAdd}>+ Add</button>
+    <div className="page-container">
+      <h1 className="page-title">Whakataukī</h1>
 
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <AdminTable
-          columns={columns}
-          data={items}
-          onEdit={openEdit}
-          onDelete={handleDelete}
-        />
-      )}
-
-      <AdminModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSave}
-        title={editing ? "Edit Whakataukī" : "Add Whakataukī"}
-      >
-        <div className="form-group">
-          <label>Text*</label>
-          <input
-            value={formData.text}
-            onChange={(e) => setFormData({ ...formData, text: e.target.value })}
-            placeholder="E.g., 'He tina ki runga...'"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Translation</label>
-          <input
-            value={formData.translation}
-            onChange={(e) =>
-              setFormData({ ...formData, translation: e.target.value })
-            }
-            placeholder="Translation..."
-          />
-        </div>
-      </AdminModal>
+      <AdminTable
+        loading={loading}
+        columns={[
+          { key: "id", label: "ID", width: 60 },
+          { key: "text", label: "Text" },
+          { key: "translation", label: "Translation" },
+        ]}
+        data={rows}
+        onAdd={addRow}
+        onUpdate={updateRow}
+        onDelete={deleteRow}
+      />
     </div>
-  );
+  )
 }

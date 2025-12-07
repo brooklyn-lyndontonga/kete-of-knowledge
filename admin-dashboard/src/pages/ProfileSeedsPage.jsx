@@ -1,113 +1,66 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react";
-import AdminTable from "../components/AdminTable";
-import AdminModal from "../components/AdminModal";
-import {
-  fetchProfileSeeds,
-  createProfileSeed,
-  updateProfileSeed,
-  deleteProfileSeed,
-} from "../api/profileSeeds";
+// admin-dashboard/src/pages/ProfileSeedsPage.jsx
+import React, { useEffect, useState } from "react"
+import AdminTable from "../components/AdminTable"
+import "./AdminTable.css"
+
+const API = "http://localhost:3000/admin/profile-seeds"
 
 export default function ProfileSeedsPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [seeds, setSeeds] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
-
-  const [formData, setFormData] = useState({
-    label: "",
-    value: "",
-  });
-
-  async function loadData() {
-    setLoading(true);
-    const data = await fetchProfileSeeds();
-    setItems(data);
-    setLoading(false);
+  async function loadSeeds() {
+    setLoading(true)
+    const res = await fetch(API)
+    const data = await res.json()
+    setSeeds(data)
+    setLoading(false)
   }
 
-  useEffect(() => { loadData(); }, []);
-
-  function openAdd() {
-    setEditing(null);
-    setFormData({ label: "", value: "" });
-    setIsModalOpen(true);
+  async function addSeed(body) {
+    await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+    loadSeeds()
   }
 
-  function openEdit(item) {
-    setEditing(item);
-    setFormData({
-      label: item.label,
-      value: item.value,
-    });
-    setIsModalOpen(true);
+  async function updateSeed(id, body) {
+    await fetch(`${API}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+    loadSeeds()
   }
 
-  async function handleSave() {
-    if (!formData.label.trim()) return alert("Label required");
-
-    if (editing) await updateProfileSeed(editing.id, formData);
-    else await createProfileSeed(formData);
-
-    setIsModalOpen(false);
-    loadData();
+  async function deleteSeed(id) {
+    await fetch(`${API}/${id}`, { method: "DELETE" })
+    loadSeeds()
   }
 
-  async function handleDelete(id) {
-    if (!confirm("Delete this seed?")) return;
-    await deleteProfileSeed(id);
-    loadData();
-  }
-
-  const columns = [
-    { key: "label", label: "Label" },
-    { key: "value", label: "Value" },
-  ];
+  useEffect(() => {
+    loadSeeds()
+  }, [])
 
   return (
-    <div className="page">
-      <h1>Profile Seeds</h1>
-      <button className="primary-btn" onClick={openAdd}>+ Add Seed</button>
+    <div className="page-container">
+      <h1 className="page-title">Profile Seeds</h1>
 
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <AdminTable 
-          columns={columns} 
-          data={items}
-          onEdit={openEdit}
-          onDelete={handleDelete}
-        />
-      )}
-
-      <AdminModal
-        isOpen={isModalOpen}
-        title={editing ? "Edit Seed" : "Add Seed"}
-        onSave={handleSave}
-        onClose={() => setIsModalOpen(false)}
-      >
-        <div className="form-group">
-          <label>Label*</label>
-          <input
-            value={formData.label}
-            onChange={(e) =>
-              setFormData({ ...formData, label: e.target.value })
-            }
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Value</label>
-          <input
-            value={formData.value}
-            onChange={(e) =>
-              setFormData({ ...formData, value: e.target.value })
-            }
-          />
-        </div>
-      </AdminModal>
+      <AdminTable
+        loading={loading}
+        columns={[
+          { key: "id", label: "ID", width: 60 },
+          { key: "label", label: "Label" },
+          { key: "value", label: "Value" },
+        ]}
+        data={seeds}
+        onAdd={addSeed}
+        onUpdate={updateSeed}
+        onDelete={deleteSeed}
+      />
     </div>
-  );
+  )
 }
