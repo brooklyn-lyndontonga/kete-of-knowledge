@@ -1,83 +1,65 @@
 /* eslint-disable react-hooks/set-state-in-effect */
+// admin-dashboard/src/pages/ReflectionTemplatesPage.jsx
 import React, { useEffect, useState } from "react"
-import { api } from "../api/client"
 import AdminTable from "../components/AdminTable"
+import "./AdminTable.css"
+
+const API = "http://localhost:3000/admin/reflection-templates"
 
 export default function ReflectionTemplatesPage() {
-  const [templates, setTemplates] = useState([])
-  const [formState, setFormState] = useState({ title: "", story: "", caption: "" })
-  const [editingId, setEditingId] = useState(null)
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  async function loadTemplates() {
-    const data = await api.get("/admin/reflection-templates")
-    setTemplates(data || [])
+  async function loadRows() {
+    setLoading(true)
+    const res = await fetch(API)
+    setRows(await res.json())
+    setLoading(false)
+  }
+
+  async function addRow(body) {
+    await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+    loadRows()
+  }
+
+  async function updateRow(id, body) {
+    await fetch(`${API}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+    loadRows()
+  }
+
+  async function deleteRow(id) {
+    await fetch(`${API}/${id}`, { method: "DELETE" })
+    loadRows()
   }
 
   useEffect(() => {
-    loadTemplates()
+    loadRows()
   }, [])
 
-  async function handleSubmit(e) {
-    e.preventDefault()
-
-    if (editingId) {
-      await api.put(`/admin/reflection-templates/${editingId}`, formState)
-      setEditingId(null)
-    } else {
-      await api.post("/admin/reflection-templates", formState)
-    }
-
-    setFormState({ title: "", story: "", caption: "" })
-    loadTemplates()
-  }
-
-  function startEdit(t) {
-    setEditingId(t.id)
-    setFormState({
-      title: t.title,
-      story: t.story,
-      caption: t.caption,
-    })
-  }
-
-  async function handleDelete(id) {
-    await api.delete(`/admin/reflection-templates/${id}`)
-    loadTemplates()
-  }
-
   return (
-    <div className="page">
-      <h1>Reflection Templates</h1>
+    <div className="page-container">
+      <h1 className="page-title">Reflection Templates</h1>
 
-      {/* Form */}
-      <form className="admin-form" onSubmit={handleSubmit}>
-        <input
-          placeholder="Title"
-          value={formState.title}
-          onChange={(e) => setFormState({ ...formState, title: e.target.value })}
-        />
-        <textarea
-          placeholder="Story"
-          value={formState.story}
-          onChange={(e) => setFormState({ ...formState, story: e.target.value })}
-        />
-        <input
-          placeholder="Caption"
-          value={formState.caption}
-          onChange={(e) => setFormState({ ...formState, caption: e.target.value })}
-        />
-
-        <button type="submit">
-          {editingId ? "Update Template" : "Add Template"}
-        </button>
-      </form>
-
-      {/* Table */}
       <AdminTable
-        data={templates}
-        fields={["title", "story", "caption"]}
-        onEdit={startEdit}
-        onDelete={handleDelete}
+        loading={loading}
+        columns={[
+          { key: "id", label: "ID", width: 60 },
+          { key: "title", label: "Title" },
+          { key: "story", label: "Story" },
+          { key: "caption", label: "Caption" },
+        ]}
+        data={rows}
+        onAdd={addRow}
+        onUpdate={updateRow}
+        onDelete={deleteRow}
       />
     </div>
   )
