@@ -1,15 +1,15 @@
 // server/routes/userReflections.js
-import express from "express";
+import express from "express"
 import {
-  listUserReflections,
-  createUserReflection,
-  deleteUserReflection,
-} from "../controllers/userReflectionsController.js";
+  listUserEntries,
+  createUserEntry,
+  removeUserEntry
+} from "../controllers/userReflectionsController.js"
 
-const router = express.Router();
+const router = express.Router()
 
-router.get("/", listUserReflections);
-router.post("/", createUserReflection);
-router.delete("/:id", deleteUserReflection);
+router.get("/", listUserEntries)
+router.post("/", createUserEntry)
+router.delete("/:id", removeUserEntry)
 
-export default router;
+export default router
