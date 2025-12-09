@@ -1,17 +1,19 @@
 // server/routes/reflectionTemplates.js
-import express from "express";
+import express from "express"
 import {
-  listReflectionTemplates,
-  createReflectionTemplate,
-  updateReflectionTemplate,
-  deleteReflectionTemplate,
-} from "../controllers/reflectionTemplatesController.js";
+  listTemplates,
+  getTemplate,
+  createTemplate,
+  updateTemplate,
+  removeTemplate
+} from "../controllers/reflectionTemplatesController.js"
 
-const router = express.Router();
+const router = express.Router()
 
-router.get("/", listReflectionTemplates);
-router.post("/", createReflectionTemplate);
-router.put("/:id", updateReflectionTemplate);
-router.delete("/:id", deleteReflectionTemplate);
+router.get("/", listTemplates)
+router.get("/:id", getTemplate)
+router.post("/", createTemplate)
+router.put("/:id", updateTemplate)
+router.delete("/:id", removeTemplate)
 
-export default router;
+export default router
