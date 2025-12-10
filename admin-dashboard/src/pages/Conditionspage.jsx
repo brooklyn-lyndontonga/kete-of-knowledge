@@ -1,76 +1,106 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-// admin-dashboard/src/pages/ConditionsPage.jsx
 import React, { useEffect, useState } from "react"
-import AdminTable from "../components/AdminTable"
-import "./AdminTable.css"
-
-const API = "http://localhost:3000/admin/conditions"
+import { conditionsApi } from "../api/conditions"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
 
 export default function ConditionsPage() {
-  const [conditions, setConditions] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [items, setItems] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [isModalOpen, setModalOpen] = useState(false)
+  const [isDeleteOpen, setDeleteOpen] = useState(false)
 
-  async function loadConditions() {
-    setLoading(true)
-    const res = await fetch(API)
-    const data = await res.json()
-    setConditions(data)
-    setLoading(false)
-  }
-
-  async function addCondition(body) {
-    body.triggers = JSON.stringify(body.triggers || [])
-    body.treatments = JSON.stringify(body.treatments || [])
-    body.images = JSON.stringify(body.images || [])
-
-    await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
-    loadConditions()
-  }
-
-  async function updateCondition(id, body) {
-    body.triggers = JSON.stringify(body.triggers || [])
-    body.treatments = JSON.stringify(body.treatments || [])
-    body.images = JSON.stringify(body.images || [])
-
-    await fetch(`${API}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
-    loadConditions()
-  }
-
-  async function deleteCondition(id) {
-    await fetch(`${API}/${id}`, { method: "DELETE" })
-    loadConditions()
+  async function loadItems() {
+    const data = await conditionsApi.list()
+    setItems(data)
   }
 
   useEffect(() => {
-    loadConditions()
+    loadItems()
   }, [])
+
+  function handleCreate() {
+    setSelected(null)
+    setModalOpen(true)
+  }
+
+  function handleEdit(item) {
+    setSelected(item)
+    setModalOpen(true)
+  }
+
+  function handleDelete(item) {
+    setSelected(item)
+    setDeleteOpen(true)
+  }
+
+  async function submitForm(values) {
+    const payload = {
+      ...values,
+      triggers: values.triggers ? values.triggers.split(",").map(s => s.trim()) : [],
+      treatments: values.treatments ? values.treatments.split(",").map(s => s.trim()) : [],
+      images: values.images ? values.images.split(",").map(s => s.trim()) : [],
+    }
+
+    if (selected) {
+      await conditionsApi.update(selected.id, payload)
+    } else {
+      await conditionsApi.create(payload)
+    }
+
+    setModalOpen(false)
+    await loadItems()
+  }
+
+  async function confirmDelete() {
+    await conditionsApi.remove(selected.id)
+    setDeleteOpen(false)
+    await loadItems()
+  }
 
   return (
     <div className="page-container">
       <h1 className="page-title">Conditions</h1>
 
-      <AdminTable
-        loading={loading}
-        columns={[
-          { key: "id", label: "ID", width: 60 },
-          { key: "name", label: "Condition Name" },
-          { key: "description", label: "Description" },
-          { key: "triggers", label: "Triggers (JSON)" },
-          { key: "treatments", label: "Treatments (JSON)" },
-          { key: "images", label: "Images (JSON)" },
+      <button className="button-primary" onClick={handleCreate}>
+        + Add Condition
+      </button>
+
+      <CrudTable
+        items={items}
+        fields={["id", "name"]}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <CrudModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        title={selected ? "Edit Condition" : "New Condition"}
+        initialValues={
+          selected ||
+          {
+            name: "",
+            triggers: "",
+            treatments: "",
+            images: "",
+          }
+        }
+        fields={[
+          { name: "name", label: "Name", type: "text" },
+          { name: "triggers", label: "Triggers (comma separated)", type: "textarea" },
+          { name: "treatments", label: "Treatments (comma separated)", type: "textarea" },
+          { name: "images", label: "Image URLs (comma separated)", type: "textarea" },
         ]}
-        data={conditions}
-        onAdd={addCondition}
-        onUpdate={updateCondition}
-        onDelete={deleteCondition}
+        onSubmit={submitForm}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        itemName={selected?.name}
       />
     </div>
   )

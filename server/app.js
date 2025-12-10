@@ -1,30 +1,25 @@
 // server/app.js
 import express from "express"
 import cors from "cors"
-
 import { connectDB, initTables } from "./db/init.js"
 
-// USER ROUTES
-import goalsRoutes from "./routes/goals.js"
-import symptomsRoutes from "./routes/symptoms.js"
-import medicinesRoutes from "./routes/medicines.js"
-import contactsRoutes from "./routes/contacts.js"
-import userReflectionsRoutes from "./routes/userReflections.js"
+// ROUTERS
+import userGoals from "./routes/goals.js"
+import userSymptoms from "./routes/symptoms.js"
+import userMedicines from "./routes/medicines.js"
+import userContacts from "./routes/contacts.js"
+import userReflections from "./routes/userReflections.js"
 
-// ADMIN ROUTES
-import supportContactsRoutes from "./routes/supportContacts.js"
-import resourceCategoriesRoutes from "./routes/resourceCategories.js"
-import resourcesRoutes from "./routes/resources.js"
-import conditionsRoutes from "./routes/conditions.js"
-import whakataukiRoutes from "./routes/whakatauki.js"
-import snapshotsRoutes from "./routes/snapshots.js"
+import adminRoutes from "./routes/admin.js"  // ✅ MASTER ADMIN ROUTER
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
 
-// DB INIT
+// =========================
+// DATABASE INIT
+// =========================
 let db
 try {
   console.log("🔌 Connecting to DB...")
@@ -41,34 +36,30 @@ try {
 app.set("db", db)
 
 // =========================
-// ROUTES
+// MAIN API ROUTER
 // =========================
 const router = express.Router()
 
-// USER DATA
-router.use("/user/goals", goalsRoutes)
-router.use("/user/symptoms", symptomsRoutes)
-router.use("/user/medicines", medicinesRoutes)
-router.use("/user/contacts", contactsRoutes)
-router.use("/user/reflections", userReflectionsRoutes)
+// USER ROUTES
+router.use("/user/goals", userGoals)
+router.use("/user/symptoms", userSymptoms)
+router.use("/user/medicines", userMedicines)
+router.use("/user/contacts", userContacts)
+router.use("/user/reflections", userReflections)
 
-// ADMIN CONTENT
-router.use("/admin/support", supportContactsRoutes)
-router.use("/admin/resource-categories", resourceCategoriesRoutes)
-router.use("/admin/resources", resourcesRoutes)
-router.use("/admin/conditions", conditionsRoutes)
-router.use("/admin/whakatauki", whakataukiRoutes)
-router.use("/admin/snapshots", snapshotsRoutes)
+// ADMIN ROUTES
+router.use("/admin", adminRoutes)   // ✅ ONLY ONE LINE
 
-// Attach router under /api
 app.use("/api", router)
 
-// API homepage
+// =========================
+// HOME ROUTE
+// =========================
 app.get("/", (req, res) => {
   res.json({
     message: "Kete of Knowledge API is running 🚀",
-    admin: "/api/admin/*",
-    user: "/api/user/*",
+    user_routes: "/api/user/*",
+    admin_routes: "/api/admin/*",
   })
 })
 

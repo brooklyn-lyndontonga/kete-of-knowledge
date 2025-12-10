@@ -1,65 +1,101 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-// admin-dashboard/src/pages/ReflectionTemplatesPage.jsx
 import React, { useEffect, useState } from "react"
-import AdminTable from "../components/AdminTable"
-import "./AdminTable.css"
-
-const API = "http://localhost:3000/admin/reflection-templates"
+import { reflectionTemplatesApi } from "../api/reflections"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
 
 export default function ReflectionTemplatesPage() {
-  const [rows, setRows] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [items, setItems] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [isModalOpen, setModalOpen] = useState(false)
+  const [isDeleteOpen, setDeleteOpen] = useState(false)
 
-  async function loadRows() {
-    setLoading(true)
-    const res = await fetch(API)
-    setRows(await res.json())
-    setLoading(false)
-  }
-
-  async function addRow(body) {
-    await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
-    loadRows()
-  }
-
-  async function updateRow(id, body) {
-    await fetch(`${API}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
-    loadRows()
-  }
-
-  async function deleteRow(id) {
-    await fetch(`${API}/${id}`, { method: "DELETE" })
-    loadRows()
+  async function loadItems() {
+    const data = await reflectionTemplatesApi.listTemplates()
+    setItems(data)
   }
 
   useEffect(() => {
-    loadRows()
+    loadItems()
   }, [])
+
+  function handleCreate() {
+    setSelected(null)
+    setModalOpen(true)
+  }
+
+  function handleEdit(item) {
+    setSelected(item)
+    setModalOpen(true)
+  }
+
+  function handleDelete(item) {
+    setSelected(item)
+    setDeleteOpen(true)
+  }
+
+  async function submitForm(values) {
+    const payload = {
+      ...values,
+      order_index: Number(values.order_index) || 0,
+    }
+
+    if (selected) {
+      await reflectionTemplatesApi.updateTemplate(selected.id, payload)
+    } else {
+      await reflectionTemplatesApi.createTemplate(payload)
+    }
+
+    setModalOpen(false)
+    await loadItems()
+  }
+
+  async function confirmDelete() {
+    await reflectionTemplatesApi.deleteTemplate(selected.id)
+    setDeleteOpen(false)
+    await loadItems()
+  }
 
   return (
     <div className="page-container">
       <h1 className="page-title">Reflection Templates</h1>
 
-      <AdminTable
-        loading={loading}
-        columns={[
-          { key: "id", label: "ID", width: 60 },
-          { key: "title", label: "Title" },
-          { key: "story", label: "Story" },
-          { key: "caption", label: "Caption" },
+      <button className="button-primary" onClick={handleCreate}>
+        + Add Template
+      </button>
+
+      <CrudTable
+        items={items}
+        fields={["id", "title", "order_index"]}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <CrudModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        title={selected ? "Edit Template" : "New Template"}
+        initialValues={
+          selected || {
+            title: "",
+            body: "",
+            order_index: 0,
+          }
+        }
+        fields={[
+          { name: "title", label: "Title", type: "text" },
+          { name: "body", label: "Body", type: "textarea" },
+          { name: "order_index", label: "Display Order", type: "number" },
         ]}
-        data={rows}
-        onAdd={addRow}
-        onUpdate={updateRow}
-        onDelete={deleteRow}
+        onSubmit={submitForm}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        itemName={selected?.title}
       />
     </div>
   )

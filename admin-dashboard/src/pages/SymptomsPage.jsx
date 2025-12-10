@@ -1,66 +1,102 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react";
-import AdminTable from "../components/AdminTable";
-import { fetchUserSymptoms } from "../api/userSymptoms";
+import React, { useEffect, useState } from "react"
+import { symptomsApi } from "../api/symptoms"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
 
 export default function SymptomsPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [isModalOpen, setModalOpen] = useState(false)
+  const [isDeleteOpen, setDeleteOpen] = useState(false)
 
-  async function loadData() {
-    setLoading(true);
-    const data = await fetchUserSymptoms();
-    setItems(data);
-    setLoading(false);
+  async function loadItems() {
+    const data = await symptomsApi.list()
+    setItems(data)
   }
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadItems()
+  }, [])
 
-  const columns = [
-    { key: "date", label: "Date" },
-    { key: "symptom", label: "Symptom" },
-    { key: "severity", label: "Severity (1–5)" },
-    { key: "notes", label: "Notes" },
-  ];
+  function handleCreate() {
+    setSelected(null)
+    setModalOpen(true)
+  }
 
-  function exportCSV() {
-    const csvRows = [
-      ["Date", "Symptom", "Severity", "Notes"],
-      ...items.map(i => [
-        i.date,
-        i.symptom,
-        i.severity,
-        i.notes?.replace(/,/g, ";") || "",
-      ]),
-    ];
-    const blob = new Blob([csvRows.map(r => r.join(",")).join("\n")], {
-      type: "text/csv",
-    });
-    const url = URL.createObjectURL(blob);
+  function handleEdit(item) {
+    setSelected(item)
+    setModalOpen(true)
+  }
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "user_symptoms.csv";
-    a.click();
+  function handleDelete(item) {
+    setSelected(item)
+    setDeleteOpen(true)
+  }
+
+  async function submitForm(values) {
+    const payload = {
+      ...values,
+      severity_scale: Number(values.severity_scale) || 1,
+    }
+
+    if (selected) {
+      await symptomsApi.update(selected.id, payload)
+    } else {
+      await symptomsApi.create(payload)
+    }
+
+    setModalOpen(false)
+    await loadItems()
+  }
+
+  async function confirmDelete() {
+    await symptomsApi.remove(selected.id)
+    setDeleteOpen(false)
+    await loadItems()
   }
 
   return (
-    <div className="page">
-      <h1>User Symptoms</h1>
+    <div className="page-container">
+      <h1 className="page-title">Symptoms</h1>
 
-      <button className="outline-btn" onClick={exportCSV}>
-        Export CSV
+      <button className="button-primary" onClick={handleCreate}>
+        + Add Symptom
       </button>
 
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <AdminTable 
-          columns={columns}
-          data={items}
-          readOnly
-        />
-      )}
+      <CrudTable
+        items={items}
+        fields={["id", "name", "severity_scale"]}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <CrudModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        title={selected ? "Edit Symptom" : "New Symptom"}
+        initialValues={
+          selected || {
+            name: "",
+            description: "",
+            severity_scale: 1,
+          }
+        }
+        fields={[
+          { name: "name", label: "Name", type: "text" },
+          { name: "description", label: "Description", type: "textarea" },
+          { name: "severity_scale", label: "Severity Scale (1–10)", type: "number" },
+        ]}
+        onSubmit={submitForm}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        itemName={selected?.name}
+      />
     </div>
-  );
+  )
 }

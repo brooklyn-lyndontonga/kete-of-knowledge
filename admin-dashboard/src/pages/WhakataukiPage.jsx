@@ -1,64 +1,96 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-// admin-dashboard/src/pages/WhakataukiPage.jsx
 import React, { useEffect, useState } from "react"
-import AdminTable from "../components/AdminTable"
-import "./AdminTable.css"
-
-const API = "http://localhost:3000/admin/whakatauki"
+import { whakataukiApi } from "../api/whakatauki"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
 
 export default function WhakataukiPage() {
-  const [rows, setRows] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [items, setItems] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [isModalOpen, setModalOpen] = useState(false)
+  const [isDeleteOpen, setDeleteOpen] = useState(false)
 
-  async function loadRows() {
-    setLoading(true)
-    const res = await fetch(API)
-    setRows(await res.json())
-    setLoading(false)
-  }
-
-  async function addRow(body) {
-    await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
-    loadRows()
-  }
-
-  async function updateRow(id, body) {
-    await fetch(`${API}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
-    loadRows()
-  }
-
-  async function deleteRow(id) {
-    await fetch(`${API}/${id}`, { method: "DELETE" })
-    loadRows()
+  async function loadItems() {
+    const data = await whakataukiApi.list()
+    setItems(data)
   }
 
   useEffect(() => {
-    loadRows()
+    loadItems()
   }, [])
+
+  function handleCreate() {
+    setSelected(null)
+    setModalOpen(true)
+  }
+
+  function handleEdit(item) {
+    setSelected(item)
+    setModalOpen(true)
+  }
+
+  function handleDelete(item) {
+    setSelected(item)
+    setDeleteOpen(true)
+  }
+
+  async function submitForm(values) {
+    if (selected) {
+      await whakataukiApi.update(selected.id, values)
+    } else {
+      await whakataukiApi.create(values)
+    }
+
+    setModalOpen(false)
+    await loadItems()
+  }
+
+  async function confirmDelete() {
+    await whakataukiApi.remove(selected.id)
+    setDeleteOpen(false)
+    await loadItems()
+  }
 
   return (
     <div className="page-container">
       <h1 className="page-title">Whakataukī</h1>
 
-      <AdminTable
-        loading={loading}
-        columns={[
-          { key: "id", label: "ID", width: 60 },
-          { key: "text", label: "Text" },
-          { key: "translation", label: "Translation" },
+      <button className="button-primary" onClick={handleCreate}>
+        + Add Whakataukī
+      </button>
+
+      <CrudTable
+        items={items}
+        fields={["id", "text", "translation", "author"]}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <CrudModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        title={selected ? "Edit Whakataukī" : "New Whakataukī"}
+        initialValues={
+          selected || {
+            text: "",
+            translation: "",
+            author: "",
+          }
+        }
+        fields={[
+          { name: "text", label: "Whakataukī", type: "textarea" },
+          { name: "translation", label: "Translation", type: "textarea" },
+          { name: "author", label: "Author (optional)", type: "text" },
         ]}
-        data={rows}
-        onAdd={addRow}
-        onUpdate={updateRow}
-        onDelete={deleteRow}
+        onSubmit={submitForm}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        itemName={selected?.text}
       />
     </div>
   )
