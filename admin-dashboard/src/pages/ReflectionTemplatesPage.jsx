@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react"
 import CrudTable from "../components/CrudTable"
 import CrudModal from "../components/CrudModal"
@@ -15,19 +16,28 @@ export default function ReflectionTemplatesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
 
-  async function load() {
-    try {
-      const data = await templatesApi.fetchReflectionTemplates()
-      setRows(data)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+  // ----------------------------
+  // LOAD DATA SAFELY
+  // ----------------------------
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await templatesApi.fetchReflectionTemplates()
+        setRows(Array.isArray(data) ? data : [])
+      } catch (err) {
+        setError(err.message)
+        showToast(err.message, "error")
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
-  useEffect(() => load(), [])
+    loadData()
+  }, [])
 
+  // ----------------------------
+  // SAVE HANDLER
+  // ----------------------------
   async function handleSave(formData) {
     try {
       if (editing) {
@@ -37,33 +47,52 @@ export default function ReflectionTemplatesPage() {
         await templatesApi.createReflectionTemplate(formData)
         showToast("Template created")
       }
-      setEditing(null)
+
       setModalOpen(false)
-      load()
+      setEditing(null)
+
+      const refreshed = await templatesApi.fetchReflectionTemplates()
+      setRows(refreshed)
+
     } catch (err) {
       showToast(err.message, "error")
     }
   }
 
+  // ----------------------------
+  // DELETE HANDLER
+  // ----------------------------
   async function handleDelete() {
     try {
       await templatesApi.deleteReflectionTemplate(deleteId)
       showToast("Deleted")
+
       setDeleteId(null)
-      load()
+
+      const refreshed = await templatesApi.fetchReflectionTemplates()
+      setRows(refreshed)
     } catch (err) {
       showToast(err.message, "error")
     }
   }
+
+  // ----------------------------
+  // RENDER
+  // ----------------------------
+  if (loading) return <p>Loading…</p>
+  if (error) return <p className="text-red-600">{error}</p>
 
   return (
     <div className="page-container">
       <h1>Reflection Templates</h1>
 
-      <button className="btn-primary" onClick={() => {
-        setEditing(null)
-        setModalOpen(true)
-      }}>
+      <button
+        className="btn-primary"
+        onClick={() => {
+          setEditing(null)
+          setModalOpen(true)
+        }}
+      >
         + Add Template
       </button>
 
@@ -72,8 +101,9 @@ export default function ReflectionTemplatesPage() {
         loading={loading}
         error={error}
         columns={[
+          { key: "category", label: "Category" },
           { key: "title", label: "Title" },
-          { key: "description", label: "Description" },
+          { key: "prompt", label: "Prompt" },
         ]}
         onEdit={(row) => {
           setEditing(row)
@@ -86,8 +116,17 @@ export default function ReflectionTemplatesPage() {
         open={modalOpen}
         initial={editing}
         fields={[
+          {
+            name: "category",
+            label: "Category",
+            type: "select",
+            options: [
+              { label: "Daily", value: "daily" },
+              { label: "Weekly", value: "weekly" },
+            ],
+          },
           { name: "title", label: "Title" },
-          { name: "description", label: "Description", type: "textarea" },
+          { name: "prompt", label: "Prompt", type: "textarea" },
         ]}
         onSave={handleSave}
         onClose={() => {
