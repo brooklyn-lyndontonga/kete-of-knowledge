@@ -1,37 +1,17 @@
-import { API_URL } from "./client"
+import { api } from "./client";
 
-export const reflectionsApi = {
-  list: async () => {
-    const res = await fetch(`${API_URL}/user/reflections`)
-    if (!res.ok) throw new Error("Failed to fetch reflections")
-    return res.json()
-  },
+export function fetchUserReflections() {
+  return api.get("/user/reflections");
+}
 
-  create: async (data) => {
-    const res = await fetch(`${API_URL}/user/reflections`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to create reflection")
-    return res.json()
-  },
+export function createUserReflection(data) {
+  return api.post("/user/reflections", data);
+}
 
-  update: async (id, data) => {
-    const res = await fetch(`${API_URL}/user/reflections/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to update reflection")
-    return res.json()
-  },
+export function updateUserReflection(id, data) {
+  return api.put(`/user/reflections/${id}`, data);
+}
 
-  remove: async (id) => {
-    const res = await fetch(`${API_URL}/user/reflections/${id}`, {
-      method: "DELETE",
-    })
-    if (!res.ok) throw new Error("Failed to delete reflection")
-    return res.json()
-  },
+export function deleteUserReflection(id) {
+  return api.delete(`/user/reflections/${id}`);
 }

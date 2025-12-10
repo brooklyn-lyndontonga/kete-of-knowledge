@@ -1,37 +1,17 @@
-import { API_URL } from "./client"
+import { api } from "./client";
 
-export const snapshotsApi = {
-  list: async () => {
-    const res = await fetch(`${API_URL}/admin/snapshots`)
-    if (!res.ok) throw new Error("Failed to fetch snapshots")
-    return res.json()
-  },
+export function fetchSnapshots() {
+  return api.get("/admin/snapshots");
+}
 
-  create: async (data) => {
-    const res = await fetch(`${API_URL}/admin/snapshots`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to create snapshot")
-    return res.json()
-  },
+export function createSnapshot(data) {
+  return api.post("/admin/snapshots", data);
+}
 
-  update: async (id, data) => {
-    const res = await fetch(`${API_URL}/admin/snapshots/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to update snapshot")
-    return res.json()
-  },
+export function updateSnapshot(id, data) {
+  return api.put(`/admin/snapshots/${id}`, data);
+}
 
-  remove: async (id) => {
-    const res = await fetch(`${API_URL}/admin/snapshots/${id}`, {
-      method: "DELETE",
-    })
-    if (!res.ok) throw new Error("Failed to delete snapshot")
-    return res.json()
-  },
+export function deleteSnapshot(id) {
+  return api.delete(`/admin/snapshots/${id}`);
 }

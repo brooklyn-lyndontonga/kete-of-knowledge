@@ -1,95 +1,96 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react"
-import { goalsApi } from "../api/goals"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import React, { useEffect, useState } from "react";
+import CrudTable from "../components/CrudTable";
+import CrudModal from "../components/CrudModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import { toast } from "../components/ToastProvider";
+import * as goalsApi from "../api/goals";
 
 export default function GoalsPage() {
-  const [items, setItems] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [isModalOpen, setModalOpen] = useState(false)
-  const [isDeleteOpen, setDeleteOpen] = useState(false)
+  const [goals, setGoals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  async function loadItems() {
-    const data = await goalsApi.list()
-    setItems(data)
-  }
+  const [editing, setEditing] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
-  useEffect(() => {
-    loadItems()
-  }, [])
-
-  function handleCreate() {
-    setSelected(null)
-    setModalOpen(true)
-  }
-
-  function handleEdit(item) {
-    setSelected(item)
-    setModalOpen(true)
-  }
-
-  function handleDelete(item) {
-    setSelected(item)
-    setDeleteOpen(true)
-  }
-
-  async function submitForm(values) {
-    if (selected) {
-      await goalsApi.update(selected.id, values)
-    } else {
-      await goalsApi.create(values)
+  async function load() {
+    try {
+      const data = await goalsApi.fetchGoals();
+      setGoals(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    setModalOpen(false)
-    await loadItems()
   }
 
-  async function confirmDelete() {
-    await goalsApi.remove(selected.id)
-    setDeleteOpen(false)
-    await loadItems()
+  useEffect(() => { load(); }, []);
+
+  async function handleSave(formData) {
+    try {
+      if (editing) {
+        await goalsApi.updateGoal(editing.id, formData);
+        toast.success("Goal updated");
+      } else {
+        await goalsApi.createGoal(formData);
+        toast.success("Goal created");
+      }
+      setModalOpen(false);
+      setEditing(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await goalsApi.deleteGoal(deleteId);
+      toast.success("Deleted");
+      setDeleteId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">Goals</h1>
+      <h1>User Goals</h1>
 
-      <button className="button-primary" onClick={handleCreate}>
+      <button className="btn-primary" onClick={() => { setEditing(null); setModalOpen(true); }}>
         + Add Goal
       </button>
 
       <CrudTable
-        items={items}
-        fields={["id", "title"]}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        rows={goals}
+        loading={loading}
+        error={error}
+        columns={[
+          { key: "title", label: "Title" },
+          { key: "description", label: "Description" }
+        ]}
+        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onDelete={(row) => setDeleteId(row.id)}
       />
 
       <CrudModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        title={selected ? "Edit Goal" : "New Goal"}
-        initialValues={
-          selected || {
-            title: "",
-            description: "",
-          }
-        }
+        open={modalOpen}
+        initial={editing}
         fields={[
-          { name: "title", label: "Title", type: "text" },
-          { name: "description", label: "Description", type: "textarea" },
+          { name: "title", label: "Title" },
+          { name: "description", label: "Description", type: "textarea" }
         ]}
-        onSubmit={submitForm}
+        onSave={handleSave}
+        onClose={() => { setEditing(null); setModalOpen(false); }}
       />
 
       <DeleteConfirmModal
-        isOpen={isDeleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={confirmDelete}
-        itemName={selected?.title}
+        open={deleteId !== null}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
       />
     </div>
-  )
+  );
 }

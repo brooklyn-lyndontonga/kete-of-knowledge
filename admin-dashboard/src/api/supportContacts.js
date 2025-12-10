@@ -1,37 +1,17 @@
-import { API_URL } from "./client"
+import { api } from "./client";
 
-export const supportContactsApi = {
-  list: async () => {
-    const res = await fetch(`${API_URL}/admin/support`)
-    if (!res.ok) throw new Error("Failed to fetch support contacts")
-    return res.json()
-  },
+export function fetchSupportContacts() {
+  return api.get("/admin/support");
+}
 
-  create: async (data) => {
-    const res = await fetch(`${API_URL}/admin/support`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to create support contact")
-    return res.json()
-  },
+export function createSupportContact(data) {
+  return api.post("/admin/support", data);
+}
 
-  update: async (id, data) => {
-    const res = await fetch(`${API_URL}/admin/support/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to update support contact")
-    return res.json()
-  },
+export function updateSupportContact(id, data) {
+  return api.put(`/admin/support/${id}`, data);
+}
 
-  remove: async (id) => {
-    const res = await fetch(`${API_URL}/admin/support/${id}`, {
-      method: "DELETE",
-    })
-    if (!res.ok) throw new Error("Failed to delete support contact")
-    return res.json()
-  },
+export function deleteSupportContact(id) {
+  return api.delete(`/admin/support/${id}`);
 }

@@ -1,102 +1,102 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react"
-import { profileSeedsApi } from "../api/profileSeeds"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import React, { useEffect, useState } from "react";
+import CrudTable from "../components/CrudTable";
+import CrudModal from "../components/CrudModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import { toast } from "../components/ToastProvider";
+import * as profileSeedsApi from "../api/profileSeeds";
 
 export default function ProfileSeedsPage() {
-  const [items, setItems] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [isModalOpen, setModalOpen] = useState(false)
-  const [isDeleteOpen, setDeleteOpen] = useState(false)
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  async function loadItems() {
-    const data = await profileSeedsApi.list()
-    setItems(data)
-  }
+  const [editing, setEditing] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
-  useEffect(() => {
-    loadItems()
-  }, [])
-
-  function handleCreate() {
-    setSelected(null)
-    setModalOpen(true)
-  }
-
-  function handleEdit(item) {
-    setSelected(item)
-    setModalOpen(true)
-  }
-
-  function handleDelete(item) {
-    setSelected(item)
-    setDeleteOpen(true)
-  }
-
-  async function submitForm(values) {
-    const payload = {
-      ...values,
-      order_index: Number(values.order_index) || 0,
+  async function load() {
+    try {
+      setLoading(true);
+      const data = await profileSeedsApi.fetchProfileSeeds();
+      setItems(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    if (selected) {
-      await profileSeedsApi.update(selected.id, payload)
-    } else {
-      await profileSeedsApi.create(payload)
-    }
-
-    setModalOpen(false)
-    await loadItems()
   }
 
-  async function confirmDelete() {
-    await profileSeedsApi.remove(selected.id)
-    setDeleteOpen(false)
-    await loadItems()
+  useEffect(() => { load(); }, []);
+
+  async function handleSave(data) {
+    try {
+      if (editing) {
+        await profileSeedsApi.updateProfileSeed(editing.id, data);
+        toast.success("Profile seed updated");
+      } else {
+        await profileSeedsApi.createProfileSeed(data);
+        toast.success("Profile seed created");
+      }
+      setIsModalOpen(false);
+      setEditing(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await profileSeedsApi.deleteProfileSeed(deleteId);
+      toast.success("Profile seed deleted");
+      setDeleteId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">Profile Seeds</h1>
+      <h1>Profile Seeds</h1>
 
-      <button className="button-primary" onClick={handleCreate}>
+      <button
+        className="btn-primary"
+        onClick={() => { setEditing(null); setIsModalOpen(true); }}
+      >
         + Add Seed
       </button>
 
       <CrudTable
-        items={items}
-        fields={["id", "label", "order_index"]}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        rows={items}
+        loading={loading}
+        error={error}
+        columns={[
+          { key: "title", label: "Title" },
+          { key: "description", label: "Description" },
+          { key: "orderIndex", label: "Order" }
+        ]}
+        onEdit={(row) => { setEditing(row); setIsModalOpen(true); }}
+        onDelete={(row) => setDeleteId(row.id)}
       />
 
       <CrudModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        title={selected ? "Edit Seed" : "New Seed"}
-        initialValues={
-          selected || {
-            label: "",
-            description: "",
-            order_index: 0,
-          }
-        }
+        open={isModalOpen}
+        initial={editing}
         fields={[
-          { name: "label", label: "Label", type: "text" },
+          { name: "title", label: "Title" },
           { name: "description", label: "Description", type: "textarea" },
-          { name: "order_index", label: "Display Order", type: "number" },
+          { name: "orderIndex", label: "Order", type: "number" },
         ]}
-        onSubmit={submitForm}
+        onSave={handleSave}
+        onClose={() => { setEditing(null); setIsModalOpen(false); }}
       />
 
       <DeleteConfirmModal
-        isOpen={isDeleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={confirmDelete}
-        itemName={selected?.label}
+        open={deleteId !== null}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
       />
     </div>
-  )
+  );
 }

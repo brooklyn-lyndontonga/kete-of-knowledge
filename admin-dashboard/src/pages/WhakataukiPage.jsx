@@ -1,97 +1,101 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react"
-import { whakataukiApi } from "../api/whakatauki"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import React, { useEffect, useState } from "react";
+import CrudTable from "../components/CrudTable";
+import CrudModal from "../components/CrudModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import { toast } from "../components/ToastProvider";
+import * as whakataukiApi from "../api/whakatauki";
 
 export default function WhakataukiPage() {
-  const [items, setItems] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [isModalOpen, setModalOpen] = useState(false)
-  const [isDeleteOpen, setDeleteOpen] = useState(false)
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  async function loadItems() {
-    const data = await whakataukiApi.list()
-    setItems(data)
-  }
+  const [editing, setEditing] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
-  useEffect(() => {
-    loadItems()
-  }, [])
-
-  function handleCreate() {
-    setSelected(null)
-    setModalOpen(true)
-  }
-
-  function handleEdit(item) {
-    setSelected(item)
-    setModalOpen(true)
-  }
-
-  function handleDelete(item) {
-    setSelected(item)
-    setDeleteOpen(true)
-  }
-
-  async function submitForm(values) {
-    if (selected) {
-      await whakataukiApi.update(selected.id, values)
-    } else {
-      await whakataukiApi.create(values)
+  async function load() {
+    try {
+      const data = await whakataukiApi.fetchWhakatauki();
+      setRows(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    setModalOpen(false)
-    await loadItems()
   }
 
-  async function confirmDelete() {
-    await whakataukiApi.remove(selected.id)
-    setDeleteOpen(false)
-    await loadItems()
+  useEffect(() => { load(); }, []);
+
+  async function handleSave(formData) {
+    try {
+      if (editing) {
+        await whakataukiApi.updateWhakatauki(editing.id, formData);
+        toast.success("Whakataukī updated");
+      } else {
+        await whakataukiApi.createWhakatauki(formData);
+        toast.success("Whakataukī created");
+      }
+
+      setModalOpen(false);
+      setEditing(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await whakataukiApi.deleteWhakatauki(deleteId);
+      toast.success("Deleted");
+      setDeleteId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">Whakataukī</h1>
+      <h1>Whakataukī</h1>
 
-      <button className="button-primary" onClick={handleCreate}>
+      <button
+        className="btn-primary"
+        onClick={() => { setEditing(null); setModalOpen(true); }}
+      >
         + Add Whakataukī
       </button>
 
       <CrudTable
-        items={items}
-        fields={["id", "text", "translation", "author"]}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        rows={rows}
+        loading={loading}
+        error={error}
+        columns={[
+          { key: "text", label: "Text" },
+          { key: "translation", label: "Translation" },
+        ]}
+        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onDelete={(row) => setDeleteId(row.id)}
       />
 
       <CrudModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        title={selected ? "Edit Whakataukī" : "New Whakataukī"}
-        initialValues={
-          selected || {
-            text: "",
-            translation: "",
-            author: "",
-          }
-        }
+        open={modalOpen}
+        initial={editing}
         fields={[
-          { name: "text", label: "Whakataukī", type: "textarea" },
+          { name: "text", label: "Text", type: "textarea" },
           { name: "translation", label: "Translation", type: "textarea" },
-          { name: "author", label: "Author (optional)", type: "text" },
+          { name: "attribution", label: "Attribution" },
         ]}
-        onSubmit={submitForm}
+        onSave={handleSave}
+        onClose={() => { setEditing(null); setModalOpen(false); }}
       />
 
       <DeleteConfirmModal
-        isOpen={isDeleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={confirmDelete}
-        itemName={selected?.text}
+        open={deleteId !== null}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
       />
     </div>
-  )
+  );
 }

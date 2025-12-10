@@ -1,37 +1,17 @@
-import { API_URL } from "./client"
+import { api } from "./client";
 
-export const profileSeedsApi = {
-  list: async () => {
-    const res = await fetch(`${API_URL}/admin/profile-seeds`)
-    if (!res.ok) throw new Error("Failed to fetch profile seeds")
-    return res.json()
-  },
+export function fetchProfileSeeds() {
+  return api.get("/admin/profileSeeds");
+}
 
-  create: async (data) => {
-    const res = await fetch(`${API_URL}/admin/profile-seeds`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to create profile seed")
-    return res.json()
-  },
+export function createProfileSeed(data) {
+  return api.post("/admin/profileSeeds", data);
+}
 
-  update: async (id, data) => {
-    const res = await fetch(`${API_URL}/admin/profile-seeds/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to update profile seed")
-    return res.json()
-  },
+export function updateProfileSeed(id, data) {
+  return api.put(`/admin/profileSeeds/${id}`, data);
+}
 
-  remove: async (id) => {
-    const res = await fetch(`${API_URL}/admin/profile-seeds/${id}`, {
-      method: "DELETE",
-    })
-    if (!res.ok) throw new Error("Failed to delete profile seed")
-    return res.json()
-  },
+export function deleteProfileSeed(id) {
+  return api.delete(`/admin/profileSeeds/${id}`);
 }

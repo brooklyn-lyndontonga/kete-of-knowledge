@@ -1,116 +1,112 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react"
-import { resourcesApi } from "../api/resources"
-import { resourceCategoriesApi } from "../api/resourceCategories"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import React, { useEffect, useState } from "react";
+import CrudTable from "../components/CrudTable";
+import CrudModal from "../components/CrudModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import { toast } from "../components/ToastProvider";
+import * as resourcesApi from "../api/resources";
+import * as categoriesApi from "../api/resourceCategories";
 
 export default function ResourcesPage() {
-  const [items, setItems] = useState([])
-  const [categories, setCategories] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [isModalOpen, setModalOpen] = useState(false)
-  const [isDeleteOpen, setDeleteOpen] = useState(false)
+  const [rows, setRows] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  async function loadData() {
-    const [resources, cats] = await Promise.all([
-      resourcesApi.list(),
-      resourceCategoriesApi.list(),
-    ])
+  const [editing, setEditing] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
-    setItems(resources)
-    setCategories(cats)
-  }
+  async function load() {
+    try {
+      const [res, cats] = await Promise.all([
+        resourcesApi.fetchResources(),
+        categoriesApi.fetchResourceCategories()
+      ]);
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  function handleCreate() {
-    setSelected(null)
-    setModalOpen(true)
-  }
-
-  function handleEdit(item) {
-    setSelected(item)
-    setModalOpen(true)
-  }
-
-  function handleDelete(item) {
-    setSelected(item)
-    setDeleteOpen(true)
-  }
-
-  async function submitForm(values) {
-    if (selected) {
-      await resourcesApi.update(selected.id, values)
-    } else {
-      await resourcesApi.create(values)
+      setRows(res);
+      setCategories(cats);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    setModalOpen(false)
-    await loadData()
   }
 
-  async function confirmDelete() {
-    await resourcesApi.remove(selected.id)
-    setDeleteOpen(false)
-    await loadData()
+  useEffect(() => { load(); }, []);
+
+  async function handleSave(formData) {
+    try {
+      if (editing) {
+        await resourcesApi.updateResource(editing.id, formData);
+        toast.success("Resource updated");
+      } else {
+        await resourcesApi.createResource(formData);
+        toast.success("Resource created");
+      }
+
+      setEditing(null);
+      setModalOpen(false);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await resourcesApi.deleteResource(deleteId);
+      toast.success("Deleted");
+      setDeleteId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">Resources</h1>
+      <h1>Library Resources</h1>
 
-      <button className="button-primary" onClick={handleCreate}>
+      <button className="btn-primary" onClick={() => { setEditing(null); setModalOpen(true); }}>
         + Add Resource
       </button>
 
       <CrudTable
-        items={items}
-        fields={["id", "title", "subtitle", "category_id"]}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        rows={rows}
+        loading={loading}
+        error={error}
+        columns={[
+          { key: "title", label: "Title" },
+          { key: "summary", label: "Summary" },
+          { key: "categoryId", label: "Category ID" },
+        ]}
+        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onDelete={(row) => setDeleteId(row.id)}
       />
 
       <CrudModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        title={selected ? "Edit Resource" : "New Resource"}
-        initialValues={
-          selected || {
-            title: "",
-            subtitle: "",
-            body: "",
-            image: "",
-            category_id: "",
-          }
-        }
+        open={modalOpen}
+        initial={editing}
         fields={[
-          { name: "title", label: "Title", type: "text" },
-          { name: "subtitle", label: "Subtitle", type: "text" },
-          { name: "body", label: "Body", type: "textarea" },
-          { name: "image", label: "Image URL", type: "text" },
+          { name: "title", label: "Title" },
+          { name: "summary", label: "Summary", type: "textarea" },
+          { name: "image", label: "Image Path (/images/...)" },
           {
-            name: "category_id",
+            name: "categoryId",
             label: "Category",
             type: "select",
-            options: categories.map((c) => ({
-              label: c.name,
-              value: c.id,
-            })),
-          },
+            options: categories.map(c => ({ label: c.name, value: c.id }))
+          }
         ]}
-        onSubmit={submitForm}
+        onSave={handleSave}
+        onClose={() => { setEditing(null); setModalOpen(false); }}
       />
 
       <DeleteConfirmModal
-        isOpen={isDeleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={confirmDelete}
-        itemName={selected?.title}
+        open={deleteId !== null}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
       />
     </div>
-  )
+  );
 }

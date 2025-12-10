@@ -1,37 +1,17 @@
-import { API_URL } from "./client"
+import { api } from "./client";
 
-export const whakataukiApi = {
-  list: async () => {
-    const res = await fetch(`${API_URL}/admin/whakatauki`)
-    if (!res.ok) throw new Error("Failed to fetch whakatauki")
-    return res.json()
-  },
+export function fetchWhakatauki() {
+  return api.get("/admin/whakatauki");
+}
 
-  create: async (data) => {
-    const res = await fetch(`${API_URL}/admin/whakatauki`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to create whakatauki")
-    return res.json()
-  },
+export function createWhakatauki(data) {
+  return api.post("/admin/whakatauki", data);
+}
 
-  update: async (id, data) => {
-    const res = await fetch(`${API_URL}/admin/whakatauki/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to update whakatauki")
-    return res.json()
-  },
+export function updateWhakatauki(id, data) {
+  return api.put(`/admin/whakatauki/${id}`, data);
+}
 
-  remove: async (id) => {
-    const res = await fetch(`${API_URL}/admin/whakatauki/${id}`, {
-      method: "DELETE",
-    })
-    if (!res.ok) throw new Error("Failed to delete whakatauki")
-    return res.json()
-  },
+export function deleteWhakatauki(id) {
+  return api.delete(`/admin/whakatauki/${id}`);
 }

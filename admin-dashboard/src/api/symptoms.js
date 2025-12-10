@@ -1,37 +1,17 @@
-import { API_URL } from "./client"
+import { api } from "./client";
 
-export const symptomsApi = {
-  list: async () => {
-    const res = await fetch(`${API_URL}/user/symptoms`)
-    if (!res.ok) throw new Error("Failed to fetch symptoms")
-    return res.json()
-  },
+export function fetchSymptoms() {
+  return api.get("/user/symptoms");
+}
 
-  create: async (data) => {
-    const res = await fetch(`${API_URL}/user/symptoms`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to create symptom record")
-    return res.json()
-  },
+export function createSymptom(data) {
+  return api.post("/user/symptoms", data);
+}
 
-  update: async (id, data) => {
-    const res = await fetch(`${API_URL}/user/symptoms/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to update symptom")
-    return res.json()
-  },
+export function updateSymptom(id, data) {
+  return api.put(`/user/symptoms/${id}`, data);
+}
 
-  remove: async (id) => {
-    const res = await fetch(`${API_URL}/user/symptoms/${id}`, {
-      method: "DELETE",
-    })
-    if (!res.ok) throw new Error("Failed to delete symptom record")
-    return res.json()
-  },
+export function deleteSymptom(id) {
+  return api.delete(`/user/symptoms/${id}`);
 }
