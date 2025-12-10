@@ -1,209 +1,116 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
-// src/pages/ResourcesPage.jsx
-import React, { useEffect, useState } from "react";
-import AdminTable from "../components/AdminTable";
-import AdminModal from "../components/AdminModal";
-
-import {
-  fetchResources,
-  createResource,
-  updateResource,
-  deleteResource,
-  fetchResourceCategories,
-} from "../api/resources";
+import React, { useEffect, useState } from "react"
+import { resourcesApi } from "../api/resources"
+import { resourceCategoriesApi } from "../api/resourceCategories"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
 
 export default function ResourcesPage() {
-  const [resources, setResources] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState([])
+  const [categories, setCategories] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [isModalOpen, setModalOpen] = useState(false)
+  const [isDeleteOpen, setDeleteOpen] = useState(false)
 
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
-
-  // Form state
-  const [formData, setFormData] = useState({
-    category_id: "",
-    title: "",
-    content: "",
-    image_url: "",
-  });
-
-  // ----------------------
-  // Load data
-  // ----------------------
   async function loadData() {
-    setLoading(true);
-    try {
-      const [resData, catData] = await Promise.all([
-        fetchResources(),
-        fetchResourceCategories(),
-      ]);
-      setResources(resData);
-      setCategories(catData);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to load resources");
-    }
-    setLoading(false);
+    const [resources, cats] = await Promise.all([
+      resourcesApi.list(),
+      resourceCategoriesApi.list(),
+    ])
+
+    setItems(resources)
+    setCategories(cats)
   }
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData()
+  }, [])
 
-  // ----------------------
-  // Open Add Modal
-  // ----------------------
-  function openAddModal() {
-    setEditing(null);
-    setFormData({
-      category_id: "",
-      title: "",
-      content: "",
-      image_url: "",
-    });
-    setIsModalOpen(true);
+  function handleCreate() {
+    setSelected(null)
+    setModalOpen(true)
   }
 
-  // ----------------------
-  // Open Edit Modal
-  // ----------------------
-  function openEditModal(item) {
-    setEditing(item);
-    setFormData({
-      category_id: item.category_id,
-      title: item.title,
-      content: item.content || "",
-      image_url: item.image_url || "",
-    });
-    setIsModalOpen(true);
+  function handleEdit(item) {
+    setSelected(item)
+    setModalOpen(true)
   }
 
-  // ----------------------
-  // Save
-  // ----------------------
-  async function handleSave() {
-    if (!formData.title.trim()) return alert("A title is required");
-    if (!formData.category_id) return alert("Select a category");
+  function handleDelete(item) {
+    setSelected(item)
+    setDeleteOpen(true)
+  }
 
-    try {
-      if (editing) {
-        await updateResource(editing.id, formData);
-      } else {
-        await createResource(formData);
-      }
-
-      setIsModalOpen(false);
-      loadData();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to save resource");
+  async function submitForm(values) {
+    if (selected) {
+      await resourcesApi.update(selected.id, values)
+    } else {
+      await resourcesApi.create(values)
     }
+
+    setModalOpen(false)
+    await loadData()
   }
 
-  // ----------------------
-  // Delete
-  // ----------------------
-  async function handleDelete(id) {
-    if (!confirm("Delete this resource?")) return;
-    try {
-      await deleteResource(id);
-      loadData();
-    } catch (err) {
-      alert("Failed to delete resource");
-    }
+  async function confirmDelete() {
+    await resourcesApi.remove(selected.id)
+    setDeleteOpen(false)
+    await loadData()
   }
-
-  const columns = [
-    { key: "title", label: "Title" },
-    { key: "category_name", label: "Category" },
-    { key: "image_url", label: "Image" },
-  ];
 
   return (
-    <div className="page">
-      <h1>Library Resources</h1>
-      <p className="subtitle">Manage all educational resources for the app.</p>
+    <div className="page-container">
+      <h1 className="page-title">Resources</h1>
 
-      <button className="primary-btn" onClick={openAddModal}>
+      <button className="button-primary" onClick={handleCreate}>
         + Add Resource
       </button>
 
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <AdminTable
-          columns={columns}
-          data={resources}
-          onEdit={openEditModal}
-          onDelete={handleDelete}
-        />
-      )}
+      <CrudTable
+        items={items}
+        fields={["id", "title", "subtitle", "category_id"]}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
-      {/* Modal */}
-      <AdminModal
+      <CrudModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSave}
-        title={editing ? "Edit Resource" : "Add Resource"}
-      >
-        {/* Category */}
-        <div className="form-group">
-          <label>Category*</label>
-          <select
-            value={formData.category_id}
-            onChange={(e) =>
-              setFormData({ ...formData, category_id: Number(e.target.value) })
-            }
-          >
-            <option value="">Select category</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.icon} {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        onClose={() => setModalOpen(false)}
+        title={selected ? "Edit Resource" : "New Resource"}
+        initialValues={
+          selected || {
+            title: "",
+            subtitle: "",
+            body: "",
+            image: "",
+            category_id: "",
+          }
+        }
+        fields={[
+          { name: "title", label: "Title", type: "text" },
+          { name: "subtitle", label: "Subtitle", type: "text" },
+          { name: "body", label: "Body", type: "textarea" },
+          { name: "image", label: "Image URL", type: "text" },
+          {
+            name: "category_id",
+            label: "Category",
+            type: "select",
+            options: categories.map((c) => ({
+              label: c.name,
+              value: c.id,
+            })),
+          },
+        ]}
+        onSubmit={submitForm}
+      />
 
-        {/* Title */}
-        <div className="form-group">
-          <label>Title*</label>
-          <input
-            value={formData.title}
-            onChange={(e) =>
-              setFormData({ ...formData, title: e.target.value })
-            }
-            placeholder="Resource title"
-          />
-        </div>
-
-        {/* Content */}
-        <div className="form-group">
-          <label>Content</label>
-          <textarea
-            rows="6"
-            value={formData.content}
-            onChange={(e) =>
-              setFormData({ ...formData, content: e.target.value })
-            }
-            placeholder="Main resource content..."
-          />
-        </div>
-
-        {/* Image URL */}
-        <div className="form-group">
-          <label>Image URL</label>
-          <input
-            value={formData.image_url}
-            onChange={(e) =>
-              setFormData({ ...formData, image_url: e.target.value })
-            }
-            placeholder="https://example.com/image.jpg"
-          />
-        </div>
-      </AdminModal>
+      <DeleteConfirmModal
+        isOpen={isDeleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        itemName={selected?.title}
+      />
     </div>
-  );
+  )
 }

@@ -1,56 +1,99 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react";
-import AdminTable from "../components/AdminTable";
-import { fetchUserMedicines } from "../api/myMedicines";
+import React, { useEffect, useState } from "react"
+import { myMedicinesApi } from "../api/myMedicines"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
 
 export default function MyMedicinesPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [isModalOpen, setModalOpen] = useState(false)
+  const [isDeleteOpen, setDeleteOpen] = useState(false)
 
-  async function loadData() {
-    setLoading(true);
-    const data = await fetchUserMedicines();
-    setItems(data);
-    setLoading(false);
+  async function loadItems() {
+    const data = await myMedicinesApi.list()
+    setItems(data)
   }
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadItems()
+  }, [])
 
-  const columns = [
-    { key: "name", label: "Name" },
-    { key: "dosage", label: "Dosage" },
-    { key: "frequency", label: "Frequency" },
-  ];
+  function handleCreate() {
+    setSelected(null)
+    setModalOpen(true)
+  }
 
-  function exportCSV() {
-    const csvRows = [
-      ["Name", "Dosage", "Frequency"],
-      ...items.map(i => [i.name, i.dosage, i.frequency]),
-    ];
-    const blob = new Blob([csvRows.map(r => r.join(",")).join("\n")], {
-      type: "text/csv",
-    });
-    const url = URL.createObjectURL(blob);
+  function handleEdit(item) {
+    setSelected(item)
+    setModalOpen(true)
+  }
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "user_medicines.csv";
-    a.click();
+  function handleDelete(item) {
+    setSelected(item)
+    setDeleteOpen(true)
+  }
+
+  async function submitForm(values) {
+    if (selected) {
+      await myMedicinesApi.update(selected.id, values)
+    } else {
+      await myMedicinesApi.create(values)
+    }
+
+    setModalOpen(false)
+    await loadItems()
+  }
+
+  async function confirmDelete() {
+    await myMedicinesApi.remove(selected.id)
+    setDeleteOpen(false)
+    await loadItems()
   }
 
   return (
-    <div className="page">
-      <h1>User Medicines</h1>
+    <div className="page-container">
+      <h1 className="page-title">My Medicines</h1>
 
-      <button className="outline-btn" onClick={exportCSV}>
-        Export CSV
+      <button className="button-primary" onClick={handleCreate}>
+        + Add Medicine
       </button>
 
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <AdminTable columns={columns} data={items} readOnly />
-      )}
+      <CrudTable
+        items={items}
+        fields={["id", "name", "dosage"]}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <CrudModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        title={selected ? "Edit Medicine" : "New Medicine"}
+        initialValues={
+          selected || {
+            name: "",
+            dosage: "",
+            schedule: "",
+            description: "",
+          }
+        }
+        fields={[
+          { name: "name", label: "Name", type: "text" },
+          { name: "dosage", label: "Dosage", type: "text" },
+          { name: "schedule", label: "Schedule", type: "text" },
+          { name: "description", label: "Description", type: "textarea" },
+        ]}
+        onSubmit={submitForm}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        itemName={selected?.name}
+      />
     </div>
-  );
+  )
 }

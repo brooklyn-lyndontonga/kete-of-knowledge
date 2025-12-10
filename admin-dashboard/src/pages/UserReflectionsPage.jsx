@@ -1,54 +1,29 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-// admin-dashboard/src/pages/UserReflectionsPage.jsx
 import React, { useEffect, useState } from "react"
-import "./AdminTable.css"
-
-const API = "http://localhost:3000/reflections"
+import { userReflectionsApi } from "../api/reflections"
+import CrudTable from "../components/CrudTable"
 
 export default function UserReflectionsPage() {
-  const [rows, setRows] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [items, setItems] = useState([])
 
-  async function loadRows() {
-    setLoading(true)
-    const res = await fetch(API)
-    setRows(await res.json())
-    setLoading(false)
+  async function loadItems() {
+    const data = await userReflectionsApi.list()
+    setItems(data)
   }
 
   useEffect(() => {
-    loadRows()
+    loadItems()
   }, [])
 
   return (
     <div className="page-container">
-      <h1 className="page-title">User Reflections</h1>
+      <h1 className="page-title">User Reflections (Read Only)</h1>
 
-      {loading && <p>Loading...</p>}
-
-      {!loading && (
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>User ID</th>
-              <th>Message</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id}>
-                <td>{r.id}</td>
-                <td>{r.user_id}</td>
-                <td>{r.message}</td>
-                <td>{r.created_at}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <CrudTable
+        items={items}
+        fields={["id", "user_id", "template_id", "created_at"]}
+        readOnly
+      />
     </div>
   )
 }

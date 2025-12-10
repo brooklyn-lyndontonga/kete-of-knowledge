@@ -1,66 +1,94 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-// admin-dashboard/src/pages/SnapshotsPage.jsx
 import React, { useEffect, useState } from "react"
-import AdminTable from "../components/AdminTable"
-import "./AdminTable.css"
-
-const API = "http://localhost:3000/admin/snapshots"
+import { snapshotsApi } from "../api/snapshots"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
 
 export default function SnapshotsPage() {
-  const [rows, setRows] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [items, setItems] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [isModalOpen, setModalOpen] = useState(false)
+  const [isDeleteOpen, setDeleteOpen] = useState(false)
 
-  async function loadRows() {
-    setLoading(true)
-    const res = await fetch(API)
-    const data = await res.json()
-    setRows(data)
-    setLoading(false)
-  }
-
-  async function addRow(body) {
-    await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
-    loadRows()
-  }
-
-  async function updateRow(id, body) {
-    await fetch(`${API}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
-    loadRows()
-  }
-
-  async function deleteRow(id) {
-    await fetch(`${API}/${id}`, { method: "DELETE" })
-    loadRows()
+  async function loadItems() {
+    const data = await snapshotsApi.list()
+    setItems(data)
   }
 
   useEffect(() => {
-    loadRows()
+    loadItems()
   }, [])
+
+  function handleCreate() {
+    setSelected(null)
+    setModalOpen(true)
+  }
+
+  function handleEdit(item) {
+    setSelected(item)
+    setModalOpen(true)
+  }
+
+  function handleDelete(item) {
+    setSelected(item)
+    setDeleteOpen(true)
+  }
+
+  async function submitForm(values) {
+    if (selected) {
+      await snapshotsApi.update(selected.id, values)
+    } else {
+      await snapshotsApi.create(values)
+    }
+
+    setModalOpen(false)
+    await loadItems()
+  }
+
+  async function confirmDelete() {
+    await snapshotsApi.remove(selected.id)
+    setDeleteOpen(false)
+    await loadItems()
+  }
 
   return (
     <div className="page-container">
       <h1 className="page-title">Progress Snapshots</h1>
 
-      <AdminTable
-        loading={loading}
-        columns={[
-          { key: "id", label: "ID", width: 60 },
-          { key: "label", label: "Label" },
-          { key: "percentage", label: "Percentage" },
-          { key: "color", label: "Color (hex)" },
+      <button className="button-primary" onClick={handleCreate}>
+        + Add Snapshot
+      </button>
+
+      <CrudTable
+        items={items}
+        fields={["id", "title"]}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <CrudModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        title={selected ? "Edit Snapshot" : "New Snapshot"}
+        initialValues={
+          selected || {
+            title: "",
+            description: "",
+          }
+        }
+        fields={[
+          { name: "title", label: "Title", type: "text" },
+          { name: "description", label: "Description", type: "textarea" },
         ]}
-        data={rows}
-        onAdd={addRow}
-        onUpdate={updateRow}
-        onDelete={deleteRow}
+        onSubmit={submitForm}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        itemName={selected?.title}
       />
     </div>
   )

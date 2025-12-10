@@ -1,18 +1,18 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import React, { useEffect, useState } from "react"
-import { profileSeedsApi } from "../api/profileSeeds"
+import { goalsApi } from "../api/goals"
 import CrudTable from "../components/CrudTable"
 import CrudModal from "../components/CrudModal"
 import DeleteConfirmModal from "../components/DeleteConfirmModal"
 
-export default function ProfileSeedsPage() {
+export default function GoalsPage() {
   const [items, setItems] = useState([])
   const [selected, setSelected] = useState(null)
   const [isModalOpen, setModalOpen] = useState(false)
   const [isDeleteOpen, setDeleteOpen] = useState(false)
 
   async function loadItems() {
-    const data = await profileSeedsApi.list()
+    const data = await goalsApi.list()
     setItems(data)
   }
 
@@ -36,15 +36,10 @@ export default function ProfileSeedsPage() {
   }
 
   async function submitForm(values) {
-    const payload = {
-      ...values,
-      order_index: Number(values.order_index) || 0,
-    }
-
     if (selected) {
-      await profileSeedsApi.update(selected.id, payload)
+      await goalsApi.update(selected.id, values)
     } else {
-      await profileSeedsApi.create(payload)
+      await goalsApi.create(values)
     }
 
     setModalOpen(false)
@@ -52,22 +47,22 @@ export default function ProfileSeedsPage() {
   }
 
   async function confirmDelete() {
-    await profileSeedsApi.remove(selected.id)
+    await goalsApi.remove(selected.id)
     setDeleteOpen(false)
     await loadItems()
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">Profile Seeds</h1>
+      <h1 className="page-title">Goals</h1>
 
       <button className="button-primary" onClick={handleCreate}>
-        + Add Seed
+        + Add Goal
       </button>
 
       <CrudTable
         items={items}
-        fields={["id", "label", "order_index"]}
+        fields={["id", "title"]}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
@@ -75,18 +70,16 @@ export default function ProfileSeedsPage() {
       <CrudModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
-        title={selected ? "Edit Seed" : "New Seed"}
+        title={selected ? "Edit Goal" : "New Goal"}
         initialValues={
           selected || {
-            label: "",
+            title: "",
             description: "",
-            order_index: 0,
           }
         }
         fields={[
-          { name: "label", label: "Label", type: "text" },
+          { name: "title", label: "Title", type: "text" },
           { name: "description", label: "Description", type: "textarea" },
-          { name: "order_index", label: "Display Order", type: "number" },
         ]}
         onSubmit={submitForm}
       />
@@ -95,7 +88,7 @@ export default function ProfileSeedsPage() {
         isOpen={isDeleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={confirmDelete}
-        itemName={selected?.label}
+        itemName={selected?.title}
       />
     </div>
   )

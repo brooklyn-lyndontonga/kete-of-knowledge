@@ -1,66 +1,98 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-// admin-dashboard/src/pages/SupportContactsPage.jsx
 import React, { useEffect, useState } from "react"
-import AdminTable from "../components/AdminTable"
-import "./AdminTable.css"
-
-const API = "http://localhost:3000/admin/support"
+import { supportContactsApi } from "../api/supportContacts"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
 
 export default function SupportContactsPage() {
-  const [rows, setRows] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [items, setItems] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [isModalOpen, setModalOpen] = useState(false)
+  const [isDeleteOpen, setDeleteOpen] = useState(false)
 
-  async function loadRows() {
-    setLoading(true)
-    const res = await fetch(API)
-    setRows(await res.json())
-    setLoading(false)
-  }
-
-  async function addRow(body) {
-    await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
-    loadRows()
-  }
-
-  async function updateRow(id, body) {
-    await fetch(`${API}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
-    loadRows()
-  }
-
-  async function deleteRow(id) {
-    await fetch(`${API}/${id}`, { method: "DELETE" })
-    loadRows()
+  async function loadItems() {
+    const data = await supportContactsApi.list()
+    setItems(data)
   }
 
   useEffect(() => {
-    loadRows()
+    loadItems()
   }, [])
+
+  function handleCreate() {
+    setSelected(null)
+    setModalOpen(true)
+  }
+
+  function handleEdit(item) {
+    setSelected(item)
+    setModalOpen(true)
+  }
+
+  function handleDelete(item) {
+    setSelected(item)
+    setDeleteOpen(true)
+  }
+
+  async function submitForm(values) {
+    if (selected) {
+      await supportContactsApi.update(selected.id, values)
+    } else {
+      await supportContactsApi.create(values)
+    }
+
+    setModalOpen(false)
+    await loadItems()
+  }
+
+  async function confirmDelete() {
+    await supportContactsApi.remove(selected.id)
+    setDeleteOpen(false)
+    await loadItems()
+  }
 
   return (
     <div className="page-container">
       <h1 className="page-title">Support Contacts</h1>
 
-      <AdminTable
-        loading={loading}
-        columns={[
-          { key: "id", label: "ID", width: 60 },
-          { key: "name", label: "Name" },
-          { key: "desc", label: "Description" },
-          { key: "phone", label: "Phone" },
-          { key: "emoji", label: "Emoji" },
+      <button className="button-primary" onClick={handleCreate}>
+        + Add Support Contact
+      </button>
+
+      <CrudTable
+        items={items}
+        fields={["id", "name", "organisation"]}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <CrudModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        title={selected ? "Edit Support Contact" : "New Support Contact"}
+        initialValues={
+          selected || {
+            name: "",
+            phone: "",
+            email: "",
+            organisation: "",
+          }
+        }
+        fields={[
+          { name: "name", label: "Name", type: "text" },
+          { name: "phone", label: "Phone", type: "text" },
+          { name: "email", label: "Email", type: "text" },
+          { name: "organisation", label: "Organisation", type: "text" },
         ]}
-        data={rows}
-        onAdd={addRow}
-        onUpdate={updateRow}
-        onDelete={deleteRow}
+        onSubmit={submitForm}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        itemName={selected?.name}
       />
     </div>
   )

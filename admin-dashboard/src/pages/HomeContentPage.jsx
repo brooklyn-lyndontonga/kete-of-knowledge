@@ -1,15 +1,20 @@
 // admin-dashboard/src/pages/HomeContentPage.jsx
 import React, { useEffect, useState } from "react"
-
-const API = "http://localhost:3000/admin/stats"
+import { api } from "../api/client"   // use your API wrapper
 
 export default function HomeContentPage() {
   const [stats, setStats] = useState(null)
 
   useEffect(() => {
-    fetch(API)
-      .then((res) => res.json())
-      .then(setStats)
+    async function loadStats() {
+      try {
+        const data = await api.get("/admin/stats")   // correct path
+        setStats(data)
+      } catch (err) {
+        console.error("Failed to load admin stats:", err)
+      }
+    }
+    loadStats()
   }, [])
 
   return (
@@ -21,10 +26,7 @@ export default function HomeContentPage() {
       {stats && (
         <div className="stats-grid">
           <div className="stat-card">Resources: {stats.resources}</div>
-          <div className="stat-card">Categories: {stats.categories}</div>
-          <div className="stat-card">Whakataukī: {stats.whakatauki}</div>
           <div className="stat-card">Conditions: {stats.conditions}</div>
-          <div className="stat-card">Support Contacts: {stats.support}</div>
           <div className="stat-card">Snapshots: {stats.snapshots}</div>
         </div>
       )}

@@ -1,4 +1,4 @@
-export const API_URL = "http://localhost:3000"
+export const API_URL = "http://localhost:3000/api"
 
 async function request(path, options = {}) {
   const url = `${API_URL}${path}`
