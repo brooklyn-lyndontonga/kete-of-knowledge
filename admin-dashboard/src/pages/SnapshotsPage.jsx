@@ -1,69 +1,100 @@
-import React, { useEffect, useState } from "react";
-import CrudTable from "../components/CrudTable";
-import CrudModal from "../components/CrudModal";
-import DeleteConfirmModal from "../components/DeleteConfirmModal";
-import { toast } from "../components/ToastProvider";
-import * as snapshotsApi from "../api/snapshots";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from "react"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import { useAdminToast } from "../components/AdminToastProvider"
+import * as templatesApi from "../api/reflections"
 
-export default function SnapshotsPage() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export default function ReflectionTemplatesPage() {
 
-  const [editing, setEditing] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
+  const { showToast } = useAdminToast()
 
-  async function load() {
-    try {
-      const data = await snapshotsApi.fetchSnapshots();
-      setRows(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const [editing, setEditing] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState(null)
+
+  // ----------------------------
+  // LOAD DATA SAFELY
+  // ----------------------------
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await templatesApi.fetchReflectionTemplates()
+        setRows(data || [])
+      } catch (err) {
+        setError(err.message)
+        showToast(err.message, "error")
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
-  useEffect(() => { load(); }, []);
+    loadData()
+  }, [])
 
+  // ----------------------------
+  // SAVE HANDLER
+  // ----------------------------
   async function handleSave(formData) {
     try {
       if (editing) {
-        await snapshotsApi.updateSnapshot(editing.id, formData);
-        toast.success("Snapshot updated");
+        await templatesApi.updateReflectionTemplate(editing.id, formData)
+        showToast("Template updated")
       } else {
-        await snapshotsApi.createSnapshot(formData);
-        toast.success("Snapshot created");
+        await templatesApi.createReflectionTemplate(formData)
+        showToast("Template created")
       }
-      setModalOpen(false);
-      setEditing(null);
-      load();
+
+      setModalOpen(false)
+      setEditing(null)
+
+      // Reload table
+      const refreshed = await templatesApi.fetchReflectionTemplates()
+      setRows(refreshed)
+
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
+  // ----------------------------
+  // DELETE HANDLER
+  // ----------------------------
   async function handleDelete() {
     try {
-      await snapshotsApi.deleteSnapshot(deleteId);
-      toast.success("Deleted");
-      setDeleteId(null);
-      load();
+      await templatesApi.deleteReflectionTemplate(deleteId)
+      showToast("Deleted")
+
+      setDeleteId(null)
+
+      const refreshed = await templatesApi.fetchReflectionTemplates()
+      setRows(refreshed)
+
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
+  // ----------------------------
+  // RENDER
+  // ----------------------------
   return (
     <div className="page-container">
-      <h1>Progress Snapshots</h1>
+      <h1>Reflection Templates</h1>
 
       <button
         className="btn-primary"
-        onClick={() => { setEditing(null); setModalOpen(true); }}
+        onClick={() => {
+          setEditing(null)
+          setModalOpen(true)
+        }}
       >
-        + Add Snapshot
+        + Add Template
       </button>
 
       <CrudTable
@@ -71,11 +102,13 @@ export default function SnapshotsPage() {
         loading={loading}
         error={error}
         columns={[
-          { key: "label", label: "Label" },
-          { key: "percentage", label: "Percentage" },
-          { key: "color", label: "Color" }
+          { key: "title", label: "Title" },
+          { key: "description", label: "Description" },
         ]}
-        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onEdit={(row) => {
+          setEditing(row)
+          setModalOpen(true)
+        }}
         onDelete={(row) => setDeleteId(row.id)}
       />
 
@@ -83,12 +116,14 @@ export default function SnapshotsPage() {
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "label", label: "Label" },
-          { name: "percentage", label: "Percentage" },
-          { name: "color", label: "Color" }
+          { name: "title", label: "Title" },
+          { name: "description", label: "Description", type: "textarea" },
         ]}
         onSave={handleSave}
-        onClose={() => { setEditing(null); setModalOpen(false); }}
+        onClose={() => {
+          setEditing(null)
+          setModalOpen(false)
+        }}
       />
 
       <DeleteConfirmModal
@@ -97,5 +132,5 @@ export default function SnapshotsPage() {
         onCancel={() => setDeleteId(null)}
       />
     </div>
-  );
+  )
 }

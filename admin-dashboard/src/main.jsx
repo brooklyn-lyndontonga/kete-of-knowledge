@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom"
 
 import App from "./App"
 
+// Admin Pages
 import HomeContentPage from "./pages/HomeContentPage"
 import SupportContactsPage from "./pages/SupportContactsPage"
 import ResourceCategoriesPage from "./pages/ResourceCategoriesPage"
@@ -13,6 +14,9 @@ import ConditionsPage from "./pages/ConditionsPage"
 import ReflectionTemplatesPage from "./pages/ReflectionTemplatesPage"
 import SnapshotsPage from "./pages/SnapshotsPage"
 import ProfileSeedsPage from "./pages/ProfileSeedsPage"
+
+// Components
+import { AdminToastProvider } from "./components/AdminToastProvider.jsx"
 
 import "./index.css"
 
@@ -35,5 +39,7 @@ const router = createBrowserRouter([
 ])
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <RouterProvider router={router} />
+  <AdminToastProvider>
+    <RouterProvider router={router} />
+  </AdminToastProvider>
 )

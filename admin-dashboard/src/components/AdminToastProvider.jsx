@@ -1,10 +1,9 @@
-/* eslint-disable react/react-in-jsx-scope */
-/* eslint-disable react/prop-types */
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from "react"
 
-const ToastContext = createContext()
+const AdminToastContext = createContext()
 
-export function ToastProvider({ children }) {
+export function AdminToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
 
   function showToast(message, type = "success") {
@@ -17,7 +16,7 @@ export function ToastProvider({ children }) {
   }
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <AdminToastContext.Provider value={{ showToast }}>
       {children}
 
       <div className="fixed bottom-4 right-4 space-y-2">
@@ -32,10 +31,10 @@ export function ToastProvider({ children }) {
           </div>
         ))}
       </div>
-    </ToastContext.Provider>
+    </AdminToastContext.Provider>
   )
 }
 
-export function useToast() {
-  return useContext(ToastContext)
+export function useAdminToast() {
+  return useContext(AdminToastContext)
 }

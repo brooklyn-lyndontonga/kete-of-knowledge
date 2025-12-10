@@ -109,9 +109,16 @@ export async function initTables(db) {
 
       CREATE TABLE IF NOT EXISTS reflection_templates (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category TEXT NOT NULL,   -- daily | weekly
+        category TEXT NOT NULL,
         title TEXT NOT NULL,
         prompt TEXT NOT NULL
+      );
+
+      -- ✅ NEW: Profile Seeds table
+      CREATE TABLE IF NOT EXISTS profile_seeds (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        value TEXT
       );
 
       CREATE TABLE IF NOT EXISTS snapshots (

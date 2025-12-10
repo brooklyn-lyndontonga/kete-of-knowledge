@@ -1,78 +1,84 @@
-import React, { useEffect, useState } from "react";
-import CrudTable from "../components/CrudTable";
-import CrudModal from "../components/CrudModal";
-import DeleteConfirmModal from "../components/DeleteConfirmModal";
-import { toast } from "../components/ToastProvider";
-import * as symptomsApi from "../api/symptoms";
+import React, { useEffect, useState } from "react"
+import CrudTable from "../components/CrudTable"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import CrudModal from "../components/CrudModal"
+import { useAdminToast } from "../components/AdminToastProvider"
+import * as symptomsApi from "../api/symptoms"
 
 export default function SymptomsPage() {
-  const [symptoms, setSymptoms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { showToast } = useAdminToast()
 
-  const [editing, setEditing] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [editing, setEditing] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState(null)
 
   async function load() {
     try {
-      const data = await symptomsApi.fetchSymptoms();
-      setSymptoms(data);
+      const data = await symptomsApi.fetchSymptoms()
+      setRows(data)
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => load(), [])
 
   async function handleSave(formData) {
     try {
       if (editing) {
-        await symptomsApi.updateSymptom(editing.id, formData);
-        toast.success("Updated");
+        await symptomsApi.updateSymptom(editing.id, formData)
+        showToast("Symptom updated")
       } else {
-        await symptomsApi.createSymptom(formData);
-        toast.success("Created");
+        await symptomsApi.createSymptom(formData)
+        showToast("Symptom created")
       }
-      setModalOpen(false);
-      setEditing(null);
-      load();
+      setEditing(null)
+      setModalOpen(false)
+      load()
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
   async function handleDelete() {
     try {
-      await symptomsApi.deleteSymptom(deleteId);
-      toast.success("Deleted");
-      setDeleteId(null);
-      load();
+      await symptomsApi.deleteSymptom(deleteId)
+      showToast("Deleted")
+      setDeleteId(null)
+      load()
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
   return (
     <div className="page-container">
-      <h1>Symptoms Tracker</h1>
+      <h1>Symptoms</h1>
 
-      <button className="btn-primary" onClick={() => { setEditing(null); setModalOpen(true); }}>
+      <button className="btn-primary" onClick={() => {
+        setEditing(null)
+        setModalOpen(true)
+      }}>
         + Add Symptom
       </button>
 
       <CrudTable
-        rows={symptoms}
+        rows={rows}
         loading={loading}
         error={error}
         columns={[
-          { key: "date", label: "Date" },
-          { key: "symptom", label: "Symptom" },
-          { key: "severity", label: "Severity" }
+          { key: "name", label: "Name" },
+          { key: "severity", label: "Severity" },
         ]}
-        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onEdit={(row) => {
+          setEditing(row)
+          setModalOpen(true)
+        }}
         onDelete={(row) => setDeleteId(row.id)}
       />
 
@@ -80,13 +86,15 @@ export default function SymptomsPage() {
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "date", label: "Date" },
-          { name: "symptom", label: "Symptom" },
-          { name: "severity", label: "Severity (1–10)" },
-          { name: "notes", label: "Notes", type: "textarea" }
+          { name: "name", label: "Name" },
+          { name: "severity", label: "Severity" },
+          { name: "notes", label: "Notes", type: "textarea" },
         ]}
         onSave={handleSave}
-        onClose={() => { setEditing(null); setModalOpen(false); }}
+        onClose={() => {
+          setEditing(null)
+          setModalOpen(false)
+        }}
       />
 
       <DeleteConfirmModal
@@ -95,5 +103,5 @@ export default function SymptomsPage() {
         onCancel={() => setDeleteId(null)}
       />
     </div>
-  );
+  )
 }

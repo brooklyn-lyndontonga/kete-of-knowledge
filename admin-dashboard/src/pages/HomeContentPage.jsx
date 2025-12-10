@@ -1,20 +1,36 @@
-import React, { useEffect, useState } from "react";
-import { api } from "../api/client";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from "react"
+import { useAdminToast } from "../components/AdminToastProvider"
+import * as homeApi from "../api/homeContent"
 
 export default function HomeContentPage() {
-  const [stats, setStats] = useState(null);
+  const { showToast } = useAdminToast()
+
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get("/admin/stats")
-      .then(setStats)
-      .catch(err => console.error(err));
-  }, []);
+    async function loadData() {
+      try {
+        const data = await homeApi.fetchAdminStats()
+        setStats(data)
+      } catch (err) {
+        showToast(err.message, "error")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, []) // ← clean, React-approved
+
+  if (loading) return <p>Loading…</p>
 
   return (
     <div className="page-container">
       <h1 className="page-title">Admin Overview</h1>
 
-      {!stats && <p>Loading...</p>}
+      {!stats && <p>No data available.</p>}
 
       {stats && (
         <div className="stats-grid">
@@ -27,5 +43,5 @@ export default function HomeContentPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

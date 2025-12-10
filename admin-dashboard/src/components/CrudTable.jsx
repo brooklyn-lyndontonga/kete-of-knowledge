@@ -1,4 +1,4 @@
-export default function CrudTable({ columns, data, onEdit, onDelete }) {
+export default function CrudTable({ columns = [], rows = [], onEdit, onDelete }) {
   return (
     <div className="bg-white border rounded shadow-sm overflow-x-auto">
       <table className="w-full text-sm">
@@ -10,21 +10,19 @@ export default function CrudTable({ columns, data, onEdit, onDelete }) {
               </th>
             ))}
 
-            <th className="text-right p-3 font-medium text-gray-600">
-              Actions
-            </th>
+            <th className="text-right p-3 font-medium text-gray-600">Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          {data.length === 0 ? (
+          {rows.length === 0 ? (
             <tr>
               <td colSpan={columns.length + 1} className="p-6 text-center text-gray-500">
                 No data found.
               </td>
             </tr>
           ) : (
-            data.map((row) => (
+            rows.map((row) => (
               <tr key={row.id} className="border-b hover:bg-gray-50">
                 {columns.map((col) => (
                   <td key={col.key} className="p-3">

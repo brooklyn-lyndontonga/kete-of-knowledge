@@ -1,58 +1,59 @@
-import React, { useEffect, useState } from "react";
-import CrudTable from "../components/CrudTable";
-import CrudModal from "../components/CrudModal";
-import DeleteConfirmModal from "../components/DeleteConfirmModal";
-import { toast } from "../components/ToastProvider";
-import * as resourceCategoriesApi from "../api/resourceCategories";
+import React, { useEffect, useState } from "react"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import { useAdminToast } from "../components/AdminToastProvider"
+import * as categoriesApi from "../api/resourceCategories"
 
 export default function ResourceCategoriesPage() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { showToast } = useAdminToast()
 
-  const [editing, setEditing] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [editing, setEditing] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState(null)
 
   async function load() {
     try {
-      const data = await resourceCategoriesApi.fetchResourceCategories();
-      setRows(data);
+      const data = await categoriesApi.fetchResourceCategories()
+      setRows(data)
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => load(), [])
 
   async function handleSave(formData) {
     try {
       if (editing) {
-        await resourceCategoriesApi.updateResourceCategory(editing.id, formData);
-        toast.success("Category updated");
+        await categoriesApi.updateResourceCategory(editing.id, formData)
+        showToast("Category updated")
       } else {
-        await resourceCategoriesApi.createResourceCategory(formData);
-        toast.success("Category created");
+        await categoriesApi.createResourceCategory(formData)
+        showToast("Category created")
       }
 
-      setEditing(null);
-      setModalOpen(false);
-      load();
+      setEditing(null)
+      setModalOpen(false)
+      load()
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
   async function handleDelete() {
     try {
-      await resourceCategoriesApi.deleteResourceCategory(deleteId);
-      toast.success("Deleted");
-      setDeleteId(null);
-      load();
+      await categoriesApi.deleteResourceCategory(deleteId)
+      showToast("Deleted")
+      setDeleteId(null)
+      load()
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
@@ -60,7 +61,13 @@ export default function ResourceCategoriesPage() {
     <div className="page-container">
       <h1>Resource Categories</h1>
 
-      <button className="btn-primary" onClick={() => { setEditing(null); setModalOpen(true); }}>
+      <button
+        className="btn-primary"
+        onClick={() => {
+          setEditing(null)
+          setModalOpen(true)
+        }}
+      >
         + Add Category
       </button>
 
@@ -70,9 +77,13 @@ export default function ResourceCategoriesPage() {
         error={error}
         columns={[
           { key: "name", label: "Name" },
-          { key: "description", label: "Description" },
+          { key: "slug", label: "Slug" },
+          { key: "image", label: "Image" },
         ]}
-        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onEdit={(row) => {
+          setEditing(row)
+          setModalOpen(true)
+        }}
         onDelete={(row) => setDeleteId(row.id)}
       />
 
@@ -81,10 +92,15 @@ export default function ResourceCategoriesPage() {
         initial={editing}
         fields={[
           { name: "name", label: "Name" },
+          { name: "slug", label: "Slug" },
           { name: "description", label: "Description", type: "textarea" },
+          { name: "image", label: "Image Path" },
         ]}
         onSave={handleSave}
-        onClose={() => { setEditing(null); setModalOpen(false); }}
+        onClose={() => {
+          setEditing(null)
+          setModalOpen(false)
+        }}
       />
 
       <DeleteConfirmModal
@@ -93,5 +109,5 @@ export default function ResourceCategoriesPage() {
         onCancel={() => setDeleteId(null)}
       />
     </div>
-  );
+  )
 }

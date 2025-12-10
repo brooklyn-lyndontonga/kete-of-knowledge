@@ -1,82 +1,74 @@
-import React, { useEffect, useState } from "react";
-import CrudTable from "../components/CrudTable";
-import CrudModal from "../components/CrudModal";
-import DeleteConfirmModal from "../components/DeleteConfirmModal";
-import { toast } from "../components/ToastProvider";
-import * as conditionsApi from "../api/conditions";
+import React, { useEffect, useState } from "react"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import { useAdminToast } from '../components/AdminToastProvider'
+import * as contactsApi from "../api/contacts"
 
-export default function ConditionsPage() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export default function ContactsPage() {
+  const { showToast } = useAdminToast()
 
-  const [editing, setEditing] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [editing, setEditing] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState(null)
 
   async function load() {
     try {
-      const data = await conditionsApi.fetchConditions();
-      setRows(data);
+      const data = await contactsApi.fetchContacts()
+      setRows(data)
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
-  useEffect(() => { load(); }, []);
-
-  function normalise(formData) {
-    return {
-      ...formData,
-      triggers: formData.triggers?.split(",").map(t=>t.trim()),
-      treatments: formData.treatments?.split(",").map(t=>t.trim()),
-      images: formData.images?.split(",").map(t=>t.trim()),
-    };
-  }
+  useEffect(() => load(), [])
 
   async function handleSave(formData) {
     try {
-      const cleaned = normalise(formData);
-
       if (editing) {
-        await conditionsApi.updateCondition(editing.id, cleaned);
-        toast.success("Condition updated");
+        await contactsApi.updateContact(editing.id, formData)
+        showToast("Contact updated")
       } else {
-        await conditionsApi.createCondition(cleaned);
-        toast.success("Condition created");
+        await contactsApi.createContact(formData)
+        showToast("Contact created")
       }
 
-      setModalOpen(false);
-      setEditing(null);
-      load();
+      setModalOpen(false)
+      setEditing(null)
+      load()
     } catch (err) {
-      console.error(err);
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
   async function handleDelete() {
     try {
-      await conditionsApi.deleteCondition(deleteId);
-      toast.success("Deleted");
-      setDeleteId(null);
-      load();
+      await contactsApi.deleteContact(deleteId)
+      showToast("Deleted")
+      setDeleteId(null)
+      load()
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
   return (
     <div className="page-container">
-      <h1>Conditions</h1>
+      <h1>Contacts</h1>
 
       <button
         className="btn-primary"
-        onClick={() => { setEditing(null); setModalOpen(true); }}
+        onClick={() => {
+          setEditing(null)
+          setModalOpen(true)
+        }}
       >
-        + Add Condition
+        + Add Contact
       </button>
 
       <CrudTable
@@ -85,16 +77,12 @@ export default function ConditionsPage() {
         error={error}
         columns={[
           { key: "name", label: "Name" },
-          { key: "summary", label: "Summary" },
+          { key: "relationship", label: "Relationship" },
+          { key: "phone", label: "Phone" },
         ]}
-        onEdit={(row) => { 
-          setEditing({
-            ...row,
-            triggers: row.triggers?.join(", "),
-            treatments: row.treatments?.join(", "),
-            images: row.images?.join(", "),
-          });
-          setModalOpen(true);
+        onEdit={(row) => {
+          setEditing(row)
+          setModalOpen(true)
         }}
         onDelete={(row) => setDeleteId(row.id)}
       />
@@ -102,15 +90,17 @@ export default function ConditionsPage() {
       <CrudModal
         open={modalOpen}
         initial={editing}
-        onClose={() => { setEditing(null); setModalOpen(false); }}
-        onSave={handleSave}
         fields={[
           { name: "name", label: "Name" },
-          { name: "summary", label: "Summary", type: "textarea" },
-          { name: "triggers", label: "Triggers (comma-separated)" },
-          { name: "treatments", label: "Treatments (comma-separated)" },
-          { name: "images", label: "Images (comma-separated)" },
+          { name: "relationship", label: "Relationship" },
+          { name: "phone", label: "Phone" },
+          { name: "notes", label: "Notes", type: "textarea" },
         ]}
+        onSave={handleSave}
+        onClose={() => {
+          setEditing(null)
+          setModalOpen(false)
+        }}
       />
 
       <DeleteConfirmModal
@@ -119,5 +109,5 @@ export default function ConditionsPage() {
         onCancel={() => setDeleteId(null)}
       />
     </div>
-  );
+  )
 }

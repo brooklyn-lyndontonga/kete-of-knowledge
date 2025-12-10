@@ -1,57 +1,38 @@
-import React, { useEffect, useState } from "react";
-import CrudTable from "../components/CrudTable";
-import CrudModal from "../components/CrudModal";
-import DeleteConfirmModal from "../components/DeleteConfirmModal";
-import { toast } from "../components/ToastProvider";
-import * as userReflectionsApi from "../api/userReflections";
+import React, { useEffect, useState } from "react"
+import CrudTable from "../components/CrudTable"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import { useAdminToast } from "../components/AdminToastProvider"
+import * as reflectionsApi from "../api/reflections"
 
 export default function UserReflectionsPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { showToast } = useAdminToast()
 
-  const [editing, setEditing] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [deleteId, setDeleteId] = useState(null)
 
   async function load() {
     try {
-      const data = await userReflectionsApi.fetchUserReflections();
-      setItems(data);
+      const data = await reflectionsApi.fetchUserReflections()
+      setRows(data)
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
-  useEffect(() => { load(); }, []);
-
-  async function handleSave(formData) {
-    try {
-      if (editing) {
-        await userReflectionsApi.updateUserReflection(editing.id, formData);
-        toast.success("Updated");
-      } else {
-        await userReflectionsApi.createUserReflection(formData);
-        toast.success("Created");
-      }
-      setModalOpen(false);
-      setEditing(null);
-      load();
-    } catch (err) {
-      toast.error(err.message);
-    }
-  }
+  useEffect(() => load(), [])
 
   async function handleDelete() {
     try {
-      await userReflectionsApi.deleteUserReflection(deleteId);
-      toast.success("Deleted");
-      setDeleteId(null);
-      load();
+      await reflectionsApi.deleteUserReflection(deleteId)
+      showToast("Deleted")
+      setDeleteId(null)
+      load()
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
@@ -59,31 +40,16 @@ export default function UserReflectionsPage() {
     <div className="page-container">
       <h1>User Reflections</h1>
 
-      <button className="btn-primary" onClick={() => { setEditing(null); setModalOpen(true); }}>
-        + Add Reflection
-      </button>
-
       <CrudTable
-        rows={items}
+        rows={rows}
         loading={loading}
         error={error}
         columns={[
-          { key: "title", label: "Title" },
-          { key: "createdAt", label: "Created" }
+          { key: "userId", label: "User ID" },
+          { key: "templateId", label: "Template ID" },
+          { key: "content", label: "Content" },
         ]}
-        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
         onDelete={(row) => setDeleteId(row.id)}
-      />
-
-      <CrudModal
-        open={modalOpen}
-        initial={editing}
-        fields={[
-          { name: "title", label: "Title" },
-          { name: "body", label: "Body", type: "textarea" }
-        ]}
-        onSave={handleSave}
-        onClose={() => { setEditing(null); setModalOpen(false); }}
       />
 
       <DeleteConfirmModal
@@ -92,5 +58,5 @@ export default function UserReflectionsPage() {
         onCancel={() => setDeleteId(null)}
       />
     </div>
-  );
+  )
 }
