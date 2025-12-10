@@ -1,107 +1,116 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react"
-import { conditionsApi } from "../api/conditions"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import React, { useEffect, useState } from "react";
+import CrudTable from "../components/CrudTable";
+import CrudModal from "../components/CrudModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import { toast } from "../components/ToastProvider";
+import * as conditionsApi from "../api/conditions";
 
 export default function ConditionsPage() {
-  const [items, setItems] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [isModalOpen, setModalOpen] = useState(false)
-  const [isDeleteOpen, setDeleteOpen] = useState(false)
+  const [conditions, setConditions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  async function loadItems() {
-    const data = await conditionsApi.list()
-    setItems(data)
-  }
+  const [editing, setEditing] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
-  useEffect(() => {
-    loadItems()
-  }, [])
-
-  function handleCreate() {
-    setSelected(null)
-    setModalOpen(true)
-  }
-
-  function handleEdit(item) {
-    setSelected(item)
-    setModalOpen(true)
-  }
-
-  function handleDelete(item) {
-    setSelected(item)
-    setDeleteOpen(true)
-  }
-
-  async function submitForm(values) {
-    const payload = {
-      ...values,
-      triggers: values.triggers ? values.triggers.split(",").map(s => s.trim()) : [],
-      treatments: values.treatments ? values.treatments.split(",").map(s => s.trim()) : [],
-      images: values.images ? values.images.split(",").map(s => s.trim()) : [],
+  async function load() {
+    try {
+      setLoading(true);
+      const data = await conditionsApi.fetchConditions();
+      setConditions(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    if (selected) {
-      await conditionsApi.update(selected.id, payload)
-    } else {
-      await conditionsApi.create(payload)
-    }
-
-    setModalOpen(false)
-    await loadItems()
   }
 
-  async function confirmDelete() {
-    await conditionsApi.remove(selected.id)
-    setDeleteOpen(false)
-    await loadItems()
+  useEffect(() => { load(); }, []);
+
+  async function handleSave(formData) {
+    try {
+      if (editing) {
+        await conditionsApi.updateCondition(editing.id, formData);
+        toast.success("Condition updated");
+      } else {
+        await conditionsApi.createCondition(formData);
+        toast.success("Condition created");
+      }
+      setIsModalOpen(false);
+      setEditing(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await conditionsApi.deleteCondition(deleteId);
+      toast.success("Condition deleted");
+      setDeleteId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">Conditions</h1>
+      <h1>Conditions</h1>
 
-      <button className="button-primary" onClick={handleCreate}>
+      <button
+        className="btn-primary"
+        onClick={() => { setEditing(null); setIsModalOpen(true); }}
+      >
         + Add Condition
       </button>
 
       <CrudTable
-        items={items}
-        fields={["id", "name"]}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        rows={conditions}
+        loading={loading}
+        error={error}
+        columns={[
+          { key: "title", label: "Title" },
+          { key: "summary", label: "Summary" },
+          { key: "image", label: "Image" },
+        ]}
+        onEdit={(row) => { setEditing(row); setIsModalOpen(true); }}
+        onDelete={(row) => setDeleteId(row.id)}
       />
 
       <CrudModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        title={selected ? "Edit Condition" : "New Condition"}
-        initialValues={
-          selected ||
-          {
-            name: "",
-            triggers: "",
-            treatments: "",
-            images: "",
-          }
-        }
+        open={isModalOpen}
+        initial={editing}
         fields={[
-          { name: "name", label: "Name", type: "text" },
-          { name: "triggers", label: "Triggers (comma separated)", type: "textarea" },
-          { name: "treatments", label: "Treatments (comma separated)", type: "textarea" },
-          { name: "images", label: "Image URLs (comma separated)", type: "textarea" },
+          { name: "title", label: "Title" },
+          { name: "summary", label: "Summary", type: "textarea" },
+          { name: "image", label: "Image Path" },
+          {
+            name: "triggers",
+            label: "Triggers (comma separated)",
+            type: "textarea",
+            parse: (v) => v.split(",").map((s) => s.trim()),
+            format: (arr) => arr?.join(", ") ?? ""
+          },
+          {
+            name: "treatments",
+            label: "Treatments (comma separated)",
+            type: "textarea",
+            parse: (v) => v.split(",").map((s) => s.trim()),
+            format: (arr) => arr?.join(", ") ?? ""
+          }
         ]}
-        onSubmit={submitForm}
+        onSave={handleSave}
+        onClose={() => { setEditing(null); setIsModalOpen(false); }}
       />
 
       <DeleteConfirmModal
-        isOpen={isDeleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={confirmDelete}
-        itemName={selected?.name}
+        open={deleteId !== null}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
       />
     </div>
-  )
+  );
 }

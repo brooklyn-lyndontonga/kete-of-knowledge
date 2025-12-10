@@ -1,37 +1,17 @@
-import { API_URL } from "./client"
+import { api } from "./client";
 
-export const contactsApi = {
-  list: async () => {
-    const res = await fetch(`${API_URL}/user/contacts`)
-    if (!res.ok) throw new Error("Failed to fetch contacts")
-    return res.json()
-  },
+export function fetchUserContacts() {
+  return api.get("/user/contacts");
+}
 
-  create: async (data) => {
-    const res = await fetch(`${API_URL}/user/contacts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to create contact")
-    return res.json()
-  },
+export function createUserContact(data) {
+  return api.post("/user/contacts", data);
+}
 
-  update: async (id, data) => {
-    const res = await fetch(`${API_URL}/user/contacts/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to update contact")
-    return res.json()
-  },
+export function updateUserContact(id, data) {
+  return api.put(`/user/contacts/${id}`, data);
+}
 
-  remove: async (id) => {
-    const res = await fetch(`${API_URL}/user/contacts/${id}`, {
-      method: "DELETE",
-    })
-    if (!res.ok) throw new Error("Failed to delete contact")
-    return res.json()
-  },
+export function deleteUserContact(id) {
+  return api.delete(`/user/contacts/${id}`);
 }

@@ -1,37 +1,17 @@
-import { API_URL } from "./client"
+import { api } from "./client";
 
-export const myMedicinesApi = {
-  list: async () => {
-    const res = await fetch(`${API_URL}/user/medicines`)
-    if (!res.ok) throw new Error("Failed to fetch medicines")
-    return res.json()
-  },
+export function fetchMyMedicines() {
+  return api.get("/user/medicines");
+}
 
-  create: async (data) => {
-    const res = await fetch(`${API_URL}/user/medicines`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to add medicine")
-    return res.json()
-  },
+export function addMyMedicine(data) {
+  return api.post("/user/medicines", data);
+}
 
-  update: async (id, data) => {
-    const res = await fetch(`${API_URL}/user/medicines/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to update medicine")
-    return res.json()
-  },
+export function updateMyMedicine(id, data) {
+  return api.put(`/user/medicines/${id}`, data);
+}
 
-  remove: async (id) => {
-    const res = await fetch(`${API_URL}/user/medicines/${id}`, {
-      method: "DELETE",
-    })
-    if (!res.ok) throw new Error("Failed to delete medicine")
-    return res.json()
-  },
+export function deleteMyMedicine(id) {
+  return api.delete(`/user/medicines/${id}`);
 }

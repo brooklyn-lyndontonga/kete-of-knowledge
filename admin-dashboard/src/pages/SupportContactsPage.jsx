@@ -1,99 +1,103 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react"
-import { supportContactsApi } from "../api/supportContacts"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import React, { useEffect, useState } from "react";
+import CrudTable from "../components/CrudTable";
+import CrudModal from "../components/CrudModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import { toast } from "../components/ToastProvider";
+import * as supportApi from "../api/supportContacts";
 
 export default function SupportContactsPage() {
-  const [items, setItems] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [isModalOpen, setModalOpen] = useState(false)
-  const [isDeleteOpen, setDeleteOpen] = useState(false)
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  async function loadItems() {
-    const data = await supportContactsApi.list()
-    setItems(data)
-  }
+  const [editing, setEditing] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
-  useEffect(() => {
-    loadItems()
-  }, [])
-
-  function handleCreate() {
-    setSelected(null)
-    setModalOpen(true)
-  }
-
-  function handleEdit(item) {
-    setSelected(item)
-    setModalOpen(true)
-  }
-
-  function handleDelete(item) {
-    setSelected(item)
-    setDeleteOpen(true)
-  }
-
-  async function submitForm(values) {
-    if (selected) {
-      await supportContactsApi.update(selected.id, values)
-    } else {
-      await supportContactsApi.create(values)
+  async function load() {
+    try {
+      const data = await supportApi.fetchSupportContacts();
+      setRows(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    setModalOpen(false)
-    await loadItems()
   }
 
-  async function confirmDelete() {
-    await supportContactsApi.remove(selected.id)
-    setDeleteOpen(false)
-    await loadItems()
+  useEffect(() => { load(); }, []);
+
+  async function handleSave(formData) {
+    try {
+      if (editing) {
+        await supportApi.updateSupport(editing.id, formData);
+        toast.success("Support contact updated");
+      } else {
+        await supportApi.createSupport(formData);
+        toast.success("Support contact created");
+      }
+      setModalOpen(false);
+      setEditing(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await supportApi.deleteSupport(deleteId);
+      toast.success("Deleted");
+      setDeleteId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">Support Contacts</h1>
+      <h1>Support Contacts</h1>
 
-      <button className="button-primary" onClick={handleCreate}>
+      <button
+        className="btn-primary"
+        onClick={() => { setEditing(null); setModalOpen(true); }}
+      >
         + Add Support Contact
       </button>
 
       <CrudTable
-        items={items}
-        fields={["id", "name", "organisation"]}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        rows={rows}
+        loading={loading}
+        error={error}
+        columns={[
+          { key: "name", label: "Name" },
+          { key: "role", label: "Role" },
+          { key: "organisation", label: "Organisation" }
+        ]}
+        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onDelete={(row) => setDeleteId(row.id)}
       />
 
       <CrudModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        title={selected ? "Edit Support Contact" : "New Support Contact"}
-        initialValues={
-          selected || {
-            name: "",
-            phone: "",
-            email: "",
-            organisation: "",
-          }
-        }
+        open={modalOpen}
+        initial={editing}
         fields={[
-          { name: "name", label: "Name", type: "text" },
-          { name: "phone", label: "Phone", type: "text" },
-          { name: "email", label: "Email", type: "text" },
-          { name: "organisation", label: "Organisation", type: "text" },
+          { name: "name", label: "Name" },
+          { name: "role", label: "Role" },
+          { name: "organisation", label: "Organisation" },
+          { name: "phone", label: "Phone" },
+          { name: "email", label: "Email" }
         ]}
-        onSubmit={submitForm}
+        onSave={handleSave}
+        onClose={() => { setEditing(null); setModalOpen(false); }}
       />
 
       <DeleteConfirmModal
-        isOpen={isDeleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={confirmDelete}
-        itemName={selected?.name}
+        open={deleteId !== null}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
       />
     </div>
-  )
+  );
 }

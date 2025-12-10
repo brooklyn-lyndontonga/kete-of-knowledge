@@ -1,99 +1,99 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react"
-import { myMedicinesApi } from "../api/myMedicines"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import React, { useEffect, useState } from "react";
+import CrudTable from "../components/CrudTable";
+import CrudModal from "../components/CrudModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import { toast } from "../components/ToastProvider";
+import * as myMedicinesApi from "../api/myMedicines";
 
 export default function MyMedicinesPage() {
-  const [items, setItems] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [isModalOpen, setModalOpen] = useState(false)
-  const [isDeleteOpen, setDeleteOpen] = useState(false)
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  async function loadItems() {
-    const data = await myMedicinesApi.list()
-    setItems(data)
-  }
+  const [editing, setEditing] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
-  useEffect(() => {
-    loadItems()
-  }, [])
-
-  function handleCreate() {
-    setSelected(null)
-    setModalOpen(true)
-  }
-
-  function handleEdit(item) {
-    setSelected(item)
-    setModalOpen(true)
-  }
-
-  function handleDelete(item) {
-    setSelected(item)
-    setDeleteOpen(true)
-  }
-
-  async function submitForm(values) {
-    if (selected) {
-      await myMedicinesApi.update(selected.id, values)
-    } else {
-      await myMedicinesApi.create(values)
+  async function load() {
+    try {
+      const data = await myMedicinesApi.fetchMyMedicines();
+      setItems(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    setModalOpen(false)
-    await loadItems()
   }
 
-  async function confirmDelete() {
-    await myMedicinesApi.remove(selected.id)
-    setDeleteOpen(false)
-    await loadItems()
+  useEffect(() => { load(); }, []);
+
+  async function handleSave(formData) {
+    try {
+      if (editing) {
+        await myMedicinesApi.updateMyMedicine(editing.id, formData);
+        toast.success("Updated");
+      } else {
+        await myMedicinesApi.createMyMedicine(formData);
+        toast.success("Added");
+      }
+      setModalOpen(false);
+      setEditing(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await myMedicinesApi.deleteMyMedicine(deleteId);
+      toast.success("Deleted");
+      setDeleteId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">My Medicines</h1>
+      <h1>My Medicines</h1>
 
-      <button className="button-primary" onClick={handleCreate}>
+      <button className="btn-primary" onClick={() => { setEditing(null); setModalOpen(true); }}>
         + Add Medicine
       </button>
 
       <CrudTable
-        items={items}
-        fields={["id", "name", "dosage"]}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        rows={items}
+        loading={loading}
+        error={error}
+        columns={[
+          { key: "name", label: "Name" },
+          { key: "dosage", label: "Dosage" },
+          { key: "frequency", label: "Frequency" }
+        ]}
+        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onDelete={(row) => setDeleteId(row.id)}
       />
 
       <CrudModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        title={selected ? "Edit Medicine" : "New Medicine"}
-        initialValues={
-          selected || {
-            name: "",
-            dosage: "",
-            schedule: "",
-            description: "",
-          }
-        }
+        open={modalOpen}
+        initial={editing}
         fields={[
-          { name: "name", label: "Name", type: "text" },
-          { name: "dosage", label: "Dosage", type: "text" },
-          { name: "schedule", label: "Schedule", type: "text" },
-          { name: "description", label: "Description", type: "textarea" },
+          { name: "name", label: "Name" },
+          { name: "dosage", label: "Dosage" },
+          { name: "frequency", label: "Frequency" },
+          { name: "notes", label: "Notes", type: "textarea" }
         ]}
-        onSubmit={submitForm}
+        onSave={handleSave}
+        onClose={() => { setEditing(null); setModalOpen(false); }}
       />
 
       <DeleteConfirmModal
-        isOpen={isDeleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={confirmDelete}
-        itemName={selected?.name}
+        open={deleteId !== null}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
       />
     </div>
-  )
+  );
 }

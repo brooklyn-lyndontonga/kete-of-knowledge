@@ -1,5 +1,5 @@
-import { api } from "./client"
+import { api } from "./client";
 
-export async function getAdminStats() {
-  return api.get(`/admin/stats`)
+export function fetchAdminStats() {
+  return api.get("/admin/stats");
 }

@@ -1,95 +1,101 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react"
-import { snapshotsApi } from "../api/snapshots"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import React, { useEffect, useState } from "react";
+import CrudTable from "../components/CrudTable";
+import CrudModal from "../components/CrudModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import { toast } from "../components/ToastProvider";
+import * as snapshotsApi from "../api/snapshots";
 
 export default function SnapshotsPage() {
-  const [items, setItems] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [isModalOpen, setModalOpen] = useState(false)
-  const [isDeleteOpen, setDeleteOpen] = useState(false)
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  async function loadItems() {
-    const data = await snapshotsApi.list()
-    setItems(data)
-  }
+  const [editing, setEditing] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
-  useEffect(() => {
-    loadItems()
-  }, [])
-
-  function handleCreate() {
-    setSelected(null)
-    setModalOpen(true)
-  }
-
-  function handleEdit(item) {
-    setSelected(item)
-    setModalOpen(true)
-  }
-
-  function handleDelete(item) {
-    setSelected(item)
-    setDeleteOpen(true)
-  }
-
-  async function submitForm(values) {
-    if (selected) {
-      await snapshotsApi.update(selected.id, values)
-    } else {
-      await snapshotsApi.create(values)
+  async function load() {
+    try {
+      const data = await snapshotsApi.fetchSnapshots();
+      setRows(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    setModalOpen(false)
-    await loadItems()
   }
 
-  async function confirmDelete() {
-    await snapshotsApi.remove(selected.id)
-    setDeleteOpen(false)
-    await loadItems()
+  useEffect(() => { load(); }, []);
+
+  async function handleSave(formData) {
+    try {
+      if (editing) {
+        await snapshotsApi.updateSnapshot(editing.id, formData);
+        toast.success("Snapshot updated");
+      } else {
+        await snapshotsApi.createSnapshot(formData);
+        toast.success("Snapshot created");
+      }
+      setModalOpen(false);
+      setEditing(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await snapshotsApi.deleteSnapshot(deleteId);
+      toast.success("Deleted");
+      setDeleteId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">Progress Snapshots</h1>
+      <h1>Progress Snapshots</h1>
 
-      <button className="button-primary" onClick={handleCreate}>
+      <button
+        className="btn-primary"
+        onClick={() => { setEditing(null); setModalOpen(true); }}
+      >
         + Add Snapshot
       </button>
 
       <CrudTable
-        items={items}
-        fields={["id", "title"]}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        rows={rows}
+        loading={loading}
+        error={error}
+        columns={[
+          { key: "label", label: "Label" },
+          { key: "percentage", label: "Percentage" },
+          { key: "color", label: "Color" }
+        ]}
+        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onDelete={(row) => setDeleteId(row.id)}
       />
 
       <CrudModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        title={selected ? "Edit Snapshot" : "New Snapshot"}
-        initialValues={
-          selected || {
-            title: "",
-            description: "",
-          }
-        }
+        open={modalOpen}
+        initial={editing}
         fields={[
-          { name: "title", label: "Title", type: "text" },
-          { name: "description", label: "Description", type: "textarea" },
+          { name: "label", label: "Label" },
+          { name: "percentage", label: "Percentage" },
+          { name: "color", label: "Color" }
         ]}
-        onSubmit={submitForm}
+        onSave={handleSave}
+        onClose={() => { setEditing(null); setModalOpen(false); }}
       />
 
       <DeleteConfirmModal
-        isOpen={isDeleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={confirmDelete}
-        itemName={selected?.title}
+        open={deleteId !== null}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
       />
     </div>
-  )
+  );
 }

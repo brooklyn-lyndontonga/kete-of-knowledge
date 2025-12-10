@@ -1,37 +1,17 @@
-import { API_URL } from "./client"
+import { api } from "./client";
 
-export const resourcesApi = {
-  list: async () => {
-    const res = await fetch(`${API_URL}/admin/resources`)
-    if (!res.ok) throw new Error("Failed to fetch resources")
-    return res.json()
-  },
+export function fetchResources() {
+  return api.get("/admin/resources");
+}
 
-  create: async (data) => {
-    const res = await fetch(`${API_URL}/admin/resources`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to create resource")
-    return res.json()
-  },
+export function createResource(data) {
+  return api.post("/admin/resources", data);
+}
 
-  update: async (id, data) => {
-    const res = await fetch(`${API_URL}/admin/resources/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error("Failed to update resource")
-    return res.json()
-  },
+export function updateResource(id, data) {
+  return api.put(`/admin/resources/${id}`, data);
+}
 
-  remove: async (id) => {
-    const res = await fetch(`${API_URL}/admin/resources/${id}`, {
-      method: "DELETE",
-    })
-    if (!res.ok) throw new Error("Failed to delete resource")
-    return res.json()
-  },
+export function deleteResource(id) {
+  return api.delete(`/admin/resources/${id}`);
 }

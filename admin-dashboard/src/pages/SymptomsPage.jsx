@@ -1,102 +1,99 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useState } from "react"
-import { symptomsApi } from "../api/symptoms"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import React, { useEffect, useState } from "react";
+import CrudTable from "../components/CrudTable";
+import CrudModal from "../components/CrudModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import { toast } from "../components/ToastProvider";
+import * as symptomsApi from "../api/symptoms";
 
 export default function SymptomsPage() {
-  const [items, setItems] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [isModalOpen, setModalOpen] = useState(false)
-  const [isDeleteOpen, setDeleteOpen] = useState(false)
+  const [symptoms, setSymptoms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  async function loadItems() {
-    const data = await symptomsApi.list()
-    setItems(data)
-  }
+  const [editing, setEditing] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
-  useEffect(() => {
-    loadItems()
-  }, [])
-
-  function handleCreate() {
-    setSelected(null)
-    setModalOpen(true)
-  }
-
-  function handleEdit(item) {
-    setSelected(item)
-    setModalOpen(true)
-  }
-
-  function handleDelete(item) {
-    setSelected(item)
-    setDeleteOpen(true)
-  }
-
-  async function submitForm(values) {
-    const payload = {
-      ...values,
-      severity_scale: Number(values.severity_scale) || 1,
+  async function load() {
+    try {
+      const data = await symptomsApi.fetchSymptoms();
+      setSymptoms(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    if (selected) {
-      await symptomsApi.update(selected.id, payload)
-    } else {
-      await symptomsApi.create(payload)
-    }
-
-    setModalOpen(false)
-    await loadItems()
   }
 
-  async function confirmDelete() {
-    await symptomsApi.remove(selected.id)
-    setDeleteOpen(false)
-    await loadItems()
+  useEffect(() => { load(); }, []);
+
+  async function handleSave(formData) {
+    try {
+      if (editing) {
+        await symptomsApi.updateSymptom(editing.id, formData);
+        toast.success("Updated");
+      } else {
+        await symptomsApi.createSymptom(formData);
+        toast.success("Created");
+      }
+      setModalOpen(false);
+      setEditing(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await symptomsApi.deleteSymptom(deleteId);
+      toast.success("Deleted");
+      setDeleteId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">Symptoms</h1>
+      <h1>Symptoms Tracker</h1>
 
-      <button className="button-primary" onClick={handleCreate}>
+      <button className="btn-primary" onClick={() => { setEditing(null); setModalOpen(true); }}>
         + Add Symptom
       </button>
 
       <CrudTable
-        items={items}
-        fields={["id", "name", "severity_scale"]}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        rows={symptoms}
+        loading={loading}
+        error={error}
+        columns={[
+          { key: "date", label: "Date" },
+          { key: "symptom", label: "Symptom" },
+          { key: "severity", label: "Severity" }
+        ]}
+        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onDelete={(row) => setDeleteId(row.id)}
       />
 
       <CrudModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        title={selected ? "Edit Symptom" : "New Symptom"}
-        initialValues={
-          selected || {
-            name: "",
-            description: "",
-            severity_scale: 1,
-          }
-        }
+        open={modalOpen}
+        initial={editing}
         fields={[
-          { name: "name", label: "Name", type: "text" },
-          { name: "description", label: "Description", type: "textarea" },
-          { name: "severity_scale", label: "Severity Scale (1–10)", type: "number" },
+          { name: "date", label: "Date" },
+          { name: "symptom", label: "Symptom" },
+          { name: "severity", label: "Severity (1–10)" },
+          { name: "notes", label: "Notes", type: "textarea" }
         ]}
-        onSubmit={submitForm}
+        onSave={handleSave}
+        onClose={() => { setEditing(null); setModalOpen(false); }}
       />
 
       <DeleteConfirmModal
-        isOpen={isDeleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={confirmDelete}
-        itemName={selected?.name}
+        open={deleteId !== null}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
       />
     </div>
-  )
+  );
 }
