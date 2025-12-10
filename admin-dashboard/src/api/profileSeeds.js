@@ -1,17 +1,17 @@
-import { api } from "./client";
+import { api } from "./client"
 
 export function fetchProfileSeeds() {
-  return api.get("/admin/profileSeeds");
+  return api.get("/admin/profile-seeds")
 }
 
-export function createProfileSeed(data) {
-  return api.post("/admin/profileSeeds", data);
+export function createProfileSeed(body) {
+  return api.post("/admin/profile-seeds", body)
 }
 
-export function updateProfileSeed(id, data) {
-  return api.put(`/admin/profileSeeds/${id}`, data);
+export function updateProfileSeed(id, body) {
+  return api.put(`/admin/profile-seeds/${id}`, body)
 }
 
 export function deleteProfileSeed(id) {
-  return api.delete(`/admin/profileSeeds/${id}`);
+  return api.delete(`/admin/profile-seeds/${id}`)
 }

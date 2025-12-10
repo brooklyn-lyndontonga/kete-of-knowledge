@@ -1,60 +1,86 @@
-import React, { useEffect, useState } from "react";
-import CrudTable from "../components/CrudTable";
-import CrudModal from "../components/CrudModal";
-import DeleteConfirmModal from "../components/DeleteConfirmModal";
-import { toast } from "../components/ToastProvider";
-import * as profileSeedsApi from "../api/profileSeeds";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from "react"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import { useAdminToast } from "../components/AdminToastProvider"
+import * as seedsApi from "../api/profileSeeds"
 
 export default function ProfileSeedsPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { showToast } = useAdminToast()
 
-  const [editing, setEditing] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [editing, setEditing] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState(null)
 
-  async function load() {
-    try {
-      setLoading(true);
-      const data = await profileSeedsApi.fetchProfileSeeds();
-      setItems(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  // -----------------------------
+  // LOAD DATA (React-safe version)
+  // -----------------------------
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await seedsApi.fetchProfileSeeds()
+        setRows(Array.isArray(data) ? data : [])
+      } catch (err) {
+        setError(err.message)
+        showToast(err.message, "error")
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
-  useEffect(() => { load(); }, []);
+    loadData()
+  }, [])
 
-  async function handleSave(data) {
+  // -----------------------------
+  // SAVE HANDLER
+  // -----------------------------
+  async function handleSave(formData) {
     try {
       if (editing) {
-        await profileSeedsApi.updateProfileSeed(editing.id, data);
-        toast.success("Profile seed updated");
+        await seedsApi.updateProfileSeed(editing.id, formData)
+        showToast("Seed updated")
       } else {
-        await profileSeedsApi.createProfileSeed(data);
-        toast.success("Profile seed created");
+        await seedsApi.createProfileSeed(formData)
+        showToast("Seed created")
       }
-      setIsModalOpen(false);
-      setEditing(null);
-      load();
+
+      setEditing(null)
+      setModalOpen(false)
+
+      // reload
+      const updated = await seedsApi.fetchProfileSeeds()
+      setRows(updated)
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
+  // -----------------------------
+  // DELETE HANDLER
+  // -----------------------------
   async function handleDelete() {
     try {
-      await profileSeedsApi.deleteProfileSeed(deleteId);
-      toast.success("Profile seed deleted");
-      setDeleteId(null);
-      load();
+      await seedsApi.deleteProfileSeed(deleteId)
+      showToast("Deleted")
+
+      setDeleteId(null)
+
+      const updated = await seedsApi.fetchProfileSeeds()
+      setRows(updated)
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
+
+  // -----------------------------
+  // RENDER
+  // -----------------------------
+  if (loading) return <p>Loading…</p>
+  if (error) return <p className="text-red-600">Error: {error}</p>
 
   return (
     <div className="page-container">
@@ -62,34 +88,41 @@ export default function ProfileSeedsPage() {
 
       <button
         className="btn-primary"
-        onClick={() => { setEditing(null); setIsModalOpen(true); }}
+        onClick={() => {
+          setEditing(null)
+          setModalOpen(true)
+        }}
       >
         + Add Seed
       </button>
 
       <CrudTable
-        rows={items}
+        rows={rows}
         loading={loading}
         error={error}
         columns={[
-          { key: "title", label: "Title" },
-          { key: "description", label: "Description" },
-          { key: "orderIndex", label: "Order" }
+          { key: "name", label: "Name" },
+          { key: "value", label: "Value" },
         ]}
-        onEdit={(row) => { setEditing(row); setIsModalOpen(true); }}
+        onEdit={(row) => {
+          setEditing(row)
+          setModalOpen(true)
+        }}
         onDelete={(row) => setDeleteId(row.id)}
       />
 
       <CrudModal
-        open={isModalOpen}
+        open={modalOpen}
         initial={editing}
         fields={[
-          { name: "title", label: "Title" },
-          { name: "description", label: "Description", type: "textarea" },
-          { name: "orderIndex", label: "Order", type: "number" },
+          { name: "name", label: "Name" },
+          { name: "value", label: "Value" },
         ]}
         onSave={handleSave}
-        onClose={() => { setEditing(null); setIsModalOpen(false); }}
+        onClose={() => {
+          setEditing(null)
+          setModalOpen(false)
+        }}
       />
 
       <DeleteConfirmModal
@@ -98,5 +131,5 @@ export default function ProfileSeedsPage() {
         onCancel={() => setDeleteId(null)}
       />
     </div>
-  );
+  )
 }

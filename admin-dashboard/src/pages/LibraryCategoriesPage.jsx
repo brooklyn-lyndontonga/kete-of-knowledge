@@ -1,57 +1,60 @@
-import React, { useEffect, useState } from "react";
-import CrudTable from "../components/CrudTable";
-import CrudModal from "../components/CrudModal";
-import DeleteConfirmModal from "../components/DeleteConfirmModal";
-import { toast } from "../components/ToastProvider";
-import * as resourceCategoriesApi from "../api/resourceCategories";
+import React, { useEffect, useState } from "react"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import { useAdminToast } from "../components/AdminToastProvider"
+import * as resourceCategoriesApi from "../api/resourceCategories"
 
 export default function LibraryCategoriesPage() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { showToast } = useAdminToast()
 
-  const [editing, setEditing] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const [editing, setEditing] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState(null)
 
   async function load() {
     try {
-      const data = await resourceCategoriesApi.fetchResourceCategories();
-      setCategories(data);
+      const data = await resourceCategoriesApi.fetchResourceCategories()
+      setRows(data)
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => load(), [])
 
   async function handleSave(formData) {
     try {
       if (editing) {
-        await resourceCategoriesApi.updateResourceCategory(editing.id, formData);
-        toast.success("Category updated");
+        await resourceCategoriesApi.updateResourceCategory(editing.id, formData)
+        showToast("Category updated")
       } else {
-        await resourceCategoriesApi.createResourceCategory(formData);
-        toast.success("Category created");
+        await resourceCategoriesApi.createResourceCategory(formData)
+        showToast("Category created")
       }
-      setModalOpen(false);
-      setEditing(null);
-      load();
+
+      setModalOpen(false)
+      setEditing(null)
+      load()
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
   async function handleDelete() {
     try {
-      await resourceCategoriesApi.deleteResourceCategory(deleteId);
-      toast.success("Category deleted");
-      setDeleteId(null);
-      load();
+      await resourceCategoriesApi.deleteResourceCategory(deleteId)
+      showToast("Deleted")
+      setDeleteId(null)
+      load()
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
@@ -61,21 +64,27 @@ export default function LibraryCategoriesPage() {
 
       <button
         className="btn-primary"
-        onClick={() => { setEditing(null); setModalOpen(true); }}
+        onClick={() => {
+          setEditing(null)
+          setModalOpen(true)
+        }}
       >
         + Add Category
       </button>
 
       <CrudTable
-        rows={categories}
+        rows={rows}
         loading={loading}
         error={error}
         columns={[
           { key: "name", label: "Name" },
           { key: "slug", label: "Slug" },
-          { key: "image", label: "Image" }
+          { key: "image", label: "Image" },
         ]}
-        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onEdit={(row) => {
+          setEditing(row)
+          setModalOpen(true)
+        }}
         onDelete={(row) => setDeleteId(row.id)}
       />
 
@@ -86,10 +95,13 @@ export default function LibraryCategoriesPage() {
           { name: "name", label: "Name" },
           { name: "slug", label: "Slug" },
           { name: "description", label: "Description", type: "textarea" },
-          { name: "image", label: "Image Path" }
+          { name: "image", label: "Image Path" },
         ]}
         onSave={handleSave}
-        onClose={() => { setEditing(null); setModalOpen(false); }}
+        onClose={() => {
+          setModalOpen(false)
+          setEditing(null)
+        }}
       />
 
       <DeleteConfirmModal
@@ -98,5 +110,5 @@ export default function LibraryCategoriesPage() {
         onCancel={() => setDeleteId(null)}
       />
     </div>
-  );
+  )
 }

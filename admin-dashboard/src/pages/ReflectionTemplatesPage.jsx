@@ -1,57 +1,58 @@
-import React, { useEffect, useState } from "react";
-import CrudTable from "../components/CrudTable";
-import CrudModal from "../components/CrudModal";
-import DeleteConfirmModal from "../components/DeleteConfirmModal";
-import { toast } from "../components/ToastProvider";
-import * as reflectionTemplatesApi from "../api/reflectionTemplates";
+import React, { useEffect, useState } from "react"
+import CrudTable from "../components/CrudTable"
+import CrudModal from "../components/CrudModal"
+import DeleteConfirmModal from "../components/DeleteConfirmModal"
+import { useAdminToast } from "../components/AdminToastProvider"
+import * as templatesApi from "../api/reflections"
 
 export default function ReflectionTemplatesPage() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { showToast } = useAdminToast()
 
-  const [editing, setEditing] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [editing, setEditing] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState(null)
 
   async function load() {
     try {
-      const data = await reflectionTemplatesApi.fetchReflectionTemplates();
-      setRows(data);
+      const data = await templatesApi.fetchReflectionTemplates()
+      setRows(data)
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => load(), [])
 
   async function handleSave(formData) {
     try {
       if (editing) {
-        await reflectionTemplatesApi.updateReflectionTemplate(editing.id, formData);
-        toast.success("Template updated");
+        await templatesApi.updateReflectionTemplate(editing.id, formData)
+        showToast("Template updated")
       } else {
-        await reflectionTemplatesApi.createReflectionTemplate(formData);
-        toast.success("Template created");
+        await templatesApi.createReflectionTemplate(formData)
+        showToast("Template created")
       }
-      setModalOpen(false);
-      setEditing(null);
-      load();
+      setEditing(null)
+      setModalOpen(false)
+      load()
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
   async function handleDelete() {
     try {
-      await reflectionTemplatesApi.deleteReflectionTemplate(deleteId);
-      toast.success("Deleted");
-      setDeleteId(null);
-      load();
+      await templatesApi.deleteReflectionTemplate(deleteId)
+      showToast("Deleted")
+      setDeleteId(null)
+      load()
     } catch (err) {
-      toast.error(err.message);
+      showToast(err.message, "error")
     }
   }
 
@@ -59,10 +60,10 @@ export default function ReflectionTemplatesPage() {
     <div className="page-container">
       <h1>Reflection Templates</h1>
 
-      <button
-        className="btn-primary"
-        onClick={() => { setEditing(null); setModalOpen(true); }}
-      >
+      <button className="btn-primary" onClick={() => {
+        setEditing(null)
+        setModalOpen(true)
+      }}>
         + Add Template
       </button>
 
@@ -72,9 +73,12 @@ export default function ReflectionTemplatesPage() {
         error={error}
         columns={[
           { key: "title", label: "Title" },
-          { key: "category", label: "Category" }
+          { key: "description", label: "Description" },
         ]}
-        onEdit={(row) => { setEditing(row); setModalOpen(true); }}
+        onEdit={(row) => {
+          setEditing(row)
+          setModalOpen(true)
+        }}
         onDelete={(row) => setDeleteId(row.id)}
       />
 
@@ -83,12 +87,13 @@ export default function ReflectionTemplatesPage() {
         initial={editing}
         fields={[
           { name: "title", label: "Title" },
-          { name: "category", label: "Category" },
-          { name: "body", label: "Body", type: "textarea" },
-          { name: "tags", label: "Tags (comma separated)" }
+          { name: "description", label: "Description", type: "textarea" },
         ]}
         onSave={handleSave}
-        onClose={() => { setEditing(null); setModalOpen(false); }}
+        onClose={() => {
+          setEditing(null)
+          setModalOpen(false)
+        }}
       />
 
       <DeleteConfirmModal
@@ -97,5 +102,5 @@ export default function ReflectionTemplatesPage() {
         onCancel={() => setDeleteId(null)}
       />
     </div>
-  );
+  )
 }

@@ -1,5 +1,7 @@
 import express from "express"
 
+import { getStats } from "../controllers/statsController.js"
+
 import reflectionTemplates from "./reflectionTemplates.js"
 import conditions from "./conditions.js"
 import snapshots from "./snapshots.js"
@@ -9,15 +11,16 @@ import profileSeeds from "./profileSeeds.js"
 import supportContacts from "./supportContacts.js"
 import whakatauki from "./whakatauki.js"
 
-// Optional but recommended
-import statsController from "../controllers/statsController.js"
-
 const router = express.Router()
 
-// Dashboard Stats
-router.get("/stats", statsController.getStats)
+// =====================
+// ADMIN DASHBOARD STATS
+// =====================
+router.get("/stats", getStats)
 
-// Admin CRUD Routes
+// =====================
+// ADMIN CRUD ROUTES
+// =====================
 router.use("/reflection-templates", reflectionTemplates)
 router.use("/conditions", conditions)
 router.use("/snapshots", snapshots)
