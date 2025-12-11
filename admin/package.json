@@ -1,5 +1,5 @@
 {
-  "name": "admin-dashboard",
+  "name": "admin",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "node preview.js"
   },
   "dependencies": {
     "react": "^19.2.0",

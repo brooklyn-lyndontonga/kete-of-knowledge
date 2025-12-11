@@ -1,4 +1,7 @@
-export const API_URL = "http://localhost:3000/api"
+export const API_URL =
+  import.meta.env.MODE === "production"
+    ? "kofk-backend.up.railway.app"
+    : "http://localhost:3000/api"
 
 async function request(path, options = {}) {
   const url = `${API_URL}${path}`
