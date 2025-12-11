@@ -1,6 +1,6 @@
 export const API_URL =
   import.meta.env.MODE === "production"
-    ? "https://kofk-backend.up.railway.app/api" // FULL URL with https + /api
+    ? "https://kofk-server-production.up.railway.app/api"
     : "http://localhost:3000/api"
 
 
