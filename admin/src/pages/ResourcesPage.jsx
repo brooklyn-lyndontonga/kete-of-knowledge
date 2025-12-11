@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react"
 import CrudTable from "../components/CrudTable"
 import CrudModal from "../components/CrudModal"
@@ -19,26 +20,33 @@ export default function ResourcesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
 
-  async function load() {
-    try {
-      const [res, cats] = await Promise.all([
-        resourcesApi.fetchResources(),
-        categoriesApi.fetchResourceCategories(),
-      ])
-
-      setRows(res)
-      setCategories(cats)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  // -----------------------------
+  // LOAD DATA (React-safe)
+  // -----------------------------
   useEffect(() => {
-    load()
+    async function loadData() {
+      try {
+        const [res, cats] = await Promise.all([
+          resourcesApi.fetchResources(),
+          categoriesApi.fetchResourceCategories()
+        ])
+
+        setRows(Array.isArray(res) ? res : [])
+        setCategories(Array.isArray(cats) ? cats : [])
+      } catch (err) {
+        setError(err.message)
+        showToast(err.message, "error")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
   }, [])
 
+  // -----------------------------
+  // SAVE RESOURCE
+  // -----------------------------
   async function handleSave(formData) {
     try {
       if (editing) {
@@ -49,25 +57,36 @@ export default function ResourcesPage() {
         showToast("Resource created")
       }
 
-      setEditing(null)
       setModalOpen(false)
-      load()
+      setEditing(null)
+
+      const refreshed = await resourcesApi.fetchResources()
+      setRows(refreshed)
     } catch (err) {
       showToast(err.message, "error")
     }
   }
 
+  // -----------------------------
+  // DELETE RESOURCE
+  // -----------------------------
   async function handleDelete() {
     try {
       await resourcesApi.deleteResource(deleteId)
       showToast("Deleted")
+
       setDeleteId(null)
-      load()
+
+      const refreshed = await resourcesApi.fetchResources()
+      setRows(refreshed)
     } catch (err) {
       showToast(err.message, "error")
     }
   }
 
+  // -----------------------------
+  // RENDER
+  // -----------------------------
   return (
     <div className="page-container">
       <h1>Library Resources</h1>
@@ -109,7 +128,10 @@ export default function ResourcesPage() {
             name: "categoryId",
             label: "Category",
             type: "select",
-            options: categories.map((c) => ({ label: c.name, value: c.id })),
+            options: categories.map((c) => ({
+              label: c.name,
+              value: c.id,
+            })),
           },
         ]}
         onSave={handleSave}

@@ -1,11 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react"
 import CrudTable from "../components/CrudTable"
 import CrudModal from "../components/CrudModal"
 import DeleteConfirmModal from "../components/DeleteConfirmModal"
 import { useAdminToast } from "../components/AdminToastProvider"
-import * as whakataukiApi from "../api/whakatauki"
+import * as conditionsApi from "../api/conditions"
 
-export default function WhakataukiPage() {
+export default function ConditionsPage() {
   const { showToast } = useAdminToast()
 
   const [rows, setRows] = useState([])
@@ -15,51 +16,98 @@ export default function WhakataukiPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
 
-  async function load() {
-    try {
-      const data = await whakataukiApi.fetchWhakatauki()
-      setRows(data)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+  // -----------------------------
+  // LOAD DATA (React-safe version)
+  // -----------------------------
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await conditionsApi.fetchConditions()
+        setRows(Array.isArray(data) ? data : [])
+      } catch (err) {
+        setError(err.message)
+        showToast(err.message, "error")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
+  // -----------------------------
+  // NORMALIZATION HELPERS
+  // -----------------------------
+  function stringToArray(str) {
+    if (!str) return []
+    return str.split(",").map((s) => s.trim()).filter(Boolean)
+  }
+
+  function arrayToString(arr) {
+    return Array.isArray(arr) ? arr.join(", ") : ""
+  }
+
+  function normalizeForm(formData) {
+    return {
+      ...formData,
+      triggers: stringToArray(formData.triggers),
+      treatments: stringToArray(formData.treatments),
+      images: stringToArray(formData.images),
     }
   }
 
-  useEffect(() => load(), [])
-
+  // -----------------------------
+  // SAVE HANDLER
+  // -----------------------------
   async function handleSave(formData) {
     try {
+      const cleaned = normalizeForm(formData)
+
       if (editing) {
-        await whakataukiApi.updateWhakatauki(editing.id, formData)
-        showToast("Whakataukī updated")
+        await conditionsApi.updateCondition(editing.id, cleaned)
+        showToast("Condition updated")
       } else {
-        await whakataukiApi.createWhakatauki(formData)
-        showToast("Whakataukī created")
+        await conditionsApi.createCondition(cleaned)
+        showToast("Condition created")
       }
 
       setEditing(null)
       setModalOpen(false)
-      load()
+
+      const refreshed = await conditionsApi.fetchConditions()
+      setRows(refreshed)
+
     } catch (err) {
       showToast(err.message, "error")
     }
   }
 
+  // -----------------------------
+  // DELETE HANDLER
+  // -----------------------------
   async function handleDelete() {
     try {
-      await whakataukiApi.deleteWhakatauki(deleteId)
+      await conditionsApi.deleteCondition(deleteId)
       showToast("Deleted")
       setDeleteId(null)
-      load()
+
+      const refreshed = await conditionsApi.fetchConditions()
+      setRows(refreshed)
+
     } catch (err) {
       showToast(err.message, "error")
     }
   }
+
+  // -----------------------------
+  // RENDER PAGE
+  // -----------------------------
+  if (loading) return <p>Loading…</p>
+  if (error) return <p className="text-red-600">Error: {error}</p>
 
   return (
     <div className="page-container">
-      <h1>Whakataukī</h1>
+      <h1>Conditions</h1>
 
       <button
         className="btn-primary"
@@ -68,7 +116,7 @@ export default function WhakataukiPage() {
           setModalOpen(true)
         }}
       >
-        + Add Whakataukī
+        + Add Condition
       </button>
 
       <CrudTable
@@ -76,11 +124,16 @@ export default function WhakataukiPage() {
         loading={loading}
         error={error}
         columns={[
-          { key: "text", label: "Text" },
-          { key: "translation", label: "Translation" },
+          { key: "name", label: "Name" },
+          { key: "description", label: "Description" },
         ]}
         onEdit={(row) => {
-          setEditing(row)
+          setEditing({
+            ...row,
+            triggers: arrayToString(row.triggers),
+            treatments: arrayToString(row.treatments),
+            images: arrayToString(row.images),
+          })
           setModalOpen(true)
         }}
         onDelete={(row) => setDeleteId(row.id)}
@@ -90,14 +143,16 @@ export default function WhakataukiPage() {
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "text", label: "Text", type: "textarea" },
-          { name: "translation", label: "Translation", type: "textarea" },
-          { name: "attribution", label: "Attribution" },
+          { name: "name", label: "Name" },
+          { name: "description", label: "Description", type: "textarea" },
+          { name: "triggers", label: "Triggers (comma-separated)" },
+          { name: "treatments", label: "Treatments (comma-separated)" },
+          { name: "images", label: "Images (comma-separated)" },
         ]}
         onSave={handleSave}
         onClose={() => {
-          setModalOpen(false)
           setEditing(null)
+          setModalOpen(false)
         }}
       />
 
