@@ -53,7 +53,6 @@ export default function ReflectionTemplatesPage() {
 
       const refreshed = await templatesApi.fetchReflectionTemplates()
       setRows(refreshed)
-
     } catch (err) {
       showToast(err.message, "error")
     }
@@ -80,7 +79,7 @@ export default function ReflectionTemplatesPage() {
   // RENDER
   // ----------------------------
   if (loading) return <p>Loading…</p>
-  if (error) return <p className="text-red-600">{error}</p>
+  if (error) return <p className="text-red-600">Error: {error}</p>
 
   return (
     <div className="page-container">

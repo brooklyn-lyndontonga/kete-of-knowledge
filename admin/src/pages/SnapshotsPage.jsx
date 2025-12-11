@@ -7,13 +7,11 @@ import { useAdminToast } from "../components/AdminToastProvider"
 import * as templatesApi from "../api/reflections"
 
 export default function ReflectionTemplatesPage() {
-
   const { showToast } = useAdminToast()
 
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
   const [editing, setEditing] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
@@ -25,7 +23,7 @@ export default function ReflectionTemplatesPage() {
     async function loadData() {
       try {
         const data = await templatesApi.fetchReflectionTemplates()
-        setRows(data || [])
+        setRows(Array.isArray(data) ? data : [])
       } catch (err) {
         setError(err.message)
         showToast(err.message, "error")
@@ -33,7 +31,6 @@ export default function ReflectionTemplatesPage() {
         setLoading(false)
       }
     }
-
     loadData()
   }, [])
 
@@ -53,10 +50,8 @@ export default function ReflectionTemplatesPage() {
       setModalOpen(false)
       setEditing(null)
 
-      // Reload table
       const refreshed = await templatesApi.fetchReflectionTemplates()
       setRows(refreshed)
-
     } catch (err) {
       showToast(err.message, "error")
     }
@@ -69,12 +64,10 @@ export default function ReflectionTemplatesPage() {
     try {
       await templatesApi.deleteReflectionTemplate(deleteId)
       showToast("Deleted")
-
       setDeleteId(null)
 
       const refreshed = await templatesApi.fetchReflectionTemplates()
       setRows(refreshed)
-
     } catch (err) {
       showToast(err.message, "error")
     }
@@ -102,8 +95,9 @@ export default function ReflectionTemplatesPage() {
         loading={loading}
         error={error}
         columns={[
+          { key: "category", label: "Category" },
           { key: "title", label: "Title" },
-          { key: "description", label: "Description" },
+          { key: "prompt", label: "Prompt" }
         ]}
         onEdit={(row) => {
           setEditing(row)
@@ -116,8 +110,17 @@ export default function ReflectionTemplatesPage() {
         open={modalOpen}
         initial={editing}
         fields={[
+          {
+            name: "category",
+            label: "Category",
+            type: "select",
+            options: [
+              { label: "Daily", value: "daily" },
+              { label: "Weekly", value: "weekly" }
+            ]
+          },
           { name: "title", label: "Title" },
-          { name: "description", label: "Description", type: "textarea" },
+          { name: "prompt", label: "Prompt", type: "textarea" }
         ]}
         onSave={handleSave}
         onClose={() => {

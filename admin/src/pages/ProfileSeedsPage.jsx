@@ -17,7 +17,7 @@ export default function ProfileSeedsPage() {
   const [deleteId, setDeleteId] = useState(null)
 
   // -----------------------------
-  // LOAD DATA (React-safe version)
+  // LOAD DATA
   // -----------------------------
   useEffect(() => {
     async function loadData() {
@@ -36,7 +36,7 @@ export default function ProfileSeedsPage() {
   }, [])
 
   // -----------------------------
-  // SAVE HANDLER
+  // SAVE
   // -----------------------------
   async function handleSave(formData) {
     try {
@@ -51,7 +51,6 @@ export default function ProfileSeedsPage() {
       setEditing(null)
       setModalOpen(false)
 
-      // reload
       const updated = await seedsApi.fetchProfileSeeds()
       setRows(updated)
     } catch (err) {
@@ -60,7 +59,7 @@ export default function ProfileSeedsPage() {
   }
 
   // -----------------------------
-  // DELETE HANDLER
+  // DELETE
   // -----------------------------
   async function handleDelete() {
     try {
