@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-// server/controllers/profileSeedsController.js
 
 export async function listProfileSeeds(req, res) {
   const db = req.app.get("db")
