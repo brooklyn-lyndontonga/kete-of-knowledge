@@ -1,27 +1,28 @@
 export const API_URL =
   import.meta.env.MODE === "production"
-    ? "kofk-backend.up.railway.app"
+    ? "https://kofk-backend.up.railway.app/api" // FULL URL with https + /api
     : "http://localhost:3000/api"
 
+
 async function request(path, options = {}) {
-  const url = `${API_URL}${path}`
+  const url = `${API_URL}${path}`;
 
   const config = {
     headers: { "Content-Type": "application/json" },
     ...options,
-  }
+  };
 
-  const response = await fetch(url, config)
+  const response = await fetch(url, config);
 
   if (!response.ok) {
-    const message = await response.text()
-    throw new Error(`API Error: ${message}`)
+    const message = await response.text();
+    throw new Error(`API Error: ${message}`);
   }
 
   try {
-    return await response.json()
+    return await response.json();
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -32,4 +33,4 @@ export const api = {
   put: (path, body) =>
     request(path, { method: "PUT", body: JSON.stringify(body) }),
   delete: (path) => request(path, { method: "DELETE" }),
-}
+};
