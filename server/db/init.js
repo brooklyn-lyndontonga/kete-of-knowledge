@@ -1,7 +1,9 @@
+// server/db/init.js
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
 import path from "path"
 import { fileURLToPath } from "url"
+import bcrypt from "bcryptjs"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -75,6 +77,14 @@ export async function initTables(db) {
         icon TEXT
       );
 
+      -- Admins table
+      CREATE TABLE IF NOT EXISTS admins (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL
+      );
+
       CREATE TABLE IF NOT EXISTS resources (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         category_id INTEGER,
@@ -114,7 +124,6 @@ export async function initTables(db) {
         prompt TEXT NOT NULL
       );
 
-      -- ✅ NEW: Profile Seeds table
       CREATE TABLE IF NOT EXISTS profile_seeds (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -172,6 +181,26 @@ async function seedDefaults(db) {
       ("Whaia te iti kahurangi", "Pursue excellence"),
       ("Ko te pae tawhiti whaia kia tata", "Seek out the distant horizon")
     `)
+  }
+
+  // ---- Admin user ----
+  const adminCount = await db.get("SELECT COUNT(*) AS total FROM admins")
+  if (adminCount.total === 0) {
+    const email = "admin@example.com"
+    const plainPassword = "KeteAdmin123!"
+    const name = "Default Admin"
+
+    const passwordHash = await bcrypt.hash(plainPassword, 10)
+
+    await db.run(
+      `
+      INSERT INTO admins (name, email, password_hash)
+      VALUES (?, ?, ?)
+      `,
+      [name, email, passwordHash]
+    )
+
+    console.log(`👤 Seeded default admin: ${email} / ${plainPassword}`)
   }
 
   console.log("🌿 Default content seeded")

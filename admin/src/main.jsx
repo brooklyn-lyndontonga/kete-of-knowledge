@@ -1,6 +1,10 @@
+// src/main.jsx
 import React from "react"
 import ReactDOM from "react-dom/client"
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom"
 
 import App from "./App"
 
@@ -17,13 +21,29 @@ import ProfileSeedsPage from "./pages/ProfileSeedsPage"
 
 // Components
 import { AdminToastProvider } from "./components/AdminToastProvider.jsx"
+import ProtectedRoute from "./components/ProtectedRoute"
+
+// Auth
+import { AuthProvider } from "./auth/AuthContext"
+import LoginPage from "./pages/LoginPage"
 
 import "./index.css"
 
 const router = createBrowserRouter([
+  // Public route: login
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
+
+  // Protected admin app
   {
     path: "/",
-    element: <App />,
+    element: (
+      <ProtectedRoute>
+        <App />
+      </ProtectedRoute>
+    ),
     children: [
       { path: "/", element: <HomeContentPage /> },
       { path: "/support-contacts", element: <SupportContactsPage /> },
@@ -39,7 +59,9 @@ const router = createBrowserRouter([
 ])
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <AdminToastProvider>
-    <RouterProvider router={router} />
-  </AdminToastProvider>
+  <AuthProvider>
+    <AdminToastProvider>
+      <RouterProvider router={router} />
+    </AdminToastProvider>
+  </AuthProvider>
 )
