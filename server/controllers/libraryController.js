@@ -1,26 +1,53 @@
-import * as Library from "../models/libraryModel.js"
+// server/controllers/libraryController.js
 
-export async function index(req, res) {
-  const data = await Library.getAllResources()
-  res.json(data)
-}
+// GET /api/library/search?q=term
+export async function searchLibrary(req, res) {
+  try {
+    const db = req.app.get("db")
+    const { q } = req.query
 
-export async function show(req, res) {
-  const item = await Library.getResourceById(req.params.id)
-  item ? res.json(item) : res.status(404).json({ error: "Not found" })
-}
+    if (!q) {
+      return res.status(400).json({ error: "Missing ?q search term" })
+    }
 
-export async function create(req, res) {
-  const item = await Library.createResource(req.body)
-  res.status(201).json(item)
-}
+    const term = `%${q}%`
 
-export async function update(req, res) {
-  const updated = await Library.updateResource(req.params.id, req.body)
-  res.json(updated)
-}
+    const [conditions, resources, templates] = await Promise.all([
+      db.all(
+        `
+        SELECT id, name AS title, description, 'condition' AS type
+        FROM conditions
+        WHERE name LIKE ? OR description LIKE ?
+        `,
+        [term, term]
+      ),
+      db.all(
+        `
+        SELECT id, title, content AS description, 'resource' AS type
+        FROM resources
+        WHERE title LIKE ? OR content LIKE ?
+        `,
+        [term, term]
+      ),
+      db.all(
+        `
+        SELECT id, title, prompt AS description, 'reflection_template' AS type
+        FROM reflection_templates
+        WHERE title LIKE ? OR prompt LIKE ?
+        `,
+        [term, term]
+      ),
+    ])
 
-export async function remove(req, res) {
-  await Library.deleteResource(req.params.id)
-  res.json({ success: true })
+    const results = [...conditions, ...resources, ...templates]
+
+    res.json({
+      query: q,
+      count: results.length,
+      results,
+    })
+  } catch (err) {
+    console.error("Error searching library:", err)
+    res.status(500).json({ error: "Failed to search library" })
+  }
 }

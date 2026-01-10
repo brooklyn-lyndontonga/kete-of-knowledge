@@ -1,14 +1,19 @@
+// server/routes/conditions.js
 import express from "express"
 import {
-  listConditions,
+  getAllConditions,
+  getConditionById,
   createCondition,
-  deleteCondition,   // ✅ FIXED
+  updateCondition,
+  deleteCondition,
 } from "../controllers/conditionsController.js"
 
 const router = express.Router()
 
-router.get("/", listConditions)
+router.get("/", getAllConditions)
+router.get("/:id", getConditionById)
 router.post("/", createCondition)
-router.delete("/:id", deleteCondition)  // ✅ FIXED
+router.put("/:id", updateCondition)
+router.delete("/:id", deleteCondition)
 
 export default router
