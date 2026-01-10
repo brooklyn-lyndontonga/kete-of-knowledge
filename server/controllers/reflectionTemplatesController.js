@@ -1,59 +1,139 @@
 // server/controllers/reflectionTemplatesController.js
-import {
-  listReflectionTemplates,
-  getReflectionTemplate,
-  createReflectionTemplate,
-  updateReflectionTemplate,
-  deleteReflectionTemplate
-} from "../models/reflectionTemplatesModel.js"
 
-export async function listTemplates(req, res) {
+// GET /api/reflection-templates
+export async function getAllReflectionTemplates(req, res) {
   try {
     const db = req.app.get("db")
-    const items = await listReflectionTemplates(db)
-    res.json(items)
+    const { category } = req.query
+
+    let sql = "SELECT * FROM reflection_templates"
+    const params = []
+
+    if (category) {
+      sql += " WHERE category = ?"
+      params.push(category)
+    }
+
+    const templates = await db.all(sql, params)
+    res.json(templates)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.error("Error getting reflection templates:", err)
+    res.status(500).json({ error: "Failed to fetch reflection templates" })
   }
 }
 
-export async function getTemplate(req, res) {
+// GET /api/reflection-templates/:id
+export async function getReflectionTemplateById(req, res) {
   try {
     const db = req.app.get("db")
-    const item = await getReflectionTemplate(db, req.params.id)
-    if (!item) return res.status(404).json({ error: "Not found" })
-    res.json(item)
+    const { id } = req.params
+
+    const template = await db.get(
+      "SELECT * FROM reflection_templates WHERE id = ?",
+      [id]
+    )
+
+    if (!template) {
+      return res.status(404).json({ error: "Reflection template not found" })
+    }
+
+    res.json(template)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.error("Error getting reflection template:", err)
+    res.status(500).json({ error: "Failed to fetch reflection template" })
   }
 }
 
-export async function createTemplate(req, res) {
+// POST /api/reflection-templates
+export async function createReflectionTemplate(req, res) {
   try {
     const db = req.app.get("db")
-    const newItem = await createReflectionTemplate(db, req.body)
-    res.json(newItem)
+    const { category, title, prompt } = req.body
+
+    if (!category || !title || !prompt) {
+      return res
+        .status(400)
+        .json({ error: "category, title, and prompt are required" })
+    }
+
+    const result = await db.run(
+      `
+      INSERT INTO reflection_templates (category, title, prompt)
+      VALUES (?, ?, ?)
+      `,
+      [category, title, prompt]
+    )
+
+    const newTemplate = await db.get(
+      "SELECT * FROM reflection_templates WHERE id = ?",
+      [result.lastID]
+    )
+
+    res.status(201).json(newTemplate)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.error("Error creating reflection template:", err)
+    res.status(500).json({ error: "Failed to create reflection template" })
   }
 }
 
-export async function updateTemplate(req, res) {
+// PUT /api/reflection-templates/:id
+export async function updateReflectionTemplate(req, res) {
   try {
     const db = req.app.get("db")
-    const updated = await updateReflectionTemplate(db, req.params.id, req.body)
+    const { id } = req.params
+    const { category, title, prompt } = req.body
+
+    const existing = await db.get(
+      "SELECT * FROM reflection_templates WHERE id = ?",
+      [id]
+    )
+    if (!existing) {
+      return res.status(404).json({ error: "Reflection template not found" })
+    }
+
+    const newCategory = category ?? existing.category
+    const newTitle = title ?? existing.title
+    const newPrompt = prompt ?? existing.prompt
+
+    await db.run(
+      `
+      UPDATE reflection_templates
+      SET category = ?, title = ?, prompt = ?
+      WHERE id = ?
+      `,
+      [newCategory, newTitle, newPrompt, id]
+    )
+
+    const updated = await db.get(
+      "SELECT * FROM reflection_templates WHERE id = ?",
+      [id]
+    )
+
     res.json(updated)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.error("Error updating reflection template:", err)
+    res.status(500).json({ error: "Failed to update reflection template" })
   }
 }
 
-export async function removeTemplate(req, res) {
+// DELETE /api/reflection-templates/:id
+export async function deleteReflectionTemplate(req, res) {
   try {
     const db = req.app.get("db")
-    await deleteReflectionTemplate(db, req.params.id)
-    res.json({ success: true })
+    const { id } = req.params
+
+    const result = await db.run(
+      "DELETE FROM reflection_templates WHERE id = ?",
+      [id]
+    )
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: "Reflection template not found" })
+    }
+
+    res.sendStatus(204)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.error("Error deleting reflection template:", err)
+    res.status(500).json({ error: "Failed to delete reflection template" })
   }
 }
