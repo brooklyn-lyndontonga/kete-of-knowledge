@@ -17,14 +17,20 @@ export default function ProfileSeedsPage() {
   const [deleteId, setDeleteId] = useState(null)
 
   // -----------------------------
-  // LOAD DATA
+  // LOAD DATA (React 18 SAFE)
   // -----------------------------
   useEffect(() => {
+    const controller = new AbortController()
+
     async function loadData() {
       try {
-        const data = await seedsApi.fetchProfileSeeds()
+        setLoading(true)
+        const data = await seedsApi.fetchProfileSeeds({
+          signal: controller.signal,
+        })
         setRows(Array.isArray(data) ? data : [])
       } catch (err) {
+        if (err.name === "AbortError") return
         setError(err.message)
         showToast(err.message, "error")
       } finally {
@@ -33,6 +39,10 @@ export default function ProfileSeedsPage() {
     }
 
     loadData()
+
+    return () => {
+      controller.abort()
+    }
   }, [])
 
   // -----------------------------

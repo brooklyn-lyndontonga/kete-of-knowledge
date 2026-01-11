@@ -4,81 +4,93 @@ import CrudTable from "../components/CrudTable"
 import CrudModal from "../components/CrudModal"
 import DeleteConfirmModal from "../components/DeleteConfirmModal"
 import { useAdminToast } from "../components/AdminToastProvider"
-import * as templatesApi from "../api/reflections"
+import * as snapshotsApi from "../api/snapshots"
 
-export default function ReflectionTemplatesPage() {
+export default function SnapshotsPage() {
   const { showToast } = useAdminToast()
 
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
   const [editing, setEditing] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
 
-  // ----------------------------
-  // LOAD DATA SAFELY
-  // ----------------------------
+  // -----------------------------
+  // LOAD DATA (React 18 SAFE)
+  // -----------------------------
   useEffect(() => {
+    const controller = new AbortController()
+
     async function loadData() {
       try {
-        const data = await templatesApi.fetchReflectionTemplates()
+        setLoading(true)
+        const data = await snapshotsApi.fetchSnapshots({
+          signal: controller.signal,
+        })
         setRows(Array.isArray(data) ? data : [])
       } catch (err) {
+        if (err.name === "AbortError") return
         setError(err.message)
         showToast(err.message, "error")
       } finally {
         setLoading(false)
       }
     }
+
     loadData()
+
+    return () => {
+      controller.abort()
+    }
   }, [])
 
-  // ----------------------------
-  // SAVE HANDLER
-  // ----------------------------
+  // -----------------------------
+  // SAVE (CREATE / UPDATE)
+  // -----------------------------
   async function handleSave(formData) {
     try {
       if (editing) {
-        await templatesApi.updateReflectionTemplate(editing.id, formData)
-        showToast("Template updated")
+        await snapshotsApi.updateSnapshot(editing.id, formData)
+        showToast("Snapshot updated")
       } else {
-        await templatesApi.createReflectionTemplate(formData)
-        showToast("Template created")
+        await snapshotsApi.createSnapshot(formData)
+        showToast("Snapshot created")
       }
 
-      setModalOpen(false)
       setEditing(null)
+      setModalOpen(false)
 
-      const refreshed = await templatesApi.fetchReflectionTemplates()
+      const refreshed = await snapshotsApi.fetchSnapshots()
       setRows(refreshed)
     } catch (err) {
       showToast(err.message, "error")
     }
   }
 
-  // ----------------------------
-  // DELETE HANDLER
-  // ----------------------------
+  // -----------------------------
+  // DELETE
+  // -----------------------------
   async function handleDelete() {
     try {
-      await templatesApi.deleteReflectionTemplate(deleteId)
-      showToast("Deleted")
+      await snapshotsApi.deleteSnapshot(deleteId)
+      showToast("Snapshot deleted")
       setDeleteId(null)
 
-      const refreshed = await templatesApi.fetchReflectionTemplates()
+      const refreshed = await snapshotsApi.fetchSnapshots()
       setRows(refreshed)
     } catch (err) {
       showToast(err.message, "error")
     }
   }
 
-  // ----------------------------
+  // -----------------------------
   // RENDER
-  // ----------------------------
+  // -----------------------------
   return (
     <div className="page-container">
-      <h1>Reflection Templates</h1>
+      <h1>Progress Snapshots</h1>
 
       <button
         className="btn-primary"
@@ -87,7 +99,7 @@ export default function ReflectionTemplatesPage() {
           setModalOpen(true)
         }}
       >
-        + Add Template
+        + Add Snapshot
       </button>
 
       <CrudTable
@@ -95,9 +107,10 @@ export default function ReflectionTemplatesPage() {
         loading={loading}
         error={error}
         columns={[
-          { key: "category", label: "Category" },
-          { key: "title", label: "Title" },
-          { key: "prompt", label: "Prompt" }
+          { key: "mood", label: "Mood" },
+          { key: "energy", label: "Energy" },
+          { key: "notes", label: "Notes" },
+          { key: "createdAt", label: "Date" },
         ]}
         onEdit={(row) => {
           setEditing(row)
@@ -111,16 +124,30 @@ export default function ReflectionTemplatesPage() {
         initial={editing}
         fields={[
           {
-            name: "category",
-            label: "Category",
+            name: "mood",
+            label: "Mood",
             type: "select",
             options: [
-              { label: "Daily", value: "daily" },
-              { label: "Weekly", value: "weekly" }
-            ]
+              { label: "Great", value: "great" },
+              { label: "Okay", value: "okay" },
+              { label: "Low", value: "low" },
+            ],
           },
-          { name: "title", label: "Title" },
-          { name: "prompt", label: "Prompt", type: "textarea" }
+          {
+            name: "energy",
+            label: "Energy",
+            type: "select",
+            options: [
+              { label: "High", value: "high" },
+              { label: "Medium", value: "medium" },
+              { label: "Low", value: "low" },
+            ],
+          },
+          {
+            name: "notes",
+            label: "Notes",
+            type: "textarea",
+          },
         ]}
         onSave={handleSave}
         onClose={() => {

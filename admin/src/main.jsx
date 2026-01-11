@@ -1,4 +1,4 @@
-// src/main.jsx
+// admin/src/main.jsx
 import React from "react"
 import ReactDOM from "react-dom/client"
 import {
@@ -8,7 +8,8 @@ import {
 
 import App from "./App"
 
-// Admin Pages
+// Pages
+import LoginPage from "./pages/LoginPage"
 import HomeContentPage from "./pages/HomeContentPage"
 import SupportContactsPage from "./pages/SupportContactsPage"
 import ResourceCategoriesPage from "./pages/ResourceCategoriesPage"
@@ -19,24 +20,27 @@ import ReflectionTemplatesPage from "./pages/ReflectionTemplatesPage"
 import SnapshotsPage from "./pages/SnapshotsPage"
 import ProfileSeedsPage from "./pages/ProfileSeedsPage"
 
-// Components
-import { AdminToastProvider } from "./components/AdminToastProvider.jsx"
-import ProtectedRoute from "./components/ProtectedRoute"
-
-// Auth
+// Providers
 import { AuthProvider } from "./auth/AuthContext"
-import LoginPage from "./pages/LoginPage"
+import { AdminToastProvider } from "./components/AdminToastProvider"
+
+// Guards
+import ProtectedRoute from "./components/ProtectedRoute"
 
 import "./index.css"
 
 const router = createBrowserRouter([
-  // Public route: login
+  // -------------------------
+  // PUBLIC
+  // -------------------------
   {
     path: "/login",
     element: <LoginPage />,
   },
 
-  // Protected admin app
+  // -------------------------
+  // PROTECTED ADMIN
+  // -------------------------
   {
     path: "/",
     element: (
@@ -45,23 +49,26 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { path: "/", element: <HomeContentPage /> },
-      { path: "/support-contacts", element: <SupportContactsPage /> },
-      { path: "/resource-categories", element: <ResourceCategoriesPage /> },
-      { path: "/resources", element: <ResourcesPage /> },
-      { path: "/whakatauki", element: <WhakataukiPage /> },
-      { path: "/conditions", element: <ConditionsPage /> },
-      { path: "/reflection-templates", element: <ReflectionTemplatesPage /> },
-      { path: "/snapshots", element: <SnapshotsPage /> },
-      { path: "/profile-seeds", element: <ProfileSeedsPage /> },
+      { index: true, element: <HomeContentPage /> },
+      { path: "support-contacts", element: <SupportContactsPage /> },
+      { path: "resource-categories", element: <ResourceCategoriesPage /> },
+      { path: "resources", element: <ResourcesPage /> },
+      { path: "whakatauki", element: <WhakataukiPage /> },
+      { path: "conditions", element: <ConditionsPage /> },
+      { path: "reflection-templates", element: <ReflectionTemplatesPage /> },
+      { path: "snapshots", element: <SnapshotsPage /> },
+      { path: "profile-seeds", element: <ProfileSeedsPage /> },
+      { path: "/exports", element: <ExportsPage />},
     ],
   },
 ])
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <AuthProvider>
-    <AdminToastProvider>
-      <RouterProvider router={router} />
-    </AdminToastProvider>
-  </AuthProvider>
+  <React.StrictMode>
+    <AuthProvider>
+      <AdminToastProvider>
+        <RouterProvider router={router} />
+      </AdminToastProvider>
+    </AuthProvider>
+  </React.StrictMode>
 )

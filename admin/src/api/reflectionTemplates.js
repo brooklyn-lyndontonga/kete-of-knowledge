@@ -1,17 +1,27 @@
-import { api } from "./client";
+// admin/src/api/reflectionTemplates.js
+import { api } from "./client"
 
-export function fetchReflectionTemplates() {
-  return api.get("/admin/reflectionTemplates");
+// GET all templates
+export async function fetchReflectionTemplates() {
+  return api.get("/admin/reflection-templates")
 }
 
-export function createReflectionTemplate(data) {
-  return api.post("/admin/reflectionTemplates", data);
+// GET one by id
+export async function fetchReflectionTemplate(id) {
+  return api.get(`/admin/reflection-templates/${id}`)
 }
 
-export function updateReflectionTemplate(id, data) {
-  return api.put(`/admin/reflectionTemplates/${id}`, data);
+// CREATE
+export async function createReflectionTemplate(payload) {
+  return api.post("/admin/reflection-templates", payload)
 }
 
-export function deleteReflectionTemplate(id) {
-  return api.delete(`/admin/reflectionTemplates/${id}`);
+// UPDATE
+export async function updateReflectionTemplate(id, payload) {
+  return api.put(`/admin/reflection-templates/${id}`, payload)
+}
+
+// DELETE
+export async function deleteReflectionTemplate(id) {
+  return api.del(`/admin/reflection-templates/${id}`)
 }
