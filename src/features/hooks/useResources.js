@@ -1,43 +1,39 @@
-import { useState, useEffect } from "react"
-import api from "../lib/api"
+import { useEffect, useState } from "react"
+import { API_URL } from "../../lib/api"
 
-export function useResources() {
-  const [categories, setCategories] = useState([])
+export function useResources(categoryId) {
   const [resources, setResources] = useState([])
-
-  async function loadCategories() {
-    const res = await api.get("/resource-categories")
-    setCategories(res.data)
-  }
-
-  async function loadResources() {
-    const res = await api.get("/resources")
-    setResources(res.data)
-  }
-
-  async function loadResourcesByCategory(id) {
-    const res = await api.get(`/resources/category/${id}`)
-    return res.data
-  }
-
-  async function getResource(id) {
-    const res = await api.get(`/resources/${id}`)
-    return res.data
-  }
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    loadCategories()
-    loadResources()
-  }, [])
+    let mounted = true
 
-  return {
-    categories,
-    resources,
-    loadResourcesByCategory,
-    getResource,
-    reload: () => {
-      loadCategories()
-      loadResources()
+    async function load() {
+      try {
+        setLoading(true)
+
+        const url = categoryId
+          ? `${API_URL}/resources?categoryId=${categoryId}`
+          : `${API_URL}/resources`
+
+        const res = await fetch(url)
+        if (!res.ok) throw new Error("Failed to load resources")
+
+        const data = await res.json()
+        if (mounted) setResources(Array.isArray(data) ? data : [])
+      } catch (err) {
+        if (mounted) setError(err.message)
+      } finally {
+        if (mounted) setLoading(false)
+      }
     }
-  }
+
+    load()
+    return () => {
+      mounted = false
+    }
+  }, [categoryId])
+
+  return { resources, loading, error }
 }

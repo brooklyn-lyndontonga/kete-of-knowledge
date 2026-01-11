@@ -1,42 +1,44 @@
+/* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text, StyleSheet } from "react-native"
-import { useSnapshots } from "../../../hooks/useSnapshots"
+import { View, Text } from "react-native"
+import { useTheme } from "../../../theme"
 
-export default function ProgressSnapshotCard() {
-  const snapshots = useSnapshots()
+export default function ProgressSnapshotCard({ snapshot }) {
+  const { colors, spacing, typography } = useTheme()
 
-  if (!snapshots.length) return null
+  if (!snapshot) return null
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.heading}>Your Progress</Text>
-      {snapshots.map((snap) => (
-        <View key={snap.id} style={styles.row}>
-          <Text style={styles.label}>{snap.label}</Text>
-          <Text style={styles.value}>{snap.percentage}%</Text>
-        </View>
-      ))}
+    <View
+      style={{
+        backgroundColor: colors.card,
+        padding: spacing.lg,
+        borderRadius: spacing.md,
+        marginTop: spacing.lg,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: typography.heading,
+          fontSize: 16,
+          color: colors.primary,
+          marginBottom: spacing.sm,
+        }}
+      >
+        Today’s Check-in
+      </Text>
+
+      <Text style={{ fontSize: 14, marginBottom: spacing.xs }}>
+        Mood: {snapshot.mood ?? "—"}
+      </Text>
+
+      <Text style={{ fontSize: 14, marginBottom: spacing.xs }}>
+        Energy: {snapshot.energy ?? "—"}
+      </Text>
+
+      <Text style={{ fontSize: 14 }}>
+        Notes: {snapshot.notes || "—"}
+      </Text>
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 20,
-  },
-  heading: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  },
-  label: { opacity: 0.7 },
-  value: { fontWeight: "700" },
-})

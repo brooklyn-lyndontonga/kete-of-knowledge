@@ -1,16 +1,24 @@
-/* eslint-disable react/react-in-jsx-scope */
-/* eslint-disable no-unused-vars */
-import { ScrollView, View } from "react-native"
-import WhakataukiCard from "./WhakataukiCard"
-import ReflectionTile from "./ReflectionTile"
-import ProgressSnapshot from "./ProgressSnapshot"
+import React from "react"
+import { View, ActivityIndicator, Text } from "react-native"
+import { useWhakatauki } from "../hooks/useWhakatauki"
+import { useSnapshots } from "../hooks/useSnapshots"
+
+import WhakataukiCard from "../../components/WhakataukiCard"
+import ProgressSnapshotCard from "./components/ProgressSnapshotCard"
 
 export default function HomeScreen() {
+  const { whakatauki, loading: loadingQuote } = useWhakatauki({ mode: "daily" })
+  const { snapshots, loading: loadingSnapshots, error } = useSnapshots()
+
+  if (loadingQuote || loadingSnapshots) return <ActivityIndicator />
+  if (error) return <Text>{error}</Text>
+
+  const latestSnapshot = snapshots[0] || null
+
   return (
-    <ScrollView contentContainerStyle={{ padding: 20 }}>
-      <WhakataukiCard />
-      <ReflectionTile />
-      <ProgressSnapshot />
-    </ScrollView>
+    <View style={{ padding: 16 }}>
+      <WhakataukiCard quote={whakatauki} />
+      <ProgressSnapshotCard snapshot={latestSnapshot} />
+    </View>
   )
 }
