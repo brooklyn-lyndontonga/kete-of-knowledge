@@ -17,14 +17,20 @@ export default function ConditionsPage() {
   const [deleteId, setDeleteId] = useState(null)
 
   // -----------------------------
-  // LOAD DATA (React-safe version)
+  // LOAD DATA (React 18 safe)
   // -----------------------------
   useEffect(() => {
+    const controller = new AbortController()
+
     async function loadData() {
       try {
-        const data = await conditionsApi.fetchConditions()
+        setLoading(true)
+        const data = await conditionsApi.fetchConditions({
+          signal: controller.signal,
+        })
         setRows(Array.isArray(data) ? data : [])
       } catch (err) {
+        if (err.name === "AbortError") return
         setError(err.message)
         showToast(err.message, "error")
       } finally {
@@ -33,6 +39,10 @@ export default function ConditionsPage() {
     }
 
     loadData()
+
+    return () => {
+      controller.abort()
+    }
   }, [])
 
   // -----------------------------
@@ -76,7 +86,6 @@ export default function ConditionsPage() {
 
       const refreshed = await conditionsApi.fetchConditions()
       setRows(refreshed)
-
     } catch (err) {
       showToast(err.message, "error")
     }
@@ -93,7 +102,6 @@ export default function ConditionsPage() {
 
       const refreshed = await conditionsApi.fetchConditions()
       setRows(refreshed)
-
     } catch (err) {
       showToast(err.message, "error")
     }

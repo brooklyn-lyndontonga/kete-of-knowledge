@@ -1,17 +1,22 @@
-import { api } from "./client";
+/* eslint-disable no-empty-pattern */
+import { api } from "./client"
 
-export function fetchSnapshots() {
-  return api.get("/admin/snapshots");
+// Fetch all snapshots
+export async function fetchSnapshots({ } = {}) {
+  return api.get("/admin/snapshots")
 }
 
-export function createSnapshot(data) {
-  return api.post("/admin/snapshots", data);
+// Create snapshot
+export async function createSnapshot(data) {
+  return api.post("/admin/snapshots", data)
 }
 
-export function updateSnapshot(id, data) {
-  return api.put(`/admin/snapshots/${id}`, data);
+// Update snapshot
+export async function updateSnapshot(id, data) {
+  return api.put(`/admin/snapshots/${id}`, data)
 }
 
-export function deleteSnapshot(id) {
-  return api.delete(`/admin/snapshots/${id}`);
+// Delete snapshot
+export async function deleteSnapshot(id) {
+  return api.delete(`/admin/snapshots/${id}`)
 }

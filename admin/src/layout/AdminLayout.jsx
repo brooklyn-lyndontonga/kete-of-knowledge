@@ -1,20 +1,24 @@
 import React from "react"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, Outlet } from "react-router-dom"
 import "./AdminLayout.css"
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout() {
   const { pathname } = useLocation()
 
   const menu = [
     { path: "/", label: "Dashboard" },
-    { path: "/support-contacts", label: "Support Contacts" },
-    { path: "/resource-categories", label: "Resource Categories" },
-    { path: "/resources", label: "Resources" },
-    { path: "/whakatauki", label: "Whakatauki" },
-    { path: "/conditions", label: "Conditions" },
     { path: "/reflection-templates", label: "Reflection Templates" },
     { path: "/snapshots", label: "Progress Snapshots" },
     { path: "/profile-seeds", label: "Profile Seeds" },
+
+    { path: "/resources", label: "Resources" },
+    { path: "/resource-categories", label: "Resource Categories" },
+    { path: "/conditions", label: "Conditions" },
+    { path: "/support-contacts", label: "Support Contacts" },
+
+    { path: "/whakatauki", label: "Whakataukī" },
+
+    { path: "/exports", label: "Exports" },
   ]
 
   return (
@@ -23,21 +27,29 @@ export default function AdminLayout({ children }) {
         <h1 className="admin-title">Kete Admin</h1>
 
         <nav>
-          {menu.map((m) => (
-            <Link
-              key={m.path}
-              to={m.path}
-              className={`admin-link ${pathname === m.path ? "active" : ""}`}
-            >
-              {m.label}
-            </Link>
-          ))}
+          {menu.map((m) => {
+            const isActive =
+              pathname === m.path || pathname.startsWith(m.path + "/")
+
+            return (
+              <Link
+                key={m.path}
+                to={m.path}
+                className={`admin-link ${isActive ? "active" : ""}`}
+              >
+                {m.label}
+              </Link>
+            )
+          })}
         </nav>
       </aside>
 
       <main className="admin-main">
-        <div className="admin-header">Admin Dashboard</div>
-        <div className="admin-content">{children}</div>
+        <div className="admin-header">Kete Admin</div>
+
+        <div className="admin-content">
+          <Outlet />
+        </div>
       </main>
     </div>
   )

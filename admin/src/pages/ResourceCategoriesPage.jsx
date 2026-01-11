@@ -15,18 +15,28 @@ export default function ResourceCategoriesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
 
-  async function load() {
+  async function load(signal) {
     try {
-      const data = await categoriesApi.fetchResourceCategories()
+      setLoading(true)
+      const data = await categoriesApi.fetchResourceCategories({ signal })
       setRows(data)
     } catch (err) {
+      if (err.name === "AbortError") return
       setError(err.message)
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => load(), [])
+  useEffect(() => {
+    const controller = new AbortController()
+
+    load(controller.signal)
+
+    return () => {
+      controller.abort()
+    }
+  }, [])
 
   async function handleSave(formData) {
     try {

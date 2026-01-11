@@ -2,48 +2,38 @@
 
 export async function getStats(req, res) {
   try {
-    const db = req.app.get("db");
-
-    console.log("📊 Running admin stats query...");
-
-    const tables = [
-      "resources",
-      "resourceCategories",
-      "whakatauki",
-      "conditions",
-      "supportContacts",
-      "snapshots",
-      "reflectionTemplates",
-      "profileSeeds"
-    ];
-
-    const counts = {};
-
-    for (const table of tables) {
-      try {
-        const row = await db.get(`SELECT COUNT(*) AS count FROM ${table}`);
-        counts[table] = row?.count ?? 0;
-      } catch (err) {
-        console.error(`❌ ERROR querying table '${table}':`, err.message);
-        counts[table] = 0;
-      }
+    const db = req.app.get("db")
+    if (!db) {
+      return res.status(500).json({ error: "Database not available on app" })
     }
 
-    console.log("📊 Stats result:", counts);
+    // Simple counts for homepage stats
+    const [
+      resources,
+      categories,
+      whakatauki,
+      conditions,
+      support,
+      snapshots,
+    ] = await Promise.all([
+      db.get("SELECT COUNT(*) AS total FROM resources"),
+      db.get("SELECT COUNT(*) AS total FROM resource_categories"),
+      db.get("SELECT COUNT(*) AS total FROM whakatauki"),
+      db.get("SELECT COUNT(*) AS total FROM conditions"),
+      db.get("SELECT COUNT(*) AS total FROM support_contacts"),
+      db.get("SELECT COUNT(*) AS total FROM snapshots"),
+    ])
 
     res.json({
-      resources: counts.resources,
-      categories: counts.resourceCategories,
-      whakatauki: counts.whakatauki,
-      conditions: counts.conditions,
-      support: counts.supportContacts,
-      snapshots: counts.snapshots,
-      reflectionTemplates: counts.reflectionTemplates,
-      profileSeeds: counts.profileSeeds,
-    });
-
+      resources: resources?.total ?? 0,
+      categories: categories?.total ?? 0,
+      whakatauki: whakatauki?.total ?? 0,
+      conditions: conditions?.total ?? 0,
+      support: support?.total ?? 0,
+      snapshots: snapshots?.total ?? 0,
+    })
   } catch (err) {
-    console.error("🔥 CRITICAL ERROR IN getStats():", err);
-    res.status(500).json({ error: err.message });
+    console.error("❌ getStats error:", err)
+    res.status(500).json({ error: "Failed to load admin stats" })
   }
 }

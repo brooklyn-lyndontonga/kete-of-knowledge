@@ -21,19 +21,24 @@ export default function ResourcesPage() {
   const [deleteId, setDeleteId] = useState(null)
 
   // -----------------------------
-  // LOAD DATA (React-safe)
+  // LOAD DATA (React 18 safe)
   // -----------------------------
   useEffect(() => {
+    const controller = new AbortController()
+
     async function loadData() {
       try {
+        setLoading(true)
+
         const [res, cats] = await Promise.all([
-          resourcesApi.fetchResources(),
-          categoriesApi.fetchResourceCategories()
+          resourcesApi.fetchResources({ signal: controller.signal }),
+          categoriesApi.fetchResourceCategories({ signal: controller.signal }),
         ])
 
         setRows(Array.isArray(res) ? res : [])
         setCategories(Array.isArray(cats) ? cats : [])
       } catch (err) {
+        if (err.name === "AbortError") return
         setError(err.message)
         showToast(err.message, "error")
       } finally {
@@ -42,6 +47,10 @@ export default function ResourcesPage() {
     }
 
     loadData()
+
+    return () => {
+      controller.abort()
+    }
   }, [])
 
   // -----------------------------
