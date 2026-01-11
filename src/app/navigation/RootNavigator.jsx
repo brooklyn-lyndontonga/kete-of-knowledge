@@ -15,13 +15,13 @@ export default function RootNavigator() {
   return (
     <NavigationContainer ref={navigationRef}>
       {!session ? (
-        // NOT LOGGED IN → full onboarding flow
+        // NOT LOGGED IN → onboarding/auth flow
         <OnboardingStack />
       ) : !hasOnboarded ? (
-        // LOGGED IN, BUT NOT FINISHED ONBOARDING
+        // LOGGED IN but NOT onboarded
         <OnboardingStack initialRouteName="CompleteProfile" />
       ) : (
-        // LOGGED IN + ONBOARDING DONE → main app
+        // READY
         <AppTabs />
       )}
     </NavigationContainer>

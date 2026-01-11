@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { API_URL } from "../../lib/api"
 
-export function useConditions() {
-  const [conditions, setConditions] = useState([])
+export function useResourceCategories() {
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -11,13 +11,11 @@ export function useConditions() {
 
     async function load() {
       try {
-        setLoading(true)
-
-        const res = await fetch(`${API_URL}/conditions`)
-        if (!res.ok) throw new Error("Failed to load conditions")
+        const res = await fetch(`${API_URL}/resourceCategories`)
+        if (!res.ok) throw new Error("Failed to load categories")
 
         const data = await res.json()
-        if (mounted) setConditions(Array.isArray(data) ? data : [])
+        if (mounted) setCategories(Array.isArray(data) ? data : [])
       } catch (err) {
         if (mounted) setError(err.message)
       } finally {
@@ -31,5 +29,6 @@ export function useConditions() {
     }
   }, [])
 
-  return { conditions, loading, error }
+  return { categories, loading, error }
 }
+
