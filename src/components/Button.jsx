@@ -36,25 +36,25 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
 
+  // 🌿 Primary = fern shadow (accent)
   primary: {
-    backgroundColor: colors.ink,
+    backgroundColor: colors.accent,
   },
 
+  primaryText: {
+    color: "#FFFFFF",
+    fontSize: typography.body,
+  },
+
+  // Neutral outline
   secondary: {
     borderWidth: 1,
     borderColor: colors.divider,
     backgroundColor: "transparent",
   },
 
-  text: {
-    fontSize: typography.body,
-  },
-
-  primaryText: {
-    color: "#FFFFFF",
-  },
-
   secondaryText: {
     color: colors.ink,
+    fontSize: typography.body,
   },
 })

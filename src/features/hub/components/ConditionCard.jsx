@@ -1,44 +1,34 @@
 /* eslint-disable react/prop-types */
-/* eslint-disable no-unused-vars */
-import React from "react"
-import { Pressable, Text, View } from "react-native"
-import { useTheme } from "../../../theme"
+import React from 'react'
+import { Text, StyleSheet, Pressable } from 'react-native'
+import Card from '../../../components/Card'
+import { colors, spacing, typography } from '../../../theme/theme'
 
-export default function ConditionCard({ condition, onPress }) {
-  const { colors, spacing, typography } = useTheme()
-
+export default function ConditionCard({
+  title,
+  description,
+  onPress,
+  status, // "success" | "warning"
+}) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        backgroundColor: colors.card,
-        padding: spacing.md,
-        borderRadius: spacing.md,
-        marginBottom: spacing.md,
-      }}
-    >
-      <Text
-        style={{
-          fontFamily: typography.heading,
-          fontSize: 16,
-          color: colors.primary,
-        }}
-      >
-        {condition.name}
-      </Text>
-
-      {condition.description && (
-        <Text
-          style={{
-            marginTop: spacing.xs,
-            fontSize: 13,
-            color: colors.mutedText,
-          }}
-          numberOfLines={2}
-        >
-          {condition.description}
-        </Text>
-      )}
+    <Pressable onPress={onPress}>
+      <Card tone={status}>
+        <Text style={styles.title}>{title}</Text>
+        {description && <Text style={styles.description}>{description}</Text>}
+      </Card>
     </Pressable>
   )
 }
+
+const styles = StyleSheet.create({
+  title: {
+    fontSize: typography.h2,
+    color: colors.ink,
+    marginBottom: spacing.sm,
+  },
+  description: {
+    fontSize: typography.small,
+    color: colors.muted,
+    lineHeight: 20,
+  },
+})

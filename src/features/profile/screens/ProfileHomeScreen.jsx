@@ -1,89 +1,48 @@
 import React from "react"
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native"
+import { Text } from "react-native"
 import { useNavigation } from "@react-navigation/native"
-import { useTheme } from "../../../theme"
+
+import PageShell from "../../../components/layout/PageShell"
+import Section from "../../../components/layout/Section"
+import Card from "../../../components/Card"
+import Button from "../../../components/Button"
+import { globalStyles } from "../../../theme/globalStyles"
 
 export default function ProfileHomeScreen() {
   const navigation = useNavigation()
-  const { colors, spacing, typography } = useTheme()
-
-  const styles = createStyles(colors, spacing, typography)
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.heading}>Your Profile</Text>
-      <Text style={styles.subheading}>
-        Manage your health info, goals, and whānau providers.
-      </Text>
+    <PageShell>
+      <Section title="Your profile">
+        <Card>
+          <Text style={globalStyles.text}>
+            Manage your health info, goals, and whānau providers.
+          </Text>
+        </Card>
+      </Section>
 
-      {/* Quick Actions */}
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate("Goals")}
-      >
-        <Text style={styles.cardTitle}>🎯 My Goals</Text>
-        <Text style={styles.cardDesc}>Track your health and wellbeing goals.</Text>
-      </TouchableOpacity>
+      <Section>
+        <Card>
+          <Button
+            title="My goals"
+            onPress={() => navigation.navigate("Goals")}
+          />
+        </Card>
 
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate("HealthProviders")}
-      >
-        <Text style={styles.cardTitle}>🏥 My Health Providers</Text>
-        <Text style={styles.cardDesc}>View and manage your clinicians.</Text>
-      </TouchableOpacity>
+        <Card>
+          <Button
+            title="My health providers"
+            onPress={() => navigation.navigate("HealthProviders")}
+          />
+        </Card>
 
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate("DataSettings")}
-      >
-        <Text style={styles.cardTitle}>🔐 Data & Privacy</Text>
-        <Text style={styles.cardDesc}>Control what information you share.</Text>
-      </TouchableOpacity>
-
-      <View style={{ height: spacing.xl * 2 }} />
-    </ScrollView>
+        <Card>
+          <Button
+            title="Data & privacy"
+            onPress={() => navigation.navigate("DataSettings")}
+          />
+        </Card>
+      </Section>
+    </PageShell>
   )
-}
-
-function createStyles(colors, spacing, typography) {
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-      padding: spacing.lg,
-      backgroundColor: colors.bg,
-      paddingTop: 60,
-    },
-    heading: {
-      fontFamily: typography.heading,
-      fontSize: 28,
-      color: colors.primary,
-    },
-    subheading: {
-      fontFamily: typography.body,
-      fontSize: 14,
-      color: colors.textLight,
-      marginBottom: spacing.xl,
-      marginTop: 4,
-    },
-    card: {
-      backgroundColor: colors.card,
-      padding: spacing.lg,
-      borderRadius: 14,
-      marginBottom: spacing.md,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    cardTitle: {
-      fontFamily: typography.medium,
-      fontSize: 18,
-      color: colors.text,
-      marginBottom: 4,
-    },
-    cardDesc: {
-      fontFamily: typography.body,
-      fontSize: 13,
-      color: colors.textLight,
-    },
-  })
 }

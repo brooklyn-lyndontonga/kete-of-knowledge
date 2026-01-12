@@ -1,20 +1,25 @@
 /* eslint-disable react/prop-types */
-import React from "react"
-import { View, Text } from "react-native"
+/* eslint-disable no-unused-vars */
+import React from 'react'
+import { Text, StyleSheet } from 'react-native'
+import Card from '../../components/Card'
+import { colors, spacing, typography } from '../../theme/theme'
 
-export default function InsightCard({ message }) {
+export default function InsightCard({
+  message,
+  tone, // "success" | "warning" | undefined
+}) {
   return (
-    <View
-      style={{
-        padding: 14,
-        marginVertical: 6,
-        borderRadius: 12,
-        backgroundColor: "#F1F5F3",
-      }}
-    >
-      <Text style={{ fontSize: 15, color: "#2F3E37" }}>
-        {message}
-      </Text>
-    </View>
+    <Card tone={tone}>
+      <Text style={styles.text}>{message}</Text>
+    </Card>
   )
 }
+
+const styles = StyleSheet.create({
+  text: {
+    fontSize: typography.body,
+    color: colors.ink,
+    lineHeight: 22,
+  },
+})
