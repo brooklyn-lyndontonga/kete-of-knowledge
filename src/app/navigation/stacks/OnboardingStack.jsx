@@ -1,9 +1,9 @@
+/* eslint-disable react/prop-types */
 import React from "react"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
 import LaunchScreen from "../../../features/welcome/screens/LaunchScreen"
 import WelcomeBackScreen from "../../../features/welcome/screens/WelcomeBackScreen"
-
 import ConsentScreen from "../../../features/onboarding/screens/ConsentScreen"
 import CompleteProfile from "../../../features/onboarding/screens/CompleteProfile"
 import EmailSignIn from "../../../features/onboarding/screens/EmailSignIn"
@@ -12,9 +12,9 @@ import Done from "../../../features/onboarding/screens/Done"
 
 const Stack = createNativeStackNavigator()
 
-export default function OnboardingStack() {
+export default function OnboardingStack({ initialRouteName = "Launch" }) {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator initialRouteName={initialRouteName}>
       <Stack.Screen name="Launch" component={LaunchScreen} />
       <Stack.Screen name="WelcomeBack" component={WelcomeBackScreen} />
       <Stack.Screen name="Consent" component={ConsentScreen} />

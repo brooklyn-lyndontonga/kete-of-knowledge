@@ -1,58 +1,87 @@
-import React, { useEffect, useState } from "react"
-import { View, Text, ScrollView, StyleSheet } from "react-native"
-import api from "../../../lib/api"   // ✅ FIXED PATH
+import React, { useState } from "react"
+import { View, Text, TextInput, TouchableOpacity } from "react-native"
+import { useNavigation, useRoute } from "@react-navigation/native"
+import { useSymptoms } from "../../hooks/useSymptoms"
 
 export default function SymptomTrackerScreen() {
-  const [summary, setSummary] = useState({})
+  const navigation = useNavigation()
+  const route = useRoute()
+  const conditionId = route.params?.conditionId ?? null
 
-  async function loadSummary() {
-    try {
-      const data = await api.get("/symptoms/summary")
-      setSummary(data)
-    } catch (err) {
-      console.error("Error loading summary:", err)
-    }
+  const { addSymptom } = useSymptoms()
+
+  const [symptom, setSymptom] = useState("")
+  const [severity, setSeverity] = useState("5")
+  const [notes, setNotes] = useState("")
+
+  const handleSave = async () => {
+    if (!symptom) return
+
+    await addSymptom({
+      symptom,
+      severity: Number(severity),
+      notes,
+      conditionId,
+      date: new Date().toISOString(),
+    })
+
+    navigation.goBack()
   }
 
-  useEffect(() => {
-    loadSummary()
-  }, [])
-
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>📊 Symptom Tracker Summary</Text>
+    <View style={{ flex: 1, padding: 16 }}>
+      <Text style={{ fontSize: 22, marginBottom: 16 }}>
+        Log a symptom
+      </Text>
 
-      {Object.entries(summary).map(([symptom, entries]) => (
-        <View key={symptom} style={styles.card}>
-          <Text style={styles.symptom}>{symptom}</Text>
+      {conditionId && (
+        <Text style={{ marginBottom: 8, color: "#666" }}>
+          Linked to this condition
+        </Text>
+      )}
 
-          <Text style={styles.meta}>
-            Logged: {entries.length} time(s)
-          </Text>
+      <Text>Symptom</Text>
+      <TextInput
+        value={symptom}
+        onChangeText={setSymptom}
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          padding: 8,
+          marginBottom: 12,
+        }}
+      />
 
-          <Text style={styles.meta}>
-            Avg Severity:{" "}
-            {(
-              entries.reduce((a, b) => a + b.severity, 0) / entries.length
-            ).toFixed(1)}
-          </Text>
+      <Text>Severity (1–10)</Text>
+      <TextInput
+        value={severity}
+        onChangeText={setSeverity}
+        keyboardType="numeric"
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          padding: 8,
+          marginBottom: 12,
+        }}
+      />
 
-          <Text style={styles.meta}>Most Recent: {entries[0]?.date}</Text>
-        </View>
-      ))}
-    </ScrollView>
+      <Text>Notes (optional)</Text>
+      <TextInput
+        value={notes}
+        onChangeText={setNotes}
+        multiline
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          padding: 8,
+          height: 80,
+          marginBottom: 24,
+        }}
+      />
+
+      <TouchableOpacity onPress={handleSave}>
+        <Text style={{ fontSize: 18 }}>Save symptom</Text>
+      </TouchableOpacity>
+    </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: "#fff", flex: 1 },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 20 },
-  card: {
-    backgroundColor: "#f8f8f8",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 14,
-  },
-  symptom: { fontSize: 18, fontWeight: "700" },
-  meta: { fontSize: 14, opacity: 0.7, marginTop: 6 },
-})
