@@ -1,43 +1,50 @@
-import { useState, useEffect } from "react"
-import api from "../lib/api"
+import { useEffect, useState } from "react"
+import { API_URL } from "../../lib/api"
 
-export function useSymptoms() {
+export function useSymptoms(conditionId = null) {
   const [symptoms, setSymptoms] = useState([])
-  const [summary, setSummary] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  async function loadSymptoms() {
-    const res = await api.get("/symptoms")
-    setSymptoms(res.data)
+  async function fetchSymptoms() {
+    try {
+      const url = conditionId
+        ? `${API_URL}/symptoms?conditionId=${conditionId}`
+        : `${API_URL}/symptoms`
+
+      const res = await fetch(url)
+      if (!res.ok) throw new Error("Failed to fetch symptoms")
+
+      const data = await res.json()
+      setSymptoms(data)
+    } catch (err) {
+      console.error("Error loading symptoms:", err)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  async function loadSummary() {
-    const res = await api.get("/symptoms/summary")
-    setSummary(res.data)
-  }
+  async function addSymptom(symptom) {
+    try {
+      const res = await fetch(`${API_URL}/symptoms`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(symptom),
+      })
 
-  async function addSymptom(data) {
-    const res = await api.post("/symptoms", data)
-    setSymptoms(prev => [...prev, res.data])
-  }
-
-  async function deleteSymptom(id) {
-    await api.delete(`/symptoms/${id}`)
-    setSymptoms(prev => prev.filter(s => s.id !== id))
+      if (!res.ok) throw new Error("Failed to add symptom")
+      await fetchSymptoms()
+    } catch (err) {
+      console.error("Error adding symptom:", err)
+    }
   }
 
   useEffect(() => {
-    loadSymptoms()
-    loadSummary()
-  }, [])
+    fetchSymptoms()
+  }, [conditionId])
 
   return {
     symptoms,
-    summary,
+    loading,
     addSymptom,
-    deleteSymptom,
-    reload: () => {
-      loadSymptoms()
-      loadSummary()
-    }
   }
 }

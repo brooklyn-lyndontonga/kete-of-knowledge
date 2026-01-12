@@ -1,53 +1,66 @@
-/* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text, ScrollView } from "react-native"
-import { useRoute } from "@react-navigation/native"
-import { useTheme } from "../../../theme"
-
-function Section({ title, items }) {
-  if (!items || items.length === 0) return null
-
-  return (
-    <View style={{ marginTop: 16 }}>
-      <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}>
-        {title}
-      </Text>
-
-      {items.map((item, i) => (
-        <Text key={i} style={{ marginBottom: 4 }}>
-          • {item}
-        </Text>
-      ))}
-    </View>
-  )
-}
+import { View, Text, FlatList, TouchableOpacity } from "react-native"
+import { useRoute, useNavigation } from "@react-navigation/native"
+import { useSymptoms } from "../../hooks/useSymptoms"
 
 export default function ConditionDetailScreen() {
-  const { params } = useRoute()
-  const { condition } = params
-  const { spacing, typography } = useTheme()
+  const route = useRoute()
+  const navigation = useNavigation()
+  const { condition } = route.params
+
+  const { symptoms, loading } = useSymptoms(condition.id)
 
   return (
-    <ScrollView style={{ padding: spacing.lg }}>
-      <Text
-        style={{
-          fontFamily: typography.heading,
-          fontSize: 22,
-          marginBottom: spacing.sm,
-        }}
-      >
+    <View style={{ flex: 1, padding: 16 }}>
+      <Text style={{ fontSize: 24, marginBottom: 8 }}>
         {condition.name}
       </Text>
 
       {condition.description && (
-        <Text style={{ marginBottom: spacing.md }}>
+        <Text style={{ marginBottom: 16 }}>
           {condition.description}
         </Text>
       )}
 
-      <Section title="Triggers" items={condition.triggers} />
-      <Section title="Treatments" items={condition.treatments} />
-      <Section title="Helpful images" items={condition.images} />
-    </ScrollView>
+      <Text style={{ fontSize: 18, marginBottom: 8 }}>
+        Linked symptoms
+      </Text>
+
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate("SymptomTracker", {
+            conditionId: condition.id,
+          })
+        }
+        style={{ marginBottom: 16 }}
+      >
+        <Text>+ Log symptom for this condition</Text>
+      </TouchableOpacity>
+
+      {loading ? (
+        <Text>Loading…</Text>
+      ) : symptoms.length === 0 ? (
+        <Text>No symptoms logged yet.</Text>
+      ) : (
+        <FlatList
+          data={symptoms}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View
+              style={{
+                paddingVertical: 8,
+                borderBottomWidth: 1,
+                borderColor: "#eee",
+              }}
+            >
+              <Text>{item.symptom}</Text>
+              <Text style={{ color: "#666" }}>
+                Severity: {item.severity}/10
+              </Text>
+            </View>
+          )}
+        />
+      )}
+    </View>
   )
 }

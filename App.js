@@ -5,7 +5,6 @@ import { OnboardingProvider } from "./src/app/providers/OnboardingProvider"
 import RootNavigator from "./src/app/navigation/RootNavigator"
 
 export default function App() {
-  console.log("🚀 App.js loaded")
   return (
     <ThemeProvider>
       <AuthProvider>

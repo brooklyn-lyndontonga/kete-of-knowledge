@@ -1,25 +1,32 @@
 import React, { useState } from "react"
-import { View, Button, ActivityIndicator } from "react-native"
+import { View, Text, TouchableOpacity } from "react-native"
+import { useNavigation } from "@react-navigation/native"
 import { useOnboarding } from "../../../app/providers/OnboardingProvider"
 
 export default function CompleteProfile() {
-  const { completeOnboarding, loading } = useOnboarding()
+  const { completeOnboarding } = useOnboarding()
+  const navigation = useNavigation()
+  const [submitting, setSubmitting] = useState(false)
 
-  const [profileData] = useState({
-    name: "",
-    dob: "",
-  })
+  const handleContinue = async () => {
+    if (submitting) return
+    setSubmitting(true)
 
-  async function handleFinish() {
-    await completeOnboarding(profileData)
+    await completeOnboarding({
+      name: "",
+      focus: null,
+      remindersEnabled: true,
+    })
+
+    navigation.navigate("Done")
   }
 
-  if (loading) return <ActivityIndicator />
-
   return (
-    <View style={{ padding: 16 }}>
-      {/* your inputs */}
-      <Button title="Finish setup" onPress={handleFinish} />
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>Complete Profile</Text>
+      <TouchableOpacity onPress={handleContinue}>
+        <Text>Continue</Text>
+      </TouchableOpacity>
     </View>
   )
 }

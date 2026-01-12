@@ -17,17 +17,29 @@ const Stack = createNativeStackNavigator()
 export default function HubStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="HubHome" component={HubHomeScreen} />
+      <Stack.Screen
+        name="HubHome"
+        component={HubHomeScreen}
+      />
 
-      <Stack.Screen name="Goals" component={GoalsScreen} />
+      <Stack.Screen
+        name="Goals"
+        component={GoalsScreen}
+      />
 
-      <Stack.Screen name="Symptoms" component={SymptomsScreen} />
+      <Stack.Screen
+        name="Symptoms"
+        component={SymptomsScreen}
+      />
       <Stack.Screen
         name="SymptomTracker"
         component={SymptomTrackerScreen}
       />
 
-      <Stack.Screen name="MyMedicines" component={MyMedicinesScreen} />
+      <Stack.Screen
+        name="MyMedicines"
+        component={MyMedicinesScreen}
+      />
       <Stack.Screen
         name="MedicinesList"
         component={MedicinesListScreen}
@@ -46,7 +58,10 @@ export default function HubStack() {
         component={ConditionDetailScreen}
       />
 
-      <Stack.Screen name="Contacts" component={ContactsScreen} />
+      <Stack.Screen
+        name="Contacts"
+        component={ContactsScreen}
+      />
     </Stack.Navigator>
   )
 }

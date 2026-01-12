@@ -8,7 +8,10 @@ const Stack = createNativeStackNavigator()
 export default function SettingsStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="SettingsMain" component={SettingsScreen} />
+      <Stack.Screen
+        name="SettingsMain"
+        component={SettingsScreen}
+      />
     </Stack.Navigator>
   )
 }
