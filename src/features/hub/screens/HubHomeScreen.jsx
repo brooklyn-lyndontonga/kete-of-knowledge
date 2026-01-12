@@ -1,28 +1,39 @@
 import React from "react"
-import { View, Text, TouchableOpacity } from "react-native"
 import { useNavigation } from "@react-navigation/native"
+
+import PageShell from "../../../components/layout/PageShell"
+import Section from "../../../components/layout/Section"
+import Card from "../../../components/Card"
+import Button from "../../../components/Button"
+import Tracker from "../../../components/Tracker"
 
 export default function HubHomeScreen() {
   const navigation = useNavigation()
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 22, marginBottom: 24 }}>
-        Your health tools
-      </Text>
+    <PageShell>
+      <Section title="Taku Manawa">
+        <Tracker
+          title="How does your manawa feel today?"
+          description="You can check in whenever it feels right."
+        />
+      </Section>
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Symptoms")}
-        style={{ marginBottom: 12 }}
-      >
-        <Text>Log symptoms</Text>
-      </TouchableOpacity>
+      <Section title="Your health tools">
+        <Card>
+          <Button
+            title="Log symptoms"
+            onPress={() => navigation.navigate("Symptoms")}
+          />
+        </Card>
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate("ManageConditions")}
-      >
-        <Text>Manage conditions</Text>
-      </TouchableOpacity>
-    </View>
+        <Card>
+          <Button
+            title="Manage conditions"
+            onPress={() => navigation.navigate("ManageConditions")}
+          />
+        </Card>
+      </Section>
+    </PageShell>
   )
 }

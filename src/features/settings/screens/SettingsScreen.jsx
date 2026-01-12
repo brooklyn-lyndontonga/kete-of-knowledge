@@ -1,5 +1,14 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react"
-import { View, Text, StyleSheet, Switch, TouchableOpacity, Alert, ScrollView } from "react-native"
+import { Text, Switch, Alert, View } from "react-native"
+
+import PageShell from "../../../components/layout/PageShell"
+import Section from "../../../components/layout/Section"
+import Card from "../../../components/Card"
+import Button from "../../../components/Button"
+
+import { colors, spacing } from "../../../theme/theme"
+import { globalStyles } from "../../../theme/globalStyles"
 
 export default function SettingsScreen() {
   const [language, setLanguage] = useState("English")
@@ -9,84 +18,96 @@ export default function SettingsScreen() {
     setLanguage(language === "English" ? "Te Reo Māori" : "English")
   }
 
-  const handlePrivacy = () => Alert.alert("Privacy Policy", "Coming soon...")
-  const handleHelp = () => Alert.alert("Help & Feedback", "Coming soon...")
+  const handlePrivacy = () =>
+    Alert.alert("Privacy & Consent", "Coming soon...")
+
+  const handleHelp = () =>
+    Alert.alert("Help & Feedback", "Coming soon...")
+
   const handleAbout = () =>
-    Alert.alert("About Kete of Knowledge", "Version 1.0 — Created with aroha and kaupapa Māori.")
+    Alert.alert(
+      "About Kete of Knowledge",
+      "Version 1.0 — Created with aroha and kaupapa Māori."
+    )
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Tautuhinga (Settings)</Text>
-      <Text style={styles.sub}>Manage your preferences and app information</Text>
+    <PageShell>
+      <Section title="Tautuhinga">
+        <Card>
+          <Text style={globalStyles.text}>
+            Manage your preferences and app information.
+          </Text>
+        </Card>
+      </Section>
 
-      {/* Language Toggle */}
-      <View style={styles.row}>
-        <Text style={styles.label}>Language / Reo</Text>
-        <TouchableOpacity style={styles.buttonSmall} onPress={handleLanguageToggle}>
-          <Text style={styles.buttonTextSmall}>{language}</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Language */}
+      <Section>
+        <Card>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text style={globalStyles.text}>Language / Reo</Text>
+            <Button
+              title={language}
+              variant="secondary"
+              onPress={handleLanguageToggle}
+            />
+          </View>
+        </Card>
+      </Section>
 
-      {/* Notifications Toggle */}
-      <View style={styles.row}>
-        <Text style={styles.label}>Notifications</Text>
-        <Switch
-          value={notificationsEnabled}
-          onValueChange={setNotificationsEnabled}
-          trackColor={{ false: "#ccc", true: "#267f53" }}
-        />
-      </View>
+      {/* Notifications */}
+      <Section>
+        <Card>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text style={globalStyles.text}>Notifications</Text>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={setNotificationsEnabled}
+              trackColor={{
+                false: colors.divider,
+                true: colors.success,
+              }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
+        </Card>
+      </Section>
 
-      {/* Buttons */}
-      <TouchableOpacity style={styles.button} onPress={handlePrivacy}>
-        <Text style={styles.buttonText}>🔒 Privacy & Consent</Text>
-      </TouchableOpacity>
+      {/* Actions */}
+      <Section>
+        <Card>
+          <Button title="Privacy & consent" onPress={handlePrivacy} />
+        </Card>
 
-      <TouchableOpacity style={styles.button} onPress={handleHelp}>
-        <Text style={styles.buttonText}>💬 Help & Feedback</Text>
-      </TouchableOpacity>
+        <Card>
+          <Button title="Help & feedback" onPress={handleHelp} />
+        </Card>
 
-      <TouchableOpacity style={styles.button} onPress={handleAbout}>
-        <Text style={styles.buttonText}>ℹ️ About Kete of Knowledge</Text>
-      </TouchableOpacity>
+        <Card>
+          <Button title="About Kete of Knowledge" onPress={handleAbout} />
+        </Card>
+      </Section>
 
-      <View style={styles.footer}>
-        <Text style={styles.version}>App version 1.0.0</Text>
-        <Text style={styles.made}>Made with ❤️ in Aotearoa</Text>
-      </View>
-    </ScrollView>
+      {/* Footer */}
+      <Section>
+        <Card soft>
+          <Text style={globalStyles.mutedText}>App version 1.0.0</Text>
+          <Text style={globalStyles.mutedText}>
+            Made with aroha in Aotearoa
+          </Text>
+        </Card>
+      </Section>
+    </PageShell>
   )
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
-  header: { fontFamily: "Poppins_700Bold", fontSize: 24, color: "#267f53" },
-  sub: { fontFamily: "Poppins_400Regular", color: "#666", marginBottom: 20 },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  label: { fontFamily: "Poppins_500Medium", color: "#333", fontSize: 16 },
-  button: {
-    backgroundColor: "#267f53",
-    borderRadius: 10,
-    padding: 14,
-    alignItems: "center",
-    marginTop: 16,
-  },
-  buttonText: { color: "#fff", fontFamily: "Poppins_700Bold" },
-  buttonSmall: {
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  buttonTextSmall: { fontFamily: "Poppins_500Medium", color: "#267f53" },
-  footer: { alignItems: "center", marginTop: 40 },
-  version: { fontFamily: "Poppins_400Regular", color: "#888" },
-  made: { fontFamily: "Poppins_400Regular", color: "#aaa", marginTop: 4 },
-})

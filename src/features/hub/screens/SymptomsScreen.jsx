@@ -1,9 +1,16 @@
 import React from "react"
-import { View, Text, FlatList, TouchableOpacity } from "react-native"
+import { Text, FlatList } from "react-native"
 import { useNavigation } from "@react-navigation/native"
+
 import { useSymptoms } from "../../hooks/useSymptoms"
 import { useInsights } from "../../hooks/useInsights"
+
+import PageShell from "../../../components/layout/PageShell"
+import Section from "../../../components/layout/Section"
+import Card from "../../../components/Card"
+import Button from "../../../components/Button"
 import InsightCard from "../../insights/InsightCard"
+import { globalStyles } from "../../../theme/globalStyles"
 
 export default function SymptomsScreen() {
   const navigation = useNavigation()
@@ -11,57 +18,51 @@ export default function SymptomsScreen() {
   const insights = useInsights(symptoms)
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      {/* Gentle insights */}
+    <PageShell>
       {insights.length > 0 && (
-        <View style={{ marginBottom: 16 }}>
+        <Section title="Gentle insights">
           {insights.map((i, idx) => (
             <InsightCard key={idx} message={i.message} />
           ))}
-        </View>
+        </Section>
       )}
 
-      {/* Header */}
-      <Text style={{ fontSize: 22, marginBottom: 16 }}>
-        Symptom tracker
-      </Text>
+      <Section title="Symptom tracker">
+        <Card>
+          <Button
+            title="Add a check-in"
+            onPress={() => navigation.navigate("SymptomTracker")}
+          />
+        </Card>
+      </Section>
 
-      {/* Add symptom */}
-      <TouchableOpacity
-        style={{ marginBottom: 16 }}
-        onPress={() => navigation.navigate("SymptomTracker")}
-      >
-        <Text style={{ fontSize: 16 }}>+ Add symptom</Text>
-      </TouchableOpacity>
-
-      {/* Content */}
-      {loading ? (
-        <Text>Loading…</Text>
-      ) : symptoms.length === 0 ? (
-        <Text>No symptoms logged yet.</Text>
-      ) : (
-        <FlatList
-          data={symptoms}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View
-              style={{
-                padding: 12,
-                borderBottomWidth: 1,
-                borderColor: "#eee",
-              }}
-            >
-              <Text style={{ fontSize: 16 }}>{item.symptom}</Text>
-              <Text style={{ color: "#666" }}>
-                Severity: {item.severity}/10
-              </Text>
-              {item.notes ? (
-                <Text style={{ color: "#888" }}>{item.notes}</Text>
-              ) : null}
-            </View>
-          )}
-        />
-      )}
-    </View>
+      <Section>
+        {loading ? (
+          <Text style={globalStyles.text}>Loading…</Text>
+        ) : symptoms.length === 0 ? (
+          <Text style={globalStyles.text}>
+            No symptoms logged yet.
+          </Text>
+        ) : (
+          <FlatList
+            data={symptoms}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item }) => (
+              <Card>
+                <Text style={globalStyles.text}>{item.symptom}</Text>
+                <Text style={globalStyles.mutedText}>
+                  Severity: {item.severity}/10
+                </Text>
+                {item.notes ? (
+                  <Text style={globalStyles.mutedText}>
+                    {item.notes}
+                  </Text>
+                ) : null}
+              </Card>
+            )}
+          />
+        )}
+      </Section>
+    </PageShell>
   )
 }

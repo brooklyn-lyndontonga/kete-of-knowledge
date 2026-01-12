@@ -1,7 +1,13 @@
 import React from "react"
-import { View, Text, TouchableOpacity } from "react-native"
+import { Text } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { useOnboarding } from "../../../app/providers/OnboardingProvider"
+
+import PageShell from "../../../components/layout/PageShell"
+import Section from "../../../components/layout/Section"
+import Card from "../../../components/Card"
+import Button from "../../../components/Button"
+import { globalStyles } from "../../../theme/globalStyles"
 
 export default function HomeWelcomeScreen() {
   const navigation = useNavigation()
@@ -13,23 +19,19 @@ export default function HomeWelcomeScreen() {
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        padding: 24,
-        justifyContent: "center",
-      }}
-    >
-      <Text style={{ fontSize: 24, fontWeight: "600", marginBottom: 12 }}>
-        Nau mai ki tō kete
-      </Text>
-      <Text style={{ fontSize: 16, marginBottom: 32 }}>
-        This space is here to support you on your health and wellbeing journey.
-      </Text>
+    <PageShell>
+      <Section title="Nau mai ki tō kete">
+        <Card>
+          <Text style={globalStyles.text}>
+            This space is here to support you on your health and wellbeing
+            journey. You can move at your own pace.
+          </Text>
+        </Card>
+      </Section>
 
-      <TouchableOpacity onPress={handleContinue}>
-        <Text style={{ fontSize: 18 }}>Open my kete →</Text>
-      </TouchableOpacity>
-    </View>
+      <Section>
+        <Button title="Open Your kete" onPress={handleContinue} />
+      </Section>
+    </PageShell>
   )
 }

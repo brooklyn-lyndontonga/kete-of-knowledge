@@ -1,18 +1,29 @@
+// =========================
+// COLOURS
+// =========================
+
 export const colors = {
-  ink: "#1A1A1A",
-  inkSoft: "#333333",
-  muted: "#6B6B6B",
+  // Core neutrals (foundation)
+  ink: "#1A1A1A",        // Charcoal shadow (primary text)
+  inkSoft: "#333333",   // Softer secondary text
+  muted: "#6B6B6B",     // Helper / meta text
 
-  background: "#FFFFFF",
-  surface: "#F7F7F7",
-  divider: "#E5E5E5",
+  background: "#FFFFFF", // Clean canvas
+  surface: "#F7F7F7",    // Soft card / panel background
+  divider: "#E5E5E5",    // Subtle structural lines
 
-  accent: "#2E2E2E",
+  // Accent (nature-aligned)
+  accent: "#2E4A3A",     // Fern shadow green
 
-  success: "#2F7D32",
-  warning: "#8A6D1D",
-  error: "#8B2F2F",
+  // State colours (soft, grounded, non-alarmist)
+  success: "#3F6F58",    // Moss / healthy leaf
+  warning: "#8A7A3C",    // Dry grass / seed pod
+  error: "#7A3E3E",      // Clay / iron-rich soil
 }
+
+// =========================
+// SPACING (8pt grid)
+// =========================
 
 export const spacing = {
   xs: 4,
@@ -23,11 +34,19 @@ export const spacing = {
   xxl: 48,
 }
 
+// =========================
+// RADIUS
+// =========================
+
 export const radius = {
   sm: 6,
   md: 10,
   lg: 14,
 }
+
+// =========================
+// TYPOGRAPHY SCALE
+// =========================
 
 export const typography = {
   h1: 28,

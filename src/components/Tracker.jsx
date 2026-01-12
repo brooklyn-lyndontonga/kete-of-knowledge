@@ -1,15 +1,17 @@
 /* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text, StyleSheet } from "react-native"
-import { colors, spacing, radius, typography } from "../theme/theme"
+import { Text, StyleSheet } from "react-native"
+import Card from "./Card"
+import { colors, spacing, typography } from "../theme/theme"
 
 export default function Tracker({
   title,
   value,
   description,
+  status, // "success" | "warning"
 }) {
   return (
-    <View style={styles.container}>
+    <Card tone={status}>
       <Text style={styles.title}>{title}</Text>
 
       {value && (
@@ -21,17 +23,11 @@ export default function Tracker({
           {description}
         </Text>
       )}
-    </View>
+    </Card>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-  },
   title: {
     fontSize: typography.h2,
     color: colors.ink,
