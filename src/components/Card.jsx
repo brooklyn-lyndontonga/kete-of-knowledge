@@ -1,33 +1,29 @@
 /* eslint-disable react/prop-types */
 import React from "react"
 import { View, StyleSheet } from "react-native"
-import { colors, spacing, radius } from "../theme/theme"
+import { useTheme } from "../theme"
 
-/**
- * Card
- *
- * Visual rules:
- * - Default: neutral
- * - tone="success"  → moss border
- * - tone="warning"  → seed-pod border
- * - tone="accent"   → fern shadow border
- *
- * NO filled colours.
- * Colour = meaning only.
- */
-export default function Card({
-  children,
-  tone,        // "success" | "warning" | "accent"
-  soft = false,
-  style,
-}) {
+export default function Card({ children, tone }) {
+  const { colors, spacing } = useTheme()
+
+  const background =
+    tone === "accent"
+      ? colors.accentSoft
+      : tone === "success"
+      ? colors.successSoft
+      : tone === "warning"
+      ? colors.warningSoft
+      : colors.card
+
   return (
     <View
       style={[
         styles.card,
-        soft && styles.soft,
-        tone && styles[tone],
-        style,
+        {
+          backgroundColor: background,
+          padding: spacing.lg,
+          borderRadius: spacing.md,
+        },
       ]}
     >
       {children}
@@ -37,28 +33,6 @@ export default function Card({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.divider,
-  },
-
-  soft: {
-    backgroundColor: colors.surface,
-  },
-
-  // 🌿 Meaningful tones
-  success: {
-    borderColor: colors.success,
-  },
-
-  warning: {
-    borderColor: colors.warning,
-  },
-
-  accent: {
-    borderColor: colors.accent,
+    marginBottom: 12,
   },
 })

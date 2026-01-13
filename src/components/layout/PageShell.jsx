@@ -8,23 +8,32 @@ export default function PageShell({ children, scroll = true }) {
   const insets = useSafeAreaInsets()
   const { colors } = useTheme()
 
-  const content = (
-    <View
-      style={{
-        paddingTop: insets.top + 16,
-        paddingBottom: insets.bottom + 24,
-        paddingHorizontal: 16,
-        backgroundColor: colors.background,
-        flex: 1,
-      }}
-    >
-      {children}
-    </View>
-  )
-
-  if (!scroll) {
-    return content
+  const containerStyle = {
+    flex: 1,
+    backgroundColor: colors.background,
   }
 
-  return <ScrollView>{content}</ScrollView>
+  const contentStyle = {
+    paddingTop: insets.top + 16,
+    paddingBottom: insets.bottom + 24,
+    paddingHorizontal: 16,
+  }
+
+  if (!scroll) {
+    return (
+      <View style={containerStyle}>
+        <View style={contentStyle}>{children}</View>
+      </View>
+    )
+  }
+
+  return (
+    <ScrollView
+      style={containerStyle}
+      contentContainerStyle={contentStyle}
+      showsVerticalScrollIndicator={false}
+    >
+      {children}
+    </ScrollView>
+  )
 }

@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
 import { View, Text, TextInput } from 'react-native'
 import { useTheme } from '../../theme'
