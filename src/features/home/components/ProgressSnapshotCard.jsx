@@ -1,44 +1,29 @@
 /* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text } from "react-native"
+import { Text } from "react-native"
+import Card from "../../../components/Card"
 import { useTheme } from "../../../theme"
 
 export default function ProgressSnapshotCard({ snapshot }) {
-  const { colors, spacing, typography } = useTheme()
+  const { typography, spacing, colors } = useTheme()
 
   if (!snapshot) return null
 
   return (
-    <View
-      style={{
-        backgroundColor: colors.card,
-        padding: spacing.lg,
-        borderRadius: spacing.md,
-        marginTop: spacing.lg,
-      }}
-    >
+    <Card tone="accent">
       <Text
         style={{
-          fontFamily: typography.heading,
-          fontSize: 16,
-          color: colors.primary,
+          fontFamily: typography.h2,
+          color: colors.ink,
           marginBottom: spacing.sm,
         }}
       >
         Today’s Check-in
       </Text>
 
-      <Text style={{ fontSize: 14, marginBottom: spacing.xs }}>
-        Mood: {snapshot.mood ?? "—"}
-      </Text>
-
-      <Text style={{ fontSize: 14, marginBottom: spacing.xs }}>
-        Energy: {snapshot.energy ?? "—"}
-      </Text>
-
-      <Text style={{ fontSize: 14 }}>
-        Notes: {snapshot.notes || "—"}
-      </Text>
-    </View>
+      <Text>Mood: {snapshot.mood ?? "—"}</Text>
+      <Text>Energy: {snapshot.energy ?? "—"}</Text>
+      <Text>Notes: {snapshot.notes || "—"}</Text>
+    </Card>
   )
 }

@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native'
-import api from '../../lib/api'
-import { useNavigation } from '@react-navigation/native'
+import React, { useEffect, useState } from "react"
+import { FlatList, Text, TouchableOpacity } from "react-native"
+import { useNavigation } from "@react-navigation/native"
+
+import PageShell from "../../components/layout/PageShell"
+import Section from "../../components/layout/Section"
+import Card from "../../components/Card"
+import api from "../../lib/api"
 
 export default function MedicinesListScreen() {
   const [meds, setMeds] = useState([])
@@ -18,46 +16,31 @@ export default function MedicinesListScreen() {
   }, [])
 
   async function loadMeds() {
-    try {
-      const data = await api.get('/medicines')
-      setMeds(data)
-    } catch (error) {
-      console.log('Error loading medicines:', error)
-    }
+    const data = await api.get("/medicines")
+    setMeds(data)
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Medicine Library</Text>
-
-      <FlatList
-        data={meds}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() =>
-              navigation.navigate('MedicineDetail', { id: item.id })
-            }
-          >
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.category}>{item.category}</Text>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
+    <PageShell scroll={false}>
+      <Section title="Medicine Library">
+        <FlatList
+          data={meds}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={{ paddingBottom: 24 }}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("MedicineDetail", { id: item.id })
+              }
+            >
+              <Card>
+                <Text>{item.name}</Text>
+                <Text style={{ opacity: 0.6 }}>{item.category}</Text>
+              </Card>
+            </TouchableOpacity>
+          )}
+        />
+      </Section>
+    </PageShell>
   )
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 20, flex: 1, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: '700', marginBottom: 20 },
-  card: {
-    padding: 16,
-    backgroundColor: '#eef2f7',
-    borderRadius: 10,
-    marginBottom: 12,
-  },
-  name: { fontSize: 18, fontWeight: '600' },
-  category: { fontSize: 14, color: '#555' },
-})

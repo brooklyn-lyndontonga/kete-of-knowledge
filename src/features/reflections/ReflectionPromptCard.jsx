@@ -1,31 +1,28 @@
 /* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text, TouchableOpacity } from "react-native"
+import { Text } from "react-native"
+import Card from "../../components/Card"
+import { useTheme } from "../../theme"
+import { spacing, typography } from "../../theme/theme"
 
-export default function ReflectionPromptCard({ prompt, onPress }) {
+export default function ReflectionPromptCard({ title, prompt }) {
+  const { colors } = useTheme()
+
   return (
-    <TouchableOpacity onPress={onPress}>
-      <View
+    <Card>
+      <Text
         style={{
-          padding: 16,
-          marginVertical: 6,
-          borderRadius: 12,
-          backgroundColor: "#FFF6EC",
+          fontFamily: typography.h2,
+          color: colors.ink,
+          marginBottom: spacing.sm,
         }}
       >
-        <Text style={{ fontSize: 15, color: "#4A3B2A" }}>
-          {prompt}
-        </Text>
-        <Text
-          style={{
-            marginTop: 8,
-            fontSize: 13,
-            color: "#8A6A4A",
-          }}
-        >
-          Reflect →
-        </Text>
-      </View>
-    </TouchableOpacity>
+        {title}
+      </Text>
+
+      <Text style={{ opacity: 0.8 }}>
+        {prompt}
+      </Text>
+    </Card>
   )
 }
