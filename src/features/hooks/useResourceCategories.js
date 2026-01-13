@@ -11,12 +11,18 @@ export function useResourceCategories() {
 
     async function load() {
       try {
-        const res = await fetch(`${API_URL}/resourceCategories`)
-        if (!res.ok) throw new Error("Failed to load categories")
+        console.log("📡 Fetching categories from:", `${API_URL}/api/library`)
+
+        const res = await fetch(`${API_URL}/api/library`)
+        if (!res.ok) throw new Error("Failed to load library categories")
 
         const data = await res.json()
-        if (mounted) setCategories(Array.isArray(data) ? data : [])
+
+        if (mounted) {
+          setCategories(Array.isArray(data) ? data : [])
+        }
       } catch (err) {
+        console.error("❌ Failed to load resource categories:", err)
         if (mounted) setError(err.message)
       } finally {
         if (mounted) setLoading(false)
@@ -31,4 +37,3 @@ export function useResourceCategories() {
 
   return { categories, loading, error }
 }
-

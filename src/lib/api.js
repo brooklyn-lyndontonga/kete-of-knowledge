@@ -1,17 +1,28 @@
-/* eslint-disable no-undef */
-// CONTACTS CRUD
-export async function getContacts() {
-  return await api("/contacts")
+import Constants from "expo-constants"
+
+const API_URL =
+  Constants.expoConfig?.extra?.API_URL ||
+  Constants.manifest?.extra?.API_URL
+
+if (!API_URL) {
+  console.error("❌ API_URL is missing from Expo config")
+} else {
+  console.log("🌐 API_URL =", API_URL)
 }
 
-export async function addContact(contact) {
-  return await api("/contacts", "POST", contact)
+export async function api(path, method = "GET", body) {
+  const res = await fetch(`${API_URL}${path}`, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(text || "API request failed")
+  }
+
+  return res.json()
 }
 
-export async function updateContact(id, updates) {
-  return await api(`/contacts/${id}`, "PUT", updates)
-}
-
-export async function deleteContact(id) {
-  return await api(`/contacts/${id}`, "DELETE")
-}
+export { API_URL }
