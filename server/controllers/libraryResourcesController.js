@@ -1,23 +1,16 @@
-import {
-  getResourcesByCategory,
-  createResource,
-  deleteResource,
-} from "../models/libraryResourcesModel.js"
+import { getResourcesByCategory } from "../models/resourcesModel.js"
 
-export async function getResources(req, res) {
-  const db = req.app.get("db")
-  const rows = await getResourcesByCategory(db, req.params.categoryId)
-  res.json(rows)
-}
+// GET /api/library/:id/resources
+export async function listResourcesByCategory(req, res) {
+  try {
+    const db = req.app.get("db")
+    const { id } = req.params
 
-export async function addResource(req, res) {
-  const db = req.app.get("db")
-  await createResource(db, req.body)
-  res.json({ success: true })
-}
+    const items = await getResourcesByCategory(db, id)
 
-export async function removeResource(req, res) {
-  const db = req.app.get("db")
-  await deleteResource(db, req.params.id)
-  res.json({ success: true })
+    res.json(items)
+  } catch (err) {
+    console.error("❌ Error loading resources:", err)
+    res.status(500).json({ error: "Failed to load resources" })
+  }
 }

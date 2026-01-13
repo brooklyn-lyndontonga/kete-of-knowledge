@@ -14,22 +14,15 @@ export async function getResourcesByCategory(db, category_id) {
   )
 }
 
-export async function addResource(db, { category_id, title, content, image_url }) {
+export async function createResource(db, { category_id, title, content, image_url }) {
   const result = await db.run(
     "INSERT INTO resources (category_id, title, content, image_url) VALUES (?, ?, ?, ?)",
     [category_id, title, content, image_url]
   )
 
-  return {
-    id: result.lastID,
-    category_id,
-    title,
-    content,
-    image_url,
-  }
+  return { id: result.lastID }
 }
 
 export async function deleteResource(db, id) {
   await db.run("DELETE FROM resources WHERE id = ?", [id])
-  return true
 }

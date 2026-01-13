@@ -1,15 +1,18 @@
+
 import {
-  getAllCategories,
-  getCategory,
-  addResourceCategory,
-  updateResourceCategory,
-  deleteResourceCategory,
+  listResourceCategories as listResourceCategoriesModel,
+  getResourceCategory as getResourceCategoryModel,
+  createResourceCategory as createResourceCategoryModel,
+  updateResourceCategory as updateResourceCategoryModel,
+  deleteResourceCategory as deleteResourceCategoryModel,
 } from "../models/resourceCategoriesModel.js"
 
-// GET /api/resource-categories
+
+// GET /api/library
 export async function listResourceCategories(req, res) {
   try {
-    const items = await getAllCategories()
+    const db = req.app.get("db")
+    const items = await listResourceCategoriesModel(db)
     res.json(items)
   } catch (err) {
     console.error("Error loading resource categories:", err)
@@ -17,10 +20,11 @@ export async function listResourceCategories(req, res) {
   }
 }
 
-// GET /api/resource-categories/:id
+// GET /api/library/:id
 export async function getResourceCategory(req, res) {
   try {
-    const item = await getCategory(req.params.id)
+    const db = req.app.get("db")
+    const item = await getResourceCategoryModel(db, req.params.id)
     res.json(item)
   } catch (err) {
     console.error("Error fetching category:", err)
@@ -28,32 +32,35 @@ export async function getResourceCategory(req, res) {
   }
 }
 
-// POST /api/resource-categories
+// POST /api/library
 export async function createResourceCategory(req, res) {
   try {
-    const item = await addResourceCategory(req.body)
-    res.json(item)
+    const db = req.app.get("db")
+    const result = await createResourceCategoryModel(db, req.body)
+    res.json(result)
   } catch (err) {
     console.error("Error creating resource category:", err)
     res.status(500).json({ error: "Failed to create category" })
   }
 }
 
-// PUT /api/resource-categories/:id
+// PUT /api/library/:id
 export async function updateResourceCategoryController(req, res) {
   try {
-    const item = await updateResourceCategory(req.params.id, req.body)
-    res.json(item)
+    const db = req.app.get("db")
+    await updateResourceCategoryModel(db, req.params.id, req.body)
+    res.json({ success: true })
   } catch (err) {
     console.error("Error updating resource category:", err)
     res.status(500).json({ error: "Failed to update category" })
   }
 }
 
-// DELETE /api/resource-categories/:id
+// DELETE /api/library/:id
 export async function deleteResourceCategoryController(req, res) {
   try {
-    await deleteResourceCategory(req.params.id)
+    const db = req.app.get("db")
+    await deleteResourceCategoryModel(db, req.params.id)
     res.json({ success: true })
   } catch (err) {
     console.error("Error deleting resource category:", err)
