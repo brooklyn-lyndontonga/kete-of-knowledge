@@ -1,4 +1,16 @@
 // server/controllers/libraryController.js
+import { getResourcesByCategory } from "../models/resourcesModel.js"
+
+export async function listResourcesByCategory(req, res) {
+  try {
+    const { id } = req.params
+    const items = await getResourcesByCategory(id)
+    res.json(items)
+  } catch (err) {
+    console.error("❌ Error loading resources:", err)
+    res.status(500).json({ error: "Failed to load resources" })
+  }
+}
 
 // GET /api/library/search?q=term
 export async function searchLibrary(req, res) {

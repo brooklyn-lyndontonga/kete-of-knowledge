@@ -1,11 +1,16 @@
 import express from "express"
+
 import {
-  listResourceCategories,
-  getResourceCategory,
-  createResourceCategory,
+  listResourceCategoriesController,
+  getResourceCategoryController,
+  createResourceCategoryController,
   updateResourceCategoryController,
   deleteResourceCategoryController,
 } from "../controllers/resourceCategoriesController.js"
+
+import {
+  listResourcesByCategory,
+} from "../controllers/libraryResourcesController.js"
 
 const router = express.Router()
 
@@ -14,18 +19,19 @@ const router = express.Router()
 // ----------------------
 
 // GET /api/library
-router.get("/", listResourceCategories)
+router.get("/", listResourceCategoriesController)
 
 // GET /api/library/:id
-router.get("/:id", getResourceCategory)
+router.get("/:id", getResourceCategoryController)
 
-// POST /api/library
-router.post("/", createResourceCategory)
+// GET /api/library/:id/resources  ✅ IMPORTANT
+router.get("/:id/resources", listResourcesByCategory)
 
-// PUT /api/library/:id
+// ----------------------
+// ADMIN (later)
+// ----------------------
+router.post("/", createResourceCategoryController)
 router.put("/:id", updateResourceCategoryController)
-
-// DELETE /api/library/:id
 router.delete("/:id", deleteResourceCategoryController)
 
 export default router

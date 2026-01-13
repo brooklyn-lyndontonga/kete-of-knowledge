@@ -28,15 +28,17 @@ export default function LibraryHomeScreen() {
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={{ paddingBottom: 24 }}
             renderItem={({ item }) => (
-              <ResourceCard
-                title={item.name}
-                onPress={() =>
-                  navigation.navigate("ResourceCategory", {
-                    categoryId: item.id,
-                    title: item.name,
-                  })
-                }
-              />
+             <ResourceCard
+  title={item.name}
+  onPress={() => {
+    console.log("🟢 PRESSED category:", item.id)
+    navigation.navigate("ResourceCategory", {
+      categoryId: item.id,
+      title: item.name,
+    })
+  }}
+/>
+
             )}
           />
         )}

@@ -7,32 +7,26 @@ export function useResources(categoryId) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    let mounted = true
+    if (!categoryId) return
 
     async function load() {
       try {
-        setLoading(true)
+        const res = await fetch(
+          `${API_URL}/api/library/${categoryId}/resources`
+        )
 
-        const url = categoryId
-          ? `${API_URL}/resources?categoryId=${categoryId}`
-          : `${API_URL}/resources`
-
-        const res = await fetch(url)
         if (!res.ok) throw new Error("Failed to load resources")
 
         const data = await res.json()
-        if (mounted) setResources(Array.isArray(data) ? data : [])
+        setResources(data)
       } catch (err) {
-        if (mounted) setError(err.message)
+        setError(err.message)
       } finally {
-        if (mounted) setLoading(false)
+        setLoading(false)
       }
     }
 
     load()
-    return () => {
-      mounted = false
-    }
   }, [categoryId])
 
   return { resources, loading, error }
