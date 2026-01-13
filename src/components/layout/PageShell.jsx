@@ -1,36 +1,30 @@
 /* eslint-disable react/prop-types */
 import React from "react"
-import { ScrollView, StyleSheet } from "react-native"
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
-import { colors, spacing } from "../../theme/theme"
+import { View, ScrollView } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { useTheme } from "../../theme"
 
-export default function PageShell({ children, padded = true }) {
+export default function PageShell({ children, scroll = true }) {
   const insets = useSafeAreaInsets()
+  const { colors } = useTheme()
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          padded && {
-            paddingTop: spacing.lg + insets.top,
-            paddingBottom: spacing.xl + insets.bottom,
-            paddingHorizontal: spacing.lg,
-          },
-        ]}
-      >
-        {children}
-      </ScrollView>
-    </SafeAreaView>
+  const content = (
+    <View
+      style={{
+        paddingTop: insets.top + 16,
+        paddingBottom: insets.bottom + 24,
+        paddingHorizontal: 16,
+        backgroundColor: colors.background,
+        flex: 1,
+      }}
+    >
+      {children}
+    </View>
   )
-}
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    flexGrow: 1,
-  },
-})
+  if (!scroll) {
+    return content
+  }
+
+  return <ScrollView>{content}</ScrollView>
+}

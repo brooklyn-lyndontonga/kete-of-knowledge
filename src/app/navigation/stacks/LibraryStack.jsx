@@ -1,13 +1,16 @@
 import React from "react"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
-import LibraryHomeScreen from "../../../features/library/screens/LibraryHomeScreen"
-import ConditionListScreen from "../../../features/library/screens/ConditionListScreen"
-import ConditionDetailScreen from "../../../features/library/screens/ConditionDetailScreen"
-import LibraryGuideScreen from "../../../features/library/screens/LibraryGuideScreen"
-import ResourceCategoryScreen from "../../../features/library/screens/ResourceCategoryScreen"
-import ResourceDetailScreen from "../../../features/library/screens/ResourceDetailScreen"
-import WhakataukiScreen from "../../../features/library/screens/WhakataukiScreen"
+import {
+  LibraryHomeScreen,
+  LibraryGuideScreen,
+  ConditionListScreen,
+  ConditionDetailScreen,
+  ResourceCategoryScreen,
+  ResourceDetailScreen,
+  RongoaScreen,
+  WhakataukiScreen,
+} from "../../../features/library"
 
 const Stack = createNativeStackNavigator()
 
@@ -20,26 +23,33 @@ export default function LibraryStack() {
       />
 
       <Stack.Screen
-        name="ConditionList"
+        name="LibraryGuide"
+        component={LibraryGuideScreen}
+      />
+
+      <Stack.Screen
+        name="Conditions"
         component={ConditionListScreen}
       />
+
       <Stack.Screen
         name="ConditionDetail"
         component={ConditionDetailScreen}
       />
 
       <Stack.Screen
-        name="LibraryGuide"
-        component={LibraryGuideScreen}
-      />
-
-      <Stack.Screen
         name="ResourceCategory"
         component={ResourceCategoryScreen}
       />
+
       <Stack.Screen
         name="ResourceDetail"
         component={ResourceDetailScreen}
+      />
+
+      <Stack.Screen
+        name="Rongoa"
+        component={RongoaScreen}
       />
 
       <Stack.Screen

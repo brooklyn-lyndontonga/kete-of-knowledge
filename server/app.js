@@ -2,6 +2,7 @@
 import express from "express"
 import cors from "cors"
 import { connectDB, initTables } from "./db/init.js"
+import { setDB } from "./db/db.js"
 
 // ROUTERS (existing user/admin routes)
 import userGoals from "./routes/goals.js"
@@ -50,7 +51,7 @@ try {
   console.error("❌ DB INIT FAILURE:", err)
 }
 
-app.set("db", db)
+setDB(db)
 
 // ----------------------
 // MAIN API ROUTER

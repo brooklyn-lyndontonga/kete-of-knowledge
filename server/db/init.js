@@ -183,6 +183,22 @@ async function seedDefaults(db) {
     `)
   }
 
+    // ---- Resource Categories ----
+  const catCount = await db.get(
+    "SELECT COUNT(*) AS total FROM resource_categories"
+  )
+
+  if (catCount.total === 0) {
+    await db.run(`
+      INSERT INTO resource_categories (name, icon) VALUES
+      ("Rongoā Māori", "🌿"),
+      ("Mental Wellbeing", "🧠"),
+      ("Physical Health", "💪"),
+      ("Kai & Nutrition", "🥗"),
+      ("Whānau Support", "👨‍👩‍👧‍👦")
+    `)
+  }
+
   // ---- Admin user ----
   const adminCount = await db.get("SELECT COUNT(*) AS total FROM admins")
   if (adminCount.total === 0) {
