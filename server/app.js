@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // server/app.js
 import express from "express"
 import cors from "cors"
@@ -88,5 +89,11 @@ app.get("/", (req, res) => {
     message: "Kete of Knowledge API is running 🚀",
   })
 })
+
+app.use((err, req, res, next) => {
+  console.error("❌ API Error:", err)
+  res.status(500).json({ error: "Something went wrong." })
+})
+
 
 export default app
