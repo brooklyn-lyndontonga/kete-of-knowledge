@@ -13,14 +13,13 @@ export async function getResources() {
 }
 
 // ✅ THIS IS THE ONE YOUR APP USES
-export async function getResourcesByCategory(categoryId) {
-  const db = getDB()
-
+export async function getResourcesByCategory(db, categoryId) {
   return db.all(
     "SELECT * FROM resources WHERE category_id = ?",
     [categoryId]
   )
 }
+
 
 export async function addResource({ category_id, title, content, image_url }) {
   const db = getDB()

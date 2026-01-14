@@ -15,7 +15,7 @@ const router = express.Router()
 router.get("/", listResourceCategoriesController)
 router.get("/:id", getResourceCategoryController)
 
-// Resources under category
+// Resources by category
 router.get("/:id/resources", listResourcesByCategory)
 
 // Admin

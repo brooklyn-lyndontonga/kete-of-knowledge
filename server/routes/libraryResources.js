@@ -1,21 +1,17 @@
-// server/routes/libraryResources.js
 import express from "express"
 import {
-  getResources,
-  addResource,
-  removeResource,
+  listResourceCategoriesController,
+} from "../controllers/resourceCategoriesController.js"
+import {
+  listResourcesByCategory,
 } from "../controllers/libraryResourcesController.js"
 
 const router = express.Router()
 
-// GET all resources for a category
-router.get("/:categoryId", getResources)
+// Categories
+router.get("/", listResourceCategoriesController)
 
-// Add a new library resource
-router.post("/", addResource)
-
-// Delete a resource by ID
-router.delete("/:id", removeResource)
+// Resources inside category
+router.get("/:id/resources", listResourcesByCategory)
 
 export default router
-

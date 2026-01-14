@@ -1,13 +1,14 @@
 import { getResourcesByCategory } from "../models/resourcesModel.js"
+import { getDB } from "../db/db.js"
 
-// GET /api/library/:id/resources
 export async function listResourcesByCategory(req, res) {
   try {
-    const db = req.app.get("db")
-    const { id } = req.params
+    const db = getDB()
+    const categoryId = req.params.id
 
-    const items = await getResourcesByCategory(db, id)
-    res.json(items)
+    const resources = await getResourcesByCategory(db, categoryId)
+
+    res.json(resources)
   } catch (err) {
     console.error("❌ Error loading resources:", err)
     res.status(500).json({ error: "Failed to load resources" })
