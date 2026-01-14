@@ -1,6 +1,10 @@
 import React from 'react'
-import { View, Text, TouchableOpacity } from 'react-native'
+import { Text, TouchableOpacity } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
+
+import PageShell from '../../components/layout/PageShell'
+import Section from '../../components/layout/Section'
+import { globalStyles } from '../../theme/globalStyles'
 
 import { useWhakatauki } from '../hooks/useWhakatauki'
 import { useSymptoms } from '../hooks/useSymptoms'
@@ -14,66 +18,86 @@ import ReflectionPromptCard from '../reflections/ReflectionPromptCard'
 export default function HomeScreen() {
   const navigation = useNavigation()
 
-  const { whakatauki, loading } = useWhakatauki()
-  const { symptoms } = useSymptoms()
+  const {
+    whakatauki,
+    loading: whakataukiLoading,
+    error: whakataukiError,
+  } = useWhakatauki()
+
+  const { symptoms = [] } = useSymptoms()
   const insights = useInsights(symptoms)
   const reflectionPrompts = useReflectionPrompts(insights)
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      {/* Whakataukī */}
-      {!loading && whakatauki && <WhakataukiCard whakatauki={whakatauki} />}
+    <PageShell>
+      {/* 🌿 Whakataukī */}
+      <Section title="Whakataukī">
+        {whakataukiLoading && (
+          <Text style={globalStyles.mutedText}>
+            Loading whakataukī…
+          </Text>
+        )}
 
-      {/* Insights */}
+        {whakataukiError && (
+          <Text style={globalStyles.mutedText}>
+            Unable to load whakataukī right now.
+          </Text>
+        )}
+
+        {!whakataukiLoading && !whakataukiError && Array.isArray(whakatauki) && (
+          <WhakataukiCard whakatauki={whakatauki} />
+        )}
+      </Section>
+
+      {/* 🔍 Insights */}
       {insights.length > 0 && (
-        <>
-          <Text style={{ marginTop: 24, fontSize: 18 }}>Noticing patterns</Text>
-
+        <Section title="Noticing patterns">
           {insights.map((insight, idx) => (
-            <InsightCard key={idx} message={insight.message} />
+            <InsightCard
+              key={idx}
+              message={insight.message}
+            />
           ))}
-        </>
+        </Section>
       )}
 
-      {/* Reflection prompts */}
+      {/* ✍🏽 Reflection prompts */}
       {reflectionPrompts.length > 0 && (
-        <>
-          <Text style={{ marginTop: 24, fontSize: 18 }}>
-            A moment to reflect
-          </Text>
-
+        <Section title="A moment to reflect">
           {reflectionPrompts.map((p) => (
             <ReflectionPromptCard
               key={p.id}
               prompt={p.prompt}
               onPress={() =>
-                navigation.navigate('WriteReflection', {
-                  prompt: p.prompt,
+                navigation.navigate('Hub', {
+                  screen: 'HubWriteReflection',
+                  params: { prompt: p.prompt },
                 })
               }
             />
           ))}
-        </>
+        </Section>
       )}
 
-      {/* Actions */}
-      <Text style={{ marginTop: 24, fontSize: 18 }}>
-        What would you like to do today?
-      </Text>
+      {/* 🎯 Actions */}
+      <Section title="What would you like to do today?">
+        <TouchableOpacity
+          style={{ marginBottom: 12 }}
+          onPress={() => navigation.navigate('Hub')}
+        >
+          <Text style={globalStyles.linkText}>
+            Track a symptom
+          </Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={{ marginTop: 16 }}
-        onPress={() => navigation.navigate('Hub')}
-      >
-        <Text>Track a symptom</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={{ marginTop: 12 }}
-        onPress={() => navigation.navigate('Library')}
-      >
-        <Text>Learn & understand</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Library')}
+        >
+          <Text style={globalStyles.linkText}>
+            Learn & understand
+          </Text>
+        </TouchableOpacity>
+      </Section>
+    </PageShell>
   )
 }

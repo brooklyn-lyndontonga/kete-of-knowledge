@@ -46,11 +46,17 @@ import { listResourcesByCategory } from "../controllers/libraryResourcesControll
 
 const router = express.Router()
 
+router.use((req, res, next) => {
+  console.log(`📚 Library API: ${req.method} ${req.originalUrl}`)
+  next()
+})
+
 // categories
 router.get("/", listResourceCategoriesController)
 router.get("/:id", getResourceCategoryController)
 
 // resources inside category
 router.get("/:id/resources", listResourcesByCategory)
+
 
 export default router
