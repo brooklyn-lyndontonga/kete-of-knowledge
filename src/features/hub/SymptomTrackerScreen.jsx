@@ -1,7 +1,14 @@
-import React, { useState } from 'react'
-import { View, Text, TextInput, TouchableOpacity } from 'react-native'
-import { useNavigation, useRoute } from '@react-navigation/native'
-import { useSymptoms } from '../hooks/useSymptoms'
+/* eslint-disable no-unused-vars */
+import React, { useState } from "react"
+import { Text, TextInput, TouchableOpacity } from "react-native"
+import { useNavigation, useRoute } from "@react-navigation/native"
+
+import PageShell from "../../components/layout/PageShell"
+import Section from "../../components/layout/Section"
+import Card from "../../components/Card"
+import Button from "../../components/Button"
+import { globalStyles } from "../../theme/globalStyles"
+import { useSymptoms } from "../hooks/useSymptoms"
 
 export default function SymptomTrackerScreen() {
   const navigation = useNavigation()
@@ -10,9 +17,12 @@ export default function SymptomTrackerScreen() {
 
   const { addSymptom } = useSymptoms()
 
-  const [symptom, setSymptom] = useState('')
-  const [severity, setSeverity] = useState('5')
-  const [notes, setNotes] = useState('')
+  const [symptom, setSymptom] = useState("")
+  const [severity, setSeverity] = useState("5")
+  const [notes, setNotes] = useState("")
+  const [date, setDate] = useState(
+    new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+  )
 
   const handleSave = async () => {
     if (!symptom) return
@@ -22,64 +32,61 @@ export default function SymptomTrackerScreen() {
       severity: Number(severity),
       notes,
       conditionId,
-      date: new Date().toISOString(),
+      date: new Date(date).toISOString(),
     })
 
     navigation.goBack()
   }
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 22, marginBottom: 16 }}>Log a symptom</Text>
+    <PageShell>
+      <Section title="Log a symptom">
+        <Card>
+          {conditionId && (
+            <Text style={globalStyles.mutedText}>
+              This symptom will be linked to the selected condition.
+            </Text>
+          )}
 
-      {conditionId && (
-        <Text style={{ marginBottom: 8, color: '#666' }}>
-          Linked to this condition
-        </Text>
-      )}
+          {/* Symptom */}
+          <Text style={globalStyles.label}>Symptom</Text>
+          <TextInput
+            value={symptom}
+            onChangeText={setSymptom}
+            placeholder="e.g. Headache, fatigue"
+            style={globalStyles.input}
+          />
 
-      <Text>Symptom</Text>
-      <TextInput
-        value={symptom}
-        onChangeText={setSymptom}
-        style={{
-          borderWidth: 1,
-          borderColor: '#ccc',
-          padding: 8,
-          marginBottom: 12,
-        }}
-      />
+          {/* Severity */}
+          <Text style={globalStyles.label}>Severity (1–10)</Text>
+          <TextInput
+            value={severity}
+            onChangeText={setSeverity}
+            keyboardType="numeric"
+            style={globalStyles.input}
+          />
 
-      <Text>Severity (1–10)</Text>
-      <TextInput
-        value={severity}
-        onChangeText={setSeverity}
-        keyboardType="numeric"
-        style={{
-          borderWidth: 1,
-          borderColor: '#ccc',
-          padding: 8,
-          marginBottom: 12,
-        }}
-      />
+          {/* Date */}
+          <Text style={globalStyles.label}>Date</Text>
+          <TextInput
+            value={date}
+            onChangeText={setDate}
+            placeholder="YYYY-MM-DD"
+            style={globalStyles.input}
+          />
 
-      <Text>Notes (optional)</Text>
-      <TextInput
-        value={notes}
-        onChangeText={setNotes}
-        multiline
-        style={{
-          borderWidth: 1,
-          borderColor: '#ccc',
-          padding: 8,
-          height: 80,
-          marginBottom: 24,
-        }}
-      />
+          {/* Notes */}
+          <Text style={globalStyles.label}>Notes (optional)</Text>
+          <TextInput
+            value={notes}
+            onChangeText={setNotes}
+            multiline
+            style={[globalStyles.input, { height: 80 }]}
+          />
 
-      <TouchableOpacity onPress={handleSave}>
-        <Text style={{ fontSize: 18 }}>Save symptom</Text>
-      </TouchableOpacity>
-    </View>
+          <Button label="Save symptom" onPress={handleSave} />
+        </Card>
+      </Section>
+    </PageShell>
   )
 }

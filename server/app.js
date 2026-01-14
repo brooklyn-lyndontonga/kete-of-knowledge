@@ -4,24 +4,27 @@ import cors from "cors"
 import { connectDB, initTables } from "./db/init.js"
 import { setDB } from "./db/db.js"
 
-// ROUTERS (existing user/admin routes)
+// USER ROUTES
 import userGoals from "./routes/goals.js"
 import userSymptoms from "./routes/symptoms.js"
 import userMedicines from "./routes/medicines.js"
 import userContacts from "./routes/contacts.js"
 import userReflections from "./routes/userReflections.js"
+
+// ADMIN ROUTES
 import adminRoutes from "./routes/admin.js"
 
-// ROUTERS (new Phase 1 routes)
+// PHASE 1 ROUTES
 import reflectionTemplates from "./routes/reflectionTemplates.js"
 import profileSeeds from "./routes/profileSeeds.js"
 import conditions from "./routes/conditions.js"
 import library from "./routes/library.js"
+import whakatauki from "./routes/whakatauki.js" // ✅ ADD THIS
 
 const app = express()
 
 // ----------------------
-// CORS MUST BE HERE ONLY
+// CORS
 // ----------------------
 app.use(
   cors({
@@ -65,14 +68,15 @@ router.use("/user/medicines", userMedicines)
 router.use("/user/contacts", userContacts)
 router.use("/user/reflections", userReflections)
 
-// ADMIN ROUTES
-router.use("/admin", adminRoutes)
-
-// NEW PHASE 1 ROUTES
+// ✅ PUBLIC CONTENT ROUTES (mobile app)
+router.use("/whakatauki", whakatauki)
 router.use("/reflection-templates", reflectionTemplates)
 router.use("/profile-seeds", profileSeeds)
 router.use("/conditions", conditions)
 router.use("/library", library)
+
+// 🔐 ADMIN ROUTES (admin panel only)
+router.use("/admin", adminRoutes)
 
 app.use("/api", router)
 
@@ -82,8 +86,6 @@ app.use("/api", router)
 app.get("/", (req, res) => {
   res.json({
     message: "Kete of Knowledge API is running 🚀",
-    user_routes: "/api/user/*",
-    admin_routes: "/api/admin/*",
   })
 })
 

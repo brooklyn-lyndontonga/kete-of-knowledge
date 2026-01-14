@@ -1,8 +1,40 @@
+// import { useEffect, useState } from "react"
+// import { API_URL } from "../../lib/api"
+
+// export function useWhakatauki() {
+//   const [whakatauki, setWhakatauki] = useState([])
+//   const [loading, setLoading] = useState(true)
+//   const [error, setError] = useState(null)
+
+//   useEffect(() => {
+//     let mounted = true
+
+//     async function load() {
+//       try {
+//         const res = await fetch(`${API_URL}/api/whakatauki`)
+//         if (!res.ok) throw new Error("Failed to load whakataukī")
+
+//         const data = await res.json()
+//         if (mounted) setWhakatauki(data)
+//       } catch (err) {
+//         if (mounted) setError(err.message)
+//       } finally {
+//         if (mounted) setLoading(false)
+//       }
+//     }
+
+//     load()
+//     return () => (mounted = false)
+//   }, [])
+
+//   return { whakatauki, loading, error }
+// }
+
 import { useEffect, useState } from "react"
 import { API_URL } from "../../lib/api"
 
-export function useWhakatauki({ mode = "daily" } = {}) {
-  const [whakatauki, setWhakatauki] = useState(null)
+export function useWhakatauki() {
+  const [whakatauki, setWhakatauki] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -11,30 +43,11 @@ export function useWhakatauki({ mode = "daily" } = {}) {
 
     async function load() {
       try {
-        setLoading(true)
-
-        const res = await fetch(`${API_URL}/whakatauki`)
-        if (!res.ok) throw new Error("Failed to load whakataukī")
+        const res = await fetch(`${API_URL}/api/whakatauki`)
+        if (!res.ok) throw new Error("Failed to load")
 
         const data = await res.json()
-        if (!Array.isArray(data) || data.length === 0) {
-          throw new Error("No whakataukī available")
-        }
-
-        let selected
-
-        if (mode === "random") {
-          selected = data[Math.floor(Math.random() * data.length)]
-        } else {
-          // stable daily rotation
-          const today = new Date().toISOString().slice(0, 10)
-          const index =
-            today.split("").reduce((sum, c) => sum + c.charCodeAt(0), 0) %
-            data.length
-          selected = data[index]
-        }
-
-        if (mounted) setWhakatauki(selected)
+        if (mounted) setWhakatauki(data)
       } catch (err) {
         if (mounted) setError(err.message)
       } finally {
@@ -43,10 +56,8 @@ export function useWhakatauki({ mode = "daily" } = {}) {
     }
 
     load()
-    return () => {
-      mounted = false
-    }
-  }, [mode])
+    return () => (mounted = false)
+  }, [])
 
   return { whakatauki, loading, error }
 }
