@@ -18,7 +18,7 @@ export function useResources(categoryId) {
         if (!res.ok) throw new Error("Failed to load resources")
 
         const data = await res.json()
-        setResources(data)
+        setResources(Array.isArray(data) ? data : [])
       } catch (err) {
         setError(err.message)
       } finally {

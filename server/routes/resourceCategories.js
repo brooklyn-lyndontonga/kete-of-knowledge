@@ -1,8 +1,8 @@
 import express from "express"
 import {
-  listResourceCategories,
-  getResourceCategory,
-  createResourceCategory,
+  listResourceCategoriesController,
+  getResourceCategoryController,
+  createResourceCategoryController,
   updateResourceCategoryController,
   deleteResourceCategoryController,
 } from "../controllers/resourceCategoriesController.js"
@@ -11,11 +11,15 @@ import { listResourcesByCategory } from "../controllers/libraryResourcesControll
 
 const router = express.Router()
 
-router.get("/", listResourceCategories)
-router.get("/:id", getResourceCategory)
+// Categories
+router.get("/", listResourceCategoriesController)
+router.get("/:id", getResourceCategoryController)
+
+// Resources under category
 router.get("/:id/resources", listResourcesByCategory)
 
-router.post("/", createResourceCategory)
+// Admin
+router.post("/", createResourceCategoryController)
 router.put("/:id", updateResourceCategoryController)
 router.delete("/:id", deleteResourceCategoryController)
 
