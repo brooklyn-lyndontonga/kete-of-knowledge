@@ -1,3 +1,5 @@
+// server/models/resourceCategoriesModel.js
+
 export async function listResourceCategories(db) {
   return db.all("SELECT * FROM resource_categories")
 }
@@ -25,5 +27,8 @@ export async function updateResourceCategory(db, id, data) {
 }
 
 export async function deleteResourceCategory(db, id) {
-  await db.run("DELETE FROM resource_categories WHERE id = ?", [id])
+  await db.run(
+    "DELETE FROM resource_categories WHERE id = ?",
+    [id]
+  )
 }

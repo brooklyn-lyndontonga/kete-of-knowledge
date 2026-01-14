@@ -7,7 +7,6 @@ export async function listResourcesByCategory(req, res) {
     const { id } = req.params
 
     const items = await getResourcesByCategory(db, id)
-
     res.json(items)
   } catch (err) {
     console.error("❌ Error loading resources:", err)

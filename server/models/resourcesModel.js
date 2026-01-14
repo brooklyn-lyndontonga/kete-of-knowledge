@@ -1,4 +1,9 @@
-export async function getResources(db) {
+import { getDB } from "../db/db.js"
+
+// Get ALL resources (optional, admin use later)
+export async function getResources() {
+  const db = getDB()
+
   return db.all(`
     SELECT r.*, c.name AS category_name
     FROM resources r
@@ -7,14 +12,19 @@ export async function getResources(db) {
   `)
 }
 
-export async function getResourcesByCategory(db, category_id) {
+// ✅ THIS IS THE ONE YOUR APP USES
+export async function getResourcesByCategory(categoryId) {
+  const db = getDB()
+
   return db.all(
     "SELECT * FROM resources WHERE category_id = ?",
-    [category_id]
+    [categoryId]
   )
 }
 
-export async function addResource(db, { category_id, title, content, image_url }) {
+export async function addResource({ category_id, title, content, image_url }) {
+  const db = getDB()
+
   const result = await db.run(
     "INSERT INTO resources (category_id, title, content, image_url) VALUES (?, ?, ?, ?)",
     [category_id, title, content, image_url]
@@ -29,7 +39,9 @@ export async function addResource(db, { category_id, title, content, image_url }
   }
 }
 
-export async function deleteResource(db, id) {
+export async function deleteResource(id) {
+  const db = getDB()
+
   await db.run("DELETE FROM resources WHERE id = ?", [id])
   return true
 }

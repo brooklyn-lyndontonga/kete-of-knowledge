@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 import React from "react"
 import { FlatList, ActivityIndicator, Text } from "react-native"
 import { useRoute, useNavigation } from "@react-navigation/native"
@@ -8,41 +10,50 @@ import ResourceCard from "./components/ResourceCard"
 import { useResources } from "../hooks/useResources"
 
 export default function ResourceCategoryScreen() {
-  const route = useRoute()
-  const navigation = useNavigation()
-  const categoryId = route.params?.categoryId
+  console.log("🟢 ResourceCategoryScreen mounted")
 
+  const route = useRoute()
+  console.log("🧭 route params:", route.params)
+
+
+  const navigation = useNavigation()
   const { resources, loading, error } = useResources(categoryId)
 
-  if (!categoryId) {
-    return (
-      <PageShell>
-        <Text>Missing category</Text>
-      </PageShell>
-    )
-  }
-
-  if (loading) return <ActivityIndicator />
-  if (error) return <Text>{error}</Text>
-
+  if (!loading && resources.length === 0) {
   return (
-    <PageShell scroll={false}>
+    <PageShell>
       <Section title="Resources">
-        <FlatList
-          data={resources}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => (
-            <ResourceCard
-              title={item.title}
-              summary={item.summary}
-              onPress={() => {
-                console.log("🟢 PRESSED resource:", item.id)
-                navigation.navigate("ResourceDetail", { resource: item })
-              }}
-            />
-          )}
-        />
+        <Text>No resources found for this category yet.</Text>
       </Section>
     </PageShell>
   )
+}
+
+
+  // return (
+  //   <PageShell>
+  //     <Text style={{ color: "red", marginBottom: 16 }}>
+  //       ResourceCategoryScreen is rendering
+  //     </Text>
+
+  //     <Section title="Resources">
+  //       {loading && <Text>Loading…</Text>}
+  //       {error && <Text>Error: {error}</Text>}
+
+  //       {resources?.length === 0 && (
+  //         <Text>No resources found for this category.</Text>
+  //       )}
+
+  //       {resources?.map((item) => (
+  //         <ResourceCard
+  //           key={item.id}
+  //           title={item.title}
+  //           onPress={() =>
+  //             navigation.navigate("ResourceDetail", { resource: item })
+  //           }
+  //         />
+  //       ))}
+  //     </Section>
+  //   </PageShell>
+  // )
 }
