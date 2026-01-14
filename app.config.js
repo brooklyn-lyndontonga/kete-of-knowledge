@@ -12,7 +12,7 @@ export default {
     scheme: "keteofknowledge",
 
    extra: {
-      API_URL: "http://10.1.1.145:3000",
+      API_URL: "http://10.1.1.105:3000",
 
       SUPABASE_URL:
         process.env.EXPO_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,

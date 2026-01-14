@@ -1,5 +1,3 @@
-// server/controllers/resourceCategoriesController.js
-
 import {
   listResourceCategories,
   getResourceCategory,
@@ -8,11 +6,9 @@ import {
   deleteResourceCategory,
 } from "../models/resourceCategoriesModel.js"
 
-// GET /api/library
 export async function listResourceCategoriesController(req, res) {
   try {
-    const db = req.app.get("db")
-    const items = await listResourceCategories(db)
+    const items = await listResourceCategories()
     res.json(items)
   } catch (err) {
     console.error("Error loading resource categories:", err)
@@ -20,11 +16,9 @@ export async function listResourceCategoriesController(req, res) {
   }
 }
 
-// GET /api/library/:id
 export async function getResourceCategoryController(req, res) {
   try {
-    const db = req.app.get("db")
-    const item = await getResourceCategory(db, req.params.id)
+    const item = await getResourceCategory(req.params.id)
     res.json(item)
   } catch (err) {
     console.error("Error fetching category:", err)
@@ -32,11 +26,9 @@ export async function getResourceCategoryController(req, res) {
   }
 }
 
-// POST /api/library
 export async function createResourceCategoryController(req, res) {
   try {
-    const db = req.app.get("db")
-    const result = await createResourceCategory(db, req.body)
+    const result = await createResourceCategory(req.body)
     res.json(result)
   } catch (err) {
     console.error("Error creating resource category:", err)
@@ -44,11 +36,9 @@ export async function createResourceCategoryController(req, res) {
   }
 }
 
-// PUT /api/library/:id
 export async function updateResourceCategoryController(req, res) {
   try {
-    const db = req.app.get("db")
-    await updateResourceCategory(db, req.params.id, req.body)
+    await updateResourceCategory(req.params.id, req.body)
     res.json({ success: true })
   } catch (err) {
     console.error("Error updating resource category:", err)
@@ -56,11 +46,9 @@ export async function updateResourceCategoryController(req, res) {
   }
 }
 
-// DELETE /api/library/:id
 export async function deleteResourceCategoryController(req, res) {
   try {
-    const db = req.app.get("db")
-    await deleteResourceCategory(db, req.params.id)
+    await deleteResourceCategory(req.params.id)
     res.json({ success: true })
   } catch (err) {
     console.error("Error deleting resource category:", err)

@@ -1,7 +1,6 @@
-/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
-import React from "react"
-import { FlatList, ActivityIndicator, Text } from "react-native"
+import React, { useEffect } from "react"
+import { ActivityIndicator, Text, FlatList } from "react-native"
 import { useRoute, useNavigation } from "@react-navigation/native"
 
 import PageShell from "../../components/layout/PageShell"
@@ -10,50 +9,57 @@ import ResourceCard from "./components/ResourceCard"
 import { useResources } from "../hooks/useResources"
 
 export default function ResourceCategoryScreen() {
-  console.log("🟢 ResourceCategoryScreen mounted")
-
   const route = useRoute()
+  const navigation = useNavigation()
+
+  // ✅ THIS is the critical line
+  const { categoryId, title } = route.params
+
   console.log("🧭 route params:", route.params)
 
-
-  const navigation = useNavigation()
   const { resources, loading, error } = useResources(categoryId)
 
-  if (!loading && resources.length === 0) {
+  if (loading) {
+    return (
+      <PageShell>
+        <Text>Loading resources…</Text>
+      </PageShell>
+    )
+  }
+
+  if (error) {
+    return (
+      <PageShell>
+        <Text>{error}</Text>
+      </PageShell>
+    )
+  }
+
   return (
-    <PageShell>
-      <Section title="Resources">
-        <Text>No resources found for this category yet.</Text>
+    <PageShell scroll={false}>
+      <Section title={title}>
+        {resources.length === 0 ? (
+          <Text style={{ opacity: 0.6 }}>
+            No resources yet for this category.
+          </Text>
+        ) : (
+          <FlatList
+            data={resources}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item }) => (
+              <ResourceCard
+                title={item.title}
+                summary={item.content}
+                onPress={() =>
+                  navigation.navigate("ResourceDetail", {
+                    resource: item,
+                  })
+                }
+              />
+            )}
+          />
+        )}
       </Section>
     </PageShell>
   )
-}
-
-
-  // return (
-  //   <PageShell>
-  //     <Text style={{ color: "red", marginBottom: 16 }}>
-  //       ResourceCategoryScreen is rendering
-  //     </Text>
-
-  //     <Section title="Resources">
-  //       {loading && <Text>Loading…</Text>}
-  //       {error && <Text>Error: {error}</Text>}
-
-  //       {resources?.length === 0 && (
-  //         <Text>No resources found for this category.</Text>
-  //       )}
-
-  //       {resources?.map((item) => (
-  //         <ResourceCard
-  //           key={item.id}
-  //           title={item.title}
-  //           onPress={() =>
-  //             navigation.navigate("ResourceDetail", { resource: item })
-  //           }
-  //         />
-  //       ))}
-  //     </Section>
-  //   </PageShell>
-  // )
 }
