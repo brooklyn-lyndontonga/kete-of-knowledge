@@ -13,18 +13,19 @@ export default function HomeScreen({ navigation }) {
     <ScrollView
       contentContainerStyle={{
         padding: 16,
-        backgroundColor: "#fff",
-        minHeight: "100%",
+        backgroundColor: "#FFFFFF",
       }}
     >
       <Text style={{ fontSize: 18, marginBottom: 16 }}>
-        Home is alive 🌱
+        Nau mai 🌿
       </Text>
 
       <WhakataukiCard />
+
       <View style={{ marginTop: 24 }}>
         <QuickStats />
       </View>
+
       <View style={{ marginTop: 24 }}>
         <QuickActions navigation={navigation} />
       </View>

@@ -1,38 +1,25 @@
-/* eslint-disable react/react-in-jsx-scope */
+import React from "react"
 import { View, Text } from "react-native"
 import { useLatestSymptom } from "../../../hooks/useLatestSymptom"
 
 export default function QuickStats() {
   console.log("📊 QuickStats rendered")
-  
-  const { latestSymptom, loading } = useLatestSymptom()
 
-  if (loading) {
-    return (
-      <View style={{ padding: 16 }}>
-        <Text style={{ opacity: 0.5 }}>Loading your day…</Text>
-      </View>
-    )
+  const latest = useLatestSymptom()
+
+  if (!latest) {
+    return <Text>No symptoms logged yet 🌿</Text>
   }
 
   return (
-    <View style={{ padding: 16 }}>
-      <Text style={{ fontWeight: "600", marginBottom: 8 }}>
-        Latest check-in
+    <View>
+      <Text style={{ fontWeight: "600" }}>Latest symptom</Text>
+      <Text>
+        {latest.symptom} · Severity {latest.severity}
       </Text>
-
-      {latestSymptom ? (
-        <View>
-          <Text>{latestSymptom.symptom}</Text>
-          <Text style={{ opacity: 0.6 }}>
-            Severity: {latestSymptom.severity}
-          </Text>
-        </View>
-      ) : (
-        <Text style={{ opacity: 0.5 }}>
-          You haven’t logged anything yet.
-        </Text>
-      )}
+      <Text style={{ color: "#666", fontSize: 12 }}>
+        {latest.date}
+      </Text>
     </View>
   )
 }
