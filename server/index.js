@@ -1,12 +1,33 @@
-// server/index.js
-import http from "http"
-import app from "./app.js"
+/* eslint-disable no-undef */
+import express from "express"
+import cors from "cors"
+import dotenv from "dotenv"
+import { initDB } from "./db/db.js"
 
-const PORT = 3000
+import adminRoute from "./routes/admin.js"
+import profileRoutes from "./routes/profile.js"
+import symptomsRoutes from "./routes/symptoms.js"
+import reflectionTemplatesRoutes from "./routes/reflectionTemplates.js"
+import libraryRoutes from "./routes/library.js"
 
-const server = http.createServer(app)
+dotenv.config()
 
-// 🔑 THIS IS THE CRITICAL CHANGE
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Unified API running at http://0.0.0.0:${PORT}`)
+const app = express()
+const PORT = process.env.PORT || 3000
+
+app.use(cors())
+app.use(express.json())
+
+// Routes
+app.use("/profile", profileRoutes)
+app.use("/symptoms", symptomsRoutes)
+app.use("/admin/reflection-templates", reflectionTemplatesRoutes)
+app.use("/library", libraryRoutes)
+app.use("/admin", adminRoute)
+
+// Boot
+initDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 API running at http://0.0.0.0:${PORT}`)
+  })
 })

@@ -1,24 +1,30 @@
- 
 /* eslint-disable react/prop-types */
 import React from "react"
-import { ScrollView, View } from "react-native"
+import { ScrollView, View, Text } from "react-native"
 
 import WhakataukiCard from "./components/WhakataukiCard"
 import QuickStats from "./components/QuickStats"
 import QuickActions from "./components/QuickActions"
 
 export default function HomeScreen({ navigation }) {
-  return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
-      {/* Daily grounding */}
-      <WhakataukiCard />
+  console.log("🏠 HomeScreen rendered")
 
-      {/* Today snapshot */}
+  return (
+    <ScrollView
+      contentContainerStyle={{
+        padding: 16,
+        backgroundColor: "#fff",
+        minHeight: "100%",
+      }}
+    >
+      <Text style={{ fontSize: 18, marginBottom: 16 }}>
+        Home is alive 🌱
+      </Text>
+
+      <WhakataukiCard />
       <View style={{ marginTop: 24 }}>
         <QuickStats />
       </View>
-
-      {/* Entry points */}
       <View style={{ marginTop: 24 }}>
         <QuickActions navigation={navigation} />
       </View>

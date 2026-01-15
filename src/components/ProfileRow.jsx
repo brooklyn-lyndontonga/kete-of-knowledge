@@ -6,15 +6,13 @@ export default function ProfileRow({ label, value }) {
   return (
     <View
       style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
         paddingVertical: 12,
-        borderBottomWidth: 0.5,
-        borderColor: "#ddd",
+        borderBottomWidth: 1,
+        borderBottomColor: "#eee",
       }}
     >
-      <Text>{label}</Text>
-      <Text style={{ color: "#555" }}>{value}</Text>
+      <Text style={{ fontSize: 14, color: "#666" }}>{label}</Text>
+      <Text style={{ fontSize: 16, fontWeight: "500" }}>{value}</Text>
     </View>
   )
 }
