@@ -13,21 +13,21 @@ export default function SettingsScreen({ navigation }) {
         onPress={() => navigation.navigate("Notifications")}
         style={{ paddingVertical: 12 }}
       >
-        <Text>🔔 Notifications</Text>
+        <Text>Notifications</Text>
       </Pressable>
 
       <Pressable
         onPress={() => navigation.navigate("DataManagement")}
         style={{ paddingVertical: 12 }}
       >
-        <Text>🗂 My data</Text>
+        <Text>My data</Text>
       </Pressable>
 
       <Pressable
         onPress={() => console.log("Logout (stub)")}
         style={{ paddingVertical: 12 }}
       >
-        <Text>🚪 Log out</Text>
+        <Text>Log out</Text>
       </Pressable>
     </View>
   )
