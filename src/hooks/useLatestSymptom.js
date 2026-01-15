@@ -1,27 +1,24 @@
 import { useEffect, useState } from "react"
-import Constants from "expo-constants"
-
-const API_URL = Constants.expoConfig.extra.API_URL
+import { API_URL } from "../lib/api"
 
 export function useLatestSymptom() {
-  const [latestSymptom, setLatestSymptom] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [latest, setLatest] = useState(null)
 
   useEffect(() => {
-    async function fetchLatest() {
+    async function load() {
       try {
-        const res = await fetch(`${API_URL}/symptoms/latest`)
+        const res = await fetch(`${API_URL}/symptoms`)
         const data = await res.json()
-        setLatestSymptom(data?.[0] ?? null)
-      } catch (error) {
-        console.error("Failed to load latest symptom", error)
-      } finally {
-        setLoading(false)
+        if (data?.length) {
+          setLatest(data[0])
+        }
+      } catch (err) {
+        console.warn("⚠️ Failed to load latest symptom", err)
       }
     }
 
-    fetchLatest()
+    load()
   }, [])
 
-  return { latestSymptom, loading }
+  return latest
 }
