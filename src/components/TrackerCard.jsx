@@ -3,7 +3,7 @@ import React from "react"
 import { Text, StyleSheet } from "react-native"
 
 import Card from "./Card"
-import { useTheme } from "../theme"
+import { useTheme } from "../../app/providers/ThemeProvider"
 
 export default function TrackerCard({
   title,

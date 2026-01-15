@@ -8,7 +8,7 @@ import {
   Linking,
 } from 'react-native'
 import Animated, { FadeInUp } from 'react-native-reanimated'
-import { useTheme } from '../../theme'
+import { useTheme } from "../../app/providers/ThemeProvider"
 import { useNavigation } from '@react-navigation/native'
 
 export default function MyProvidersScreen() {

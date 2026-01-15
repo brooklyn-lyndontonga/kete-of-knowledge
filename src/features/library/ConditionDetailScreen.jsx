@@ -8,7 +8,7 @@ import PageShell from "../../components/layout/PageShell"
 import Section from "../../components/layout/Section"
 import Card from "../../components/Card"
 
-import { useTheme } from "../../theme"
+import { useTheme } from "../../app/providers/ThemeProvider"
 
 export default function ConditionDetailScreen({ route }) {
   const { conditionId } = route.params

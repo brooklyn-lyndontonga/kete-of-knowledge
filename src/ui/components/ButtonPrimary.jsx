@@ -1,9 +1,11 @@
 /* eslint-disable react/prop-types */
+// src/ui/components/ButtonPrimary.jsx
 import React from "react"
 import { TouchableOpacity, Text } from "react-native"
-import { useTheme } from "../../theme"
+import { useTheme } from "../../app/providers/ThemeProvider"
 
-export default function ButtonPrimary({ title, onPress }) {
+
+export default function ButtonPrimary({ label, onPress }) {
   const { colors, spacing, typography } = useTheme()
 
   return (
@@ -12,19 +14,19 @@ export default function ButtonPrimary({ title, onPress }) {
       style={{
         backgroundColor: colors.primary,
         paddingVertical: spacing.md,
-        borderRadius: spacing.md,
+        paddingHorizontal: spacing.lg,
+        borderRadius: 12,
         alignItems: "center",
-        marginTop: spacing.lg,
       }}
     >
       <Text
         style={{
-          fontFamily: typography.bold,
           color: "#fff",
-          fontSize: 16,
+          fontFamily: typography.medium,
+          fontSize: 15,
         }}
       >
-        {title}
+        {label}
       </Text>
     </TouchableOpacity>
   )

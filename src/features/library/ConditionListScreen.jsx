@@ -7,7 +7,7 @@ import PageShell from "../../components/layout/PageShell"
 import Section from "../../components/layout/Section"
 import Card from "../../components/Card"
 
-import { useTheme } from "../../theme"
+import { useTheme } from "../../app/providers/ThemeProvider"
 
 const CONDITIONS = [
   { id: "asthma", name: "Asthma", emoji: "🌬️", summary: "Breathing difficulties caused by airway inflammation." },

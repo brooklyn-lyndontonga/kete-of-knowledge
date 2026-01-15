@@ -1,45 +1,42 @@
-import React from 'react'
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import React from "react"
+import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
-// Screens
-import HubHomeScreen from '../../../features/hub/HubHomeScreen'
-import GoalsScreen from '../../../features/hub/GoalsScreen'
-import SymptomsScreen from '../../../features/hub/SymptomsScreen'
-import SymptomTrackerScreen from '../../../features/hub/SymptomTrackerScreen'
-import MyMedicinesScreen from '../../../features/hub/MyMedicinesScreen'
-import MedicinesListScreen from '../../../features/hub/MedicinesListScreen'
-import MedicineDetailScreen from '../../../features/hub/MedicineDetailScreen'
-import ConditionListScreen from '../../../features/hub/ConditionListScreen'
-import ConditionDetailScreen from '../../../features/hub/ConditionDetailScreen'
-import ContactsScreen from '../../../features/hub/ContactsScreen'
+import HubHomeScreen from "../../../features/hub/HubHomeScreen"
+import SymptomsScreen from "../../../features/hub/SymptomsScreen"
+import SymptomTrackerScreen from "../../../features/hub/SymptomTrackerScreen"
+import ConditionListScreen from "../../../features/hub/ConditionListScreen"
+import ConditionDetailScreen from "../../../features/hub/ConditionDetailScreen"
+import MedicinesListScreen from "../../../features/hub/MedicinesListScreen"
+import MedicineDetailScreen from "../../../features/hub/MedicineDetailScreen"
+import RongoaScreen from "../../../features/hub/RongoaScreen"
+import WriteReflectionScreen from "../../../features/hub/WriteReflectionScreen"
 
 const Stack = createNativeStackNavigator()
 
 export default function HubStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {/* Hub Home */}
       <Stack.Screen name="HubHome" component={HubHomeScreen} />
 
-      <Stack.Screen name="HubGoals" component={GoalsScreen} />
+      {/* Symptoms */}
+      <Stack.Screen name="Symptoms" component={SymptomsScreen} />
+      <Stack.Screen name="SymptomTracker" component={SymptomTrackerScreen} />
 
-      <Stack.Screen name="HubSymptoms" component={SymptomsScreen} />
+      {/* Conditions */}
+      <Stack.Screen name="ConditionList" component={ConditionListScreen} />
+      <Stack.Screen name="ConditionDetail" component={ConditionDetailScreen} />
 
-      <Stack.Screen name="HubSymptomTracker" component={SymptomTrackerScreen} />
+      {/* Medicines & Rongoā */}
+      <Stack.Screen name="MedicinesList" component={MedicinesListScreen} />
+      <Stack.Screen name="MedicineDetail" component={MedicineDetailScreen} />
+      <Stack.Screen name="Rongoa" component={RongoaScreen} />
 
-      <Stack.Screen name="HubMyMedicines" component={MyMedicinesScreen} />
-
-      <Stack.Screen name="HubMedicinesList" component={MedicinesListScreen} />
-
-      <Stack.Screen name="HubMedicineDetail" component={MedicineDetailScreen} />
-
-      <Stack.Screen name="HubConditionList" component={ConditionListScreen} />
-
+      {/* Reflections */}
       <Stack.Screen
-        name="HubConditionDetail"
-        component={ConditionDetailScreen}
+        name="WriteReflection"
+        component={WriteReflectionScreen}
       />
-
-      <Stack.Screen name="HubContacts" component={ContactsScreen} />
     </Stack.Navigator>
   )
 }

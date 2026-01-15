@@ -1,44 +1,44 @@
 /* eslint-disable react/prop-types */
-import React from 'react'
-import { View, Text, TextInput } from 'react-native'
-import { useTheme } from '../../theme'
+// src/ui/components/ProfileCard.jsx
+import React from "react"
+import { View, Text } from "react-native"
+import { useTheme } from "../../app/providers/ThemeProvider"
 
-export function ProfileCard({ profile, setProfile }) {
+
+export default function ProfileCard({ title, subtitle }) {
   const { colors, spacing, typography } = useTheme()
 
-  const handleChange = (field, value) => setProfile({ ...profile, [field]: value })
-
   return (
-    <View style={{
-      backgroundColor: colors.card,
-      padding: spacing.md,
-      borderRadius: spacing.sm,
-      marginBottom: spacing.lg,
-    }}>
-      <Text style={{ ...typography.h3, color: colors.textPrimary, marginBottom: spacing.sm }}>
-        Basic Details
+    <View
+      style={{
+        backgroundColor: colors.card,
+        padding: spacing.lg,
+        borderRadius: 16,
+        marginBottom: spacing.md,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: typography.medium,
+          fontSize: 16,
+          color: colors.text,
+        }}
+      >
+        {title}
       </Text>
 
-      {['name', 'age', 'gender'].map(field => (
-        <View key={field} style={{ marginBottom: spacing.sm }}>
-          <Text style={{ color: colors.textSecondary, marginBottom: 4 }}>
-            {field.charAt(0).toUpperCase() + field.slice(1)}
-          </Text>
-          <TextInput
-            value={profile[field]}
-            onChangeText={(v) => handleChange(field, v)}
-            style={{
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: spacing.xs,
-              padding: spacing.sm,
-              color: colors.textPrimary,
-            }}
-            placeholder={`Enter your ${field}`}
-            placeholderTextColor={colors.textPlaceholder}
-          />
-        </View>
-      ))}
+      {subtitle && (
+        <Text
+          style={{
+            marginTop: spacing.xs,
+            fontFamily: typography.body,
+            fontSize: 13,
+            color: colors.mutedText,
+          }}
+        >
+          {subtitle}
+        </Text>
+      )}
     </View>
   )
 }

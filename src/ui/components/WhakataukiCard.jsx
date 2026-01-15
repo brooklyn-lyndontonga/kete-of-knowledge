@@ -1,55 +1,46 @@
-import React, { useEffect, useState } from "react"
+/* eslint-disable react/prop-types */
+// src/ui/components/WhakataukiCard.jsx
+import React from "react"
 import { View, Text } from "react-native"
-import { useTheme } from "../../theme"
-import whakataukiData from "../../data/whakatauki.json"
+import { useTheme } from "../../app/providers/ThemeProvider"
 
-export default function WhakataukiCard() {
+
+export default function WhakataukiCard({ quote, translation }) {
   const { colors, spacing, typography } = useTheme()
-  const [quote, setQuote] = useState(null)
-
-  useEffect(() => {
-    // Rotate daily (change each day)
-    const today = new Date().getDate()
-    const index = today % whakataukiData.length
-    setQuote(whakataukiData[index])
-  }, [])
 
   if (!quote) return null
 
   return (
     <View
       style={{
-        backgroundColor: colors.card,
+        backgroundColor: colors.beige,
         padding: spacing.lg,
-        borderRadius: spacing.md,
-        marginTop: spacing.lg,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        borderRadius: 16,
+        marginBottom: spacing.lg,
       }}
     >
       <Text
         style={{
-          fontFamily: typography.heading,
-          fontSize: 18,
-          color: colors.primary,
-          fontStyle: "italic",
-          marginBottom: spacing.sm,
+          fontFamily: typography.medium,
+          fontSize: 16,
+          color: colors.charcoal,
         }}
       >
-        “{quote.text}”
+        {quote}
       </Text>
 
-      <Text
-        style={{
-          fontFamily: typography.body,
-          fontSize: 14,
-          color: colors.mutedText,
-        }}
-      >
-        {quote.translation}
-      </Text>
+      {translation && (
+        <Text
+          style={{
+            marginTop: spacing.sm,
+            fontFamily: typography.body,
+            fontSize: 13,
+            color: colors.mutedText,
+          }}
+        >
+          {translation}
+        </Text>
+      )}
     </View>
   )
 }

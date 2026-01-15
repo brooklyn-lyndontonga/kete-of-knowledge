@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native'
 import Animated, { FadeInUp } from 'react-native-reanimated'
-import { useTheme } from '../../theme'
+import { useTheme } from "../../app/providers/ThemeProvider"
 import { useNavigation } from '@react-navigation/native'
 import { useAuth } from '../../app/providers/AuthProvider'
 import { useOnboarding } from '../../app/providers/OnboardingProvider'
