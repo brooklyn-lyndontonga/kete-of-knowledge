@@ -4,6 +4,10 @@ import { View, Text, FlatList, Pressable } from "react-native"
 import conditions from "../../data/conditions.json"
 
 export default function LibraryScreen({ navigation }) {
+  console.log("📚 LibraryScreen rendered", {
+    conditionsCount: conditions.length,
+  })
+
   return (
     <View style={{ padding: 16 }}>
       <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 16 }}>
@@ -15,9 +19,10 @@ export default function LibraryScreen({ navigation }) {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <Pressable
-            onPress={() =>
+            onPress={() => {
+              console.log("➡️ Open condition", item.id)
               navigation.navigate("Condition", { id: item.id })
-            }
+            }}
             style={{ paddingVertical: 12 }}
           >
             <Text style={{ fontWeight: "500" }}>

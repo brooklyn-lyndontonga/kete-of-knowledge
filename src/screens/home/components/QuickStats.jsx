@@ -1,21 +1,38 @@
- 
-import React from "react"
+/* eslint-disable react/react-in-jsx-scope */
 import { View, Text } from "react-native"
-import { useContext } from "react"
-import { AppDataContext } from "../../../context/AppDataContext"
-
-
+import { useLatestSymptom } from "../../../hooks/useLatestSymptom"
 
 export default function QuickStats() {
-  const { symptoms } = useContext(AppDataContext)
+  console.log("📊 QuickStats rendered")
+  
+  const { latestSymptom, loading } = useLatestSymptom()
 
-  const latest = symptoms[symptoms.length - 1]
+  if (loading) {
+    return (
+      <View style={{ padding: 16 }}>
+        <Text style={{ opacity: 0.5 }}>Loading your day…</Text>
+      </View>
+    )
+  }
 
   return (
-    <View>
-      <Text style={{ fontWeight: "600", marginBottom: 8 }}> Today </Text>
-      <Text>• Latest symptom:{" "} {latest ? latest.symptom : "—"}</Text>
-      <Text>• Checklist items remaining: —</Text>
+    <View style={{ padding: 16 }}>
+      <Text style={{ fontWeight: "600", marginBottom: 8 }}>
+        Latest check-in
+      </Text>
+
+      {latestSymptom ? (
+        <View>
+          <Text>{latestSymptom.symptom}</Text>
+          <Text style={{ opacity: 0.6 }}>
+            Severity: {latestSymptom.severity}
+          </Text>
+        </View>
+      ) : (
+        <Text style={{ opacity: 0.5 }}>
+          You haven’t logged anything yet.
+        </Text>
+      )}
     </View>
   )
 }

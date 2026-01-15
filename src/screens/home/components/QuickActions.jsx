@@ -3,6 +3,8 @@ import React from "react"
 import { View, Text, Pressable } from "react-native"
 
 export default function QuickActions({ navigation }) {
+console.log("🚀 QuickActions rendered")
+
   return (
     <View>
       <Text style={{ fontWeight: "600", marginBottom: 8 }}>

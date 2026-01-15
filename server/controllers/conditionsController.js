@@ -1,165 +1,125 @@
-// server/controllers/conditionsController.js
+import { getDB } from "../db/db.js"
 
-function parseJsonField(value, fallback) {
-  if (!value) return fallback
-  try {
-    return JSON.parse(value)
-  } catch (err) {
-    console.warn("Failed to parse JSON field:", err)
-    return fallback
-  }
-}
-
-function serialiseJsonField(value) {
-  if (value == null) return null
-  return JSON.stringify(value)
-}
-
-function mapCondition(row) {
-  return {
-    ...row,
-    triggers: parseJsonField(row.triggers, []),
-    treatments: parseJsonField(row.treatments, []),
-    images: parseJsonField(row.images, []),
-  }
-}
-
-// GET /api/conditions?search=pcos
+// =======================
+// ADMIN: LIST ALL CONDITIONS
+// GET /admin/conditions
+// =======================
 export async function getAllConditions(req, res) {
-  try {
-    const db = req.app.get("db")
-    const { search } = req.query
+  const db = getDB()
 
-    let sql = "SELECT * FROM conditions"
-    const params = []
-
-    if (search) {
-      sql += " WHERE name LIKE ? OR description LIKE ?"
-      const like = `%${search}%`
-      params.push(like, like)
-    }
-
-    const rows = await db.all(sql, params)
-    res.json(rows.map(mapCondition))
-  } catch (err) {
-    console.error("Error getting conditions:", err)
-    res.status(500).json({ error: "Failed to fetch conditions" })
-  }
-}
-
-// GET /api/conditions/:id
-export async function getConditionById(req, res) {
-  try {
-    const db = req.app.get("db")
-    const { id } = req.params
-
-    const row = await db.get("SELECT * FROM conditions WHERE id = ?", [id])
-
-    if (!row) {
-      return res.status(404).json({ error: "Condition not found" })
-    }
-
-    res.json(mapCondition(row))
-  } catch (err) {
-    console.error("Error getting condition:", err)
-    res.status(500).json({ error: "Failed to fetch condition" })
-  }
-}
-
-// POST /api/conditions
-export async function createCondition(req, res) {
-  try {
-    const db = req.app.get("db")
-    const { name, description, triggers, treatments, images } = req.body
-
-    if (!name) {
-      return res.status(400).json({ error: "name is required" })
-    }
-
-    const result = await db.run(
-      `
-      INSERT INTO conditions (name, description, triggers, treatments, images)
-      VALUES (?, ?, ?, ?, ?)
-      `,
-      [
-        name,
-        description ?? null,
-        serialiseJsonField(triggers ?? []),
-        serialiseJsonField(treatments ?? []),
-        serialiseJsonField(images ?? []),
-      ]
-    )
-
-    const row = await db.get("SELECT * FROM conditions WHERE id = ?", [
-      result.lastID,
-    ])
-
-    res.status(201).json(mapCondition(row))
-  } catch (err) {
-    console.error("Error creating condition:", err)
-    res.status(500).json({ error: "Failed to create condition" })
-  }
-}
-
-// PUT /api/conditions/:id
-export async function updateCondition(req, res) {
-  try {
-    const db = req.app.get("db")
-    const { id } = req.params
-    const { name, description, triggers, treatments, images } = req.body
-
-    const existing = await db.get("SELECT * FROM conditions WHERE id = ?", [
+  const rows = await db.all(`
+    SELECT
       id,
-    ])
+      name AS title,
+      description AS content,
+      triggers,
+      treatments,
+      images
+    FROM conditions
+    ORDER BY name ASC
+  `)
 
-    if (!existing) {
-      return res.status(404).json({ error: "Condition not found" })
-    }
-
-    const newName = name ?? existing.name
-    const newDescription = description ?? existing.description
-    const newTriggers =
-      triggers !== undefined ? serialiseJsonField(triggers) : existing.triggers
-    const newTreatments =
-      treatments !== undefined
-        ? serialiseJsonField(treatments)
-        : existing.treatments
-    const newImages =
-      images !== undefined ? serialiseJsonField(images) : existing.images
-
-    await db.run(
-      `
-      UPDATE conditions
-      SET name = ?, description = ?, triggers = ?, treatments = ?, images = ?
-      WHERE id = ?
-      `,
-      [newName, newDescription, newTriggers, newTreatments, newImages, id]
-    )
-
-    const updated = await db.get("SELECT * FROM conditions WHERE id = ?", [id])
-
-    res.json(mapCondition(updated))
-  } catch (err) {
-    console.error("Error updating condition:", err)
-    res.status(500).json({ error: "Failed to update condition" })
-  }
+  res.json(rows)
 }
 
-// DELETE /api/conditions/:id
-export async function deleteCondition(req, res) {
-  try {
-    const db = req.app.get("db")
-    const { id } = req.params
+// =======================
+// ADMIN: GET ONE CONDITION
+// GET /admin/conditions/:id
+// =======================
+export async function getConditionById(req, res) {
+  const db = getDB()
 
-    const result = await db.run("DELETE FROM conditions WHERE id = ?", [id])
+  const row = await db.get(
+    `
+    SELECT
+      id,
+      name AS title,
+      description AS content,
+      triggers,
+      treatments,
+      images
+    FROM conditions
+    WHERE id = ?
+    `,
+    req.params.id
+  )
 
-    if (result.changes === 0) {
-      return res.status(404).json({ error: "Condition not found" })
-    }
-
-    res.sendStatus(204)
-  } catch (err) {
-    console.error("Error deleting condition:", err)
-    res.status(500).json({ error: "Failed to delete condition" })
+  if (!row) {
+    return res.status(404).json({ error: "Condition not found" })
   }
+
+  res.json(row)
+}
+
+// =======================
+// ADMIN: CREATE CONDITION
+// POST /admin/conditions
+// =======================
+export async function createCondition(req, res) {
+  const {
+    title,
+    content,
+    triggers = null,
+    treatments = null,
+    images = null,
+  } = req.body
+
+  const db = getDB()
+
+  await db.run(
+    `
+    INSERT INTO conditions (name, description, triggers, treatments, images)
+    VALUES (?, ?, ?, ?, ?)
+    `,
+    [title, content, triggers, treatments, images]
+  )
+
+  res.json({ success: true })
+}
+
+// =======================
+// ADMIN: UPDATE CONDITION
+// PUT /admin/conditions/:id
+// =======================
+export async function updateCondition(req, res) {
+  const {
+    title,
+    content,
+    triggers = null,
+    treatments = null,
+    images = null,
+  } = req.body
+
+  const db = getDB()
+
+  await db.run(
+    `
+    UPDATE conditions
+    SET
+      name = ?,
+      description = ?,
+      triggers = ?,
+      treatments = ?,
+      images = ?
+    WHERE id = ?
+    `,
+    [title, content, triggers, treatments, images, req.params.id]
+  )
+
+  res.json({ success: true })
+}
+
+// =======================
+// ADMIN: DELETE CONDITION
+// DELETE /admin/conditions/:id
+// =======================
+export async function deleteCondition(req, res) {
+  const db = getDB()
+
+  await db.run(
+    "DELETE FROM conditions WHERE id = ?",
+    req.params.id
+  )
+
+  res.json({ success: true })
 }

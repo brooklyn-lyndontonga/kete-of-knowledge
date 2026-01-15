@@ -4,9 +4,34 @@ import { View, Text } from "react-native"
 import { useTheme } from "../../app/providers/ThemeProvider"
 
 export default function WhakataukiCard({ quote }) {
+  console.log("🌟 WhakataukiCard rendered")
+
   const { colors, spacing, typography } = useTheme()
 
-  if (!quote) return null
+  // Fallback placeholder (IMPORTANT: still renders UI)
+  if (!quote) {
+    return (
+      <View
+        style={{
+          backgroundColor: colors.card,
+          padding: spacing.lg,
+          borderRadius: spacing.md,
+          marginTop: spacing.lg,
+        }}
+      >
+        <Text
+          style={{
+            fontFamily: typography.body,
+            fontSize: 14,
+            color: colors.mutedText,
+            fontStyle: "italic",
+          }}
+        >
+          He whakataukī mō tēnei rā ka tae mai ākuanei 🌱
+        </Text>
+      </View>
+    )
+  }
 
   return (
     <View
@@ -15,10 +40,6 @@ export default function WhakataukiCard({ quote }) {
         padding: spacing.lg,
         borderRadius: spacing.md,
         marginTop: spacing.lg,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
       }}
     >
       <Text

@@ -1,38 +1,64 @@
-import {
-  getSymptoms,
-  addSymptom,
-  deleteSymptom,
-} from "../models/symptomsModel.js"
+import { getDB } from "../db/db.js"
 
-// GET /api/symptoms
+// =======================
+// GET ALL SYMPTOMS
+// GET /symptoms
+// =======================
 export async function listSymptoms(req, res) {
-  try {
-    const data = await getSymptoms()
-    res.json(data)
-  } catch (err) {
-    console.error("Error loading symptoms:", err)
-    res.status(500).json({ error: "Failed to load symptoms" })
-  }
+  const db = getDB()
+  const rows = await db.all(
+    "SELECT * FROM symptoms ORDER BY date DESC"
+  )
+  res.json(rows)
 }
 
-// POST /api/symptoms
+// =======================
+// GET LATEST SYMPTOM (MVP)
+// GET /symptoms/latest
+// =======================
+export async function getLatestSymptom(req, res) {
+  const db = getDB()
+
+  const row = await db.get(`
+    SELECT *
+    FROM symptoms
+    ORDER BY date DESC
+    LIMIT 1
+  `)
+
+  res.json(row ?? null)
+}
+
+// =======================
+// CREATE SYMPTOM
+// POST /symptoms
+// =======================
 export async function createSymptom(req, res) {
-  try {
-    const item = await addSymptom(req.body)
-    res.json(item)
-  } catch (err) {
-    console.error("Error creating symptom:", err)
-    res.status(500).json({ error: "Failed to create symptom" })
-  }
+  const { symptom, severity, notes, date } = req.body
+  const db = getDB()
+
+  await db.run(
+    `
+    INSERT INTO symptoms (symptom, severity, notes, date)
+    VALUES (?, ?, ?, ?)
+    `,
+    [symptom, severity, notes, date]
+  )
+
+  res.json({ success: true })
 }
 
-// DELETE /api/symptoms/:id
+// =======================
+// DELETE SYMPTOM (MVP)
+// DELETE /symptoms/:id
+// =======================
 export async function removeSymptom(req, res) {
-  try {
-    await deleteSymptom(req.params.id)
-    res.json({ success: true })
-  } catch (err) {
-    console.error("Error deleting symptom:", err)
-    res.status(500).json({ error: "Failed to delete symptom" })
-  }
+  const db = getDB()
+
+  await db.run(
+    "DELETE FROM symptoms WHERE id = ?",
+    req.params.id
+  )
+
+  res.json({ success: true })
 }
