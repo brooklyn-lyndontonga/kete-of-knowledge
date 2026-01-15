@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
-import { useTheme } from '../../theme'
+import { useTheme } from "../../app/providers/ThemeProvider"
+
 import { API_URL } from '../../lib/api'
 
 export default function ReflectionTile() {

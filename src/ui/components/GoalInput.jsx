@@ -1,33 +1,32 @@
-import React from 'react'
-import { View, Text, TextInput } from 'react-native'
-import { useTheme } from '../../theme'
+/* eslint-disable react/prop-types */
+// src/ui/components/GoalInput.jsx
+import React from "react"
+import { View, TextInput } from "react-native"
+import { useTheme } from "../../app/providers/ThemeProvider"
 
-export function GoalInput({ profile, setProfile }) {
+
+export default function GoalInput({ value, onChangeText, placeholder }) {
   const { colors, spacing, typography } = useTheme()
 
   return (
-    <View style={{
-      backgroundColor: colors.card,
-      padding: spacing.md,
-      borderRadius: spacing.sm,
-    }}>
-      <Text style={{ ...typography.h3, color: colors.textPrimary, marginBottom: spacing.sm }}>
-        Your Goals
-      </Text>
+    <View
+      style={{
+        backgroundColor: colors.card,
+        borderRadius: 12,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        marginBottom: spacing.md,
+      }}
+    >
       <TextInput
-        multiline
-        value={profile.goals}
-        onChangeText={(v) => setProfile({ ...profile, goals: v })}
-        placeholder="Describe your health or wellbeing goals..."
-        placeholderTextColor={colors.textPlaceholder}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.mutedText}
         style={{
-          height: 100,
-          borderWidth: 1,
-          borderColor: colors.border,
-          borderRadius: spacing.xs,
-          padding: spacing.sm,
-          color: colors.textPrimary,
-          textAlignVertical: 'top'
+          fontFamily: typography.body,
+          fontSize: 14,
+          color: colors.text,
         }}
       />
     </View>

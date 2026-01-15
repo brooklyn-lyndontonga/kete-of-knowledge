@@ -2,7 +2,8 @@
 import React from "react"
 import { Text } from "react-native"
 import Card from "../../../components/Card"
-import { useTheme } from "../../../theme"
+import { useTheme } from "../../app/providers/ThemeProvider"
+
 
 export default function ProgressSnapshotCard({ snapshot }) {
   const { typography, spacing, colors } = useTheme()

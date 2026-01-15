@@ -9,7 +9,7 @@ import {
   Linking,
 } from 'react-native'
 import Animated, { FadeInUp } from 'react-native-reanimated'
-import { useTheme } from '../../theme'
+import { useTheme } from "../../app/providers/ThemeProvider"
 
 export default function DataSettingsScreen() {
   const { colors, spacing, radii, typography } = useTheme()

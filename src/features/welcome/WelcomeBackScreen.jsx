@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native'
 import Animated, { FadeInUp, ZoomIn } from 'react-native-reanimated'
-import { useTheme } from '../../theme'
+import { useTheme } from "../../app/providers/ThemeProvider"
 import { useNavigation, useRoute } from '@react-navigation/native'
 
 export default function WelcomeBackScreen() {

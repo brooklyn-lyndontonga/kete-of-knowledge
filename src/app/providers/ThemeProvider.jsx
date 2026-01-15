@@ -3,30 +3,29 @@ import React, { createContext, useContext } from "react"
 import { ThemeProvider as StyledThemeProvider } from "styled-components/native"
 import { colors, spacing, radii, typography } from "../../theme"
 
-const ThemeCtx = createContext(null)
+const ThemeContext = createContext(null)
 
-export const useTheme = () => {
-  const ctx = useContext(ThemeCtx)
+export function useTheme() {
+  const ctx = useContext(ThemeContext)
   if (!ctx) {
     throw new Error("useTheme must be used within ThemeProvider")
   }
   return ctx
 }
 
-const baseTheme = {
+const theme = {
   colors,
   spacing,
   radii,
   typography,
-  mode: "light",
 }
 
 export function ThemeProvider({ children }) {
   return (
-    <ThemeCtx.Provider value={{ theme: baseTheme }}>
-      <StyledThemeProvider theme={baseTheme}>
+    <ThemeContext.Provider value={theme}>
+      <StyledThemeProvider theme={theme}>
         {children}
       </StyledThemeProvider>
-    </ThemeCtx.Provider>
+    </ThemeContext.Provider>
   )
 }

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from "react"
 import { View, Text } from "react-native"
-import { useTheme } from "../theme"
+import { useTheme } from "../../app/providers/ThemeProvider"
 
 export default function WhakataukiCard({ quote }) {
   const { colors, spacing, typography } = useTheme()

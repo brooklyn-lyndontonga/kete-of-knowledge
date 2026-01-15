@@ -12,7 +12,7 @@ import {
   Alert,
 } from 'react-native'
 import Animated, { FadeInUp } from 'react-native-reanimated'
-import { useTheme } from '../../theme'
+import { useTheme } from "../../app/providers/ThemeProvider"
 import {
   getContacts,
   addContact,

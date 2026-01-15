@@ -1,44 +1,34 @@
 /* eslint-disable react/prop-types */
+// src/ui/components/SearchBar.jsx
 import React from "react"
-import { View, TextInput, StyleSheet } from "react-native"
-import { useTheme } from "../../theme"
+import { View, TextInput } from "react-native"
+import { useTheme } from "../../app/providers/ThemeProvider"
 
-export default function SearchBar({ query, setQuery, placeholder = "Search..." }) {
+
+export default function SearchBar({ value, onChangeText, placeholder }) {
   const { colors, spacing, typography } = useTheme()
 
   return (
     <View
-      style={[
-        styles.container,
-        { borderColor: colors.border, marginBottom: spacing.md },
-      ]}
+      style={{
+        backgroundColor: colors.card,
+        borderRadius: 14,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        marginBottom: spacing.md,
+      }}
     >
       <TextInput
-        style={[
-          styles.input,
-          {
-            color: colors.text,
-            fontFamily: typography.body,
-            backgroundColor: colors.card,
-          },
-        ]}
-        placeholder={placeholder}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder || "Search"}
         placeholderTextColor={colors.mutedText}
-        value={query}
-        onChangeText={setQuery}
+        style={{
+          fontFamily: typography.body,
+          fontSize: 14,
+          color: colors.text,
+        }}
       />
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-  },
-  input: {
-    height: 42,
-    fontSize: 16,
-  },
-})
