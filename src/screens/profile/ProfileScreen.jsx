@@ -1,15 +1,26 @@
+/* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text, StyleSheet } from "react-native"
+import { View, Text, Pressable } from "react-native"
 
-export default function ProfileScreen() {
+import ProfileHeader from "./components/ProfileHeader"
+import ProfileRow from "./components/ProfileRow"
+
+export default function ProfileScreen({ navigation }) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>ProfileScreen Placeholder</Text>
+    <View style={{ padding: 16 }}>
+      <ProfileHeader />
+
+      <View style={{ marginTop: 24 }}>
+        <ProfileRow label="Health goals" value="View" />
+        <ProfileRow label="Language" value="English / Te Reo" />
+      </View>
+
+      <Pressable
+        onPress={() => navigation.navigate("EditProfile")}
+        style={{ marginTop: 32 }}
+      >
+        <Text>✏️ Edit profile</Text>
+      </Pressable>
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5" },
-  text: { fontSize: 20, fontWeight: "600", color: "#333" }
-})
