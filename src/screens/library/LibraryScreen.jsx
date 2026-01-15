@@ -1,42 +1,34 @@
-/* eslint-disable react/jsx-no-undef */
-/* eslint-disable react/react-in-jsx-scope */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
-export default function LibraryScreen() {
-  const [resources, setResources] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+/* eslint-disable react/prop-types */
+import React from "react"
+import { View, Text, FlatList, Pressable } from "react-native"
+import conditions from "../../data/conditions.json"
 
-  async function load() {
-    try {
-      setLoading(true)
-      const data = await apiGet("/library")
-      setResources(data)
-    } catch (err) {
-      setError("Failed to load resources")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    load()
-  }, [])
-
-  if (loading) return <Text>Loading…</Text>
-  if (error) return <Text>{error}</Text>
-
+export default function LibraryScreen({ navigation }) {
   return (
-    <FlatList
-      data={resources}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={({ item }) => (
-        <TouchableOpacity
-          onPress={() => navigation.navigate("ResourceScreen", { resource: item })}
-        >
-          <Text>{item.title}</Text>
-        </TouchableOpacity>
-      )}
-    />
+    <View style={{ padding: 16 }}>
+      <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 16 }}>
+        Library
+      </Text>
+
+      <FlatList
+        data={conditions}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() =>
+              navigation.navigate("Condition", { id: item.id })
+            }
+            style={{ paddingVertical: 12 }}
+          >
+            <Text style={{ fontWeight: "500" }}>
+              {item.name}
+            </Text>
+            <Text style={{ color: "#666" }}>
+              {item.summary}
+            </Text>
+          </Pressable>
+        )}
+      />
+    </View>
   )
 }

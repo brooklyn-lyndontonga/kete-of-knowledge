@@ -1,13 +1,34 @@
+/* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text, Button } from "react-native"
-import { useNavigation } from "@react-navigation/native"
+import { View, Text, Pressable } from "react-native"
 
-export default function SettingsScreen(){
-  const nav = useNavigation()
+export default function SettingsScreen({ navigation }) {
   return (
-    <View style={{ flex:1, alignItems:"center", justifyContent:"center", padding:20 }}>
-      <Text style={{ fontSize:22, fontWeight:"700", marginBottom:12 }}>⚙️ Settings</Text>
-      <Button title="Help & Support" onPress={() => nav.navigate("Help")} />
+    <View style={{ padding: 16 }}>
+      <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 16 }}>
+        Settings
+      </Text>
+
+      <Pressable
+        onPress={() => navigation.navigate("Notifications")}
+        style={{ paddingVertical: 12 }}
+      >
+        <Text>🔔 Notifications</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={() => navigation.navigate("DataManagement")}
+        style={{ paddingVertical: 12 }}
+      >
+        <Text>🗂 My data</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={() => console.log("Logout (stub)")}
+        style={{ paddingVertical: 12 }}
+      >
+        <Text>🚪 Log out</Text>
+      </Pressable>
     </View>
   )
 }

@@ -1,77 +1,27 @@
-/* eslint-disable no-unused-vars */
+ 
+/* eslint-disable react/prop-types */
 import React from "react"
-import { View, ActivityIndicator, Text } from "react-native"
+import { ScrollView, View } from "react-native"
 
-import PageShell from "../../components/layout/PageShell"
-import Section from "../../components/layout/Section"
-import { globalStyles } from "../../theme/globalStyles"
+import WhakataukiCard from "./components/WhakataukiCard"
+import QuickStats from "./components/QuickStats"
+import QuickActions from "./components/QuickActions"
 
-import { useWhakatauki } from "../hooks/useWhakatauki"
-import { useSnapshots } from "../hooks/useSnapshots"
-
-import WhakataukiCard from "../../components/WhakataukiCard"
-import ProgressSnapshotCard from "./components/ProgressSnapshotCard"
-
-export default function HomeScreen() {
-  // ✅ correct hook usage
-  const {
-    whakatauki,
-    loading: loadingQuote,
-    error: quoteError,
-  } = useWhakatauki()
-
-  const {
-    snapshots = [],
-    loading: loadingSnapshots,
-    error: snapshotError,
-  } = useSnapshots()
-
-  const loading = loadingQuote || loadingSnapshots
-  const error = quoteError || snapshotError
-
-  if (loading) {
-    return (
-      <PageShell>
-        <ActivityIndicator />
-      </PageShell>
-    )
-  }
-
-  if (error) {
-    return (
-      <PageShell>
-        <Text style={globalStyles.mutedText}>
-          Something went wrong loading your kete.
-        </Text>
-      </PageShell>
-    )
-  }
-
-  const latestSnapshot = snapshots[0] || null
-
+export default function HomeScreen({ navigation }) {
   return (
-    <PageShell>
-      {/* 🌿 Whakataukī */}
-      <Section title="Whakataukī">
-        {whakatauki ? (
-          <WhakataukiCard whakatauki={whakatauki} />
-        ) : (
-          <Text style={globalStyles.mutedText}>
-            No whakataukī available today.
-          </Text>
-        )}
-      </Section>
+    <ScrollView contentContainerStyle={{ padding: 16 }}>
+      {/* Daily grounding */}
+      <WhakataukiCard />
 
-      {/* 📊 Progress Snapshot */}
-      <Section title="Your progress">
-        {latestSnapshot ? (
-          <ProgressSnapshotCard snapshot={latestSnapshot} />
-        ) : (
-          <Text style={globalStyles.mutedText}>
-            No progress logged yet.
-          </Text>
-        )}
-      </Section>
-    </PageShell>
+      {/* Today snapshot */}
+      <View style={{ marginTop: 24 }}>
+        <QuickStats />
+      </View>
+
+      {/* Entry points */}
+      <View style={{ marginTop: 24 }}>
+        <QuickActions navigation={navigation} />
+      </View>
+    </ScrollView>
   )
 }
