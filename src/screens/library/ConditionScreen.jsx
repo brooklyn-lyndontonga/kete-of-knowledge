@@ -1,31 +1,43 @@
 /* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text } from "react-native"
+import { View, Text, ScrollView } from "react-native"
 import conditions from "../../data/conditions.json"
 
 export default function ConditionScreen({ route }) {
   const { id } = route.params
+  console.log("📖 ConditionScreen rendered:", id)
+
   const condition = conditions.find((c) => c.id === id)
 
   if (!condition) {
-    return <Text>Condition not found.</Text>
+    return (
+      <View style={{ padding: 16 }}>
+        <Text>Condition not found.</Text>
+      </View>
+    )
   }
 
   return (
-    <View style={{ padding: 16 }}>
-      <Text style={{ fontSize: 18, fontWeight: "600" }}>
+    <ScrollView style={{ padding: 16 }}>
+      <Text
+        style={{
+          fontSize: 20,
+          fontWeight: "600",
+          marginBottom: 12,
+        }}
+      >
         {condition.name}
       </Text>
 
-      <Text style={{ marginTop: 12 }}>
-        {condition.body}
+      <Text
+        style={{
+          fontSize: 15,
+          lineHeight: 22,
+          color: "#444",
+        }}
+      >
+        {condition.content}
       </Text>
-
-      {condition.culturalNote && (
-        <Text style={{ marginTop: 16, fontStyle: "italic", color: "#555" }}>
-          {condition.culturalNote}
-        </Text>
-      )}
-    </View>
+    </ScrollView>
   )
 }

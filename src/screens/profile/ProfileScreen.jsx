@@ -1,30 +1,34 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React from "react"
 import { View, Text, Pressable } from "react-native"
-
-import ProfileHeader from "./components/ProfileHeader"
-import ProfileRow from "../../components/ProfileRow"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function ProfileScreen({ navigation }) {
-  console.log("👤 ProfileScreen rendered")
-
   return (
+    <SafeAreaView style={{ flex: 1 }}>
     <View style={{ padding: 16 }}>
-      <ProfileHeader />
-
-      <View style={{ marginTop: 24 }}>
-        <ProfileRow label="Health goals" value="View" />
+      
+      <View style={card}>
+        <Text style={{ fontSize: 14, color: "#666" }}>Identity</Text>
+        <Text style={{ fontSize: 18, marginTop: 4 }}>This kete</Text>
       </View>
 
-      <Pressable
-        onPress={() => {
-          console.log("➡️ Navigate to EditProfile")
-          navigation.navigate("EditProfile")
-        }}
-        style={{ marginTop: 32 }}
-      >
-        <Text>✏️ Edit profile</Text>
+      <View style={[card, { marginTop: 16 }]}>
+        <Text>Health goals</Text>
+      </View>
+
+      <Pressable style={[card, { marginTop: 24 }]}>
+        <Text>Edit profile</Text>
       </Pressable>
+
     </View>
+    </SafeAreaView>
   )
+}
+
+const card = {
+  padding: 16,
+  borderRadius: 12,
+  backgroundColor: "#F5F5F5",
 }

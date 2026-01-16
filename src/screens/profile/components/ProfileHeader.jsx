@@ -1,18 +1,24 @@
 import React from "react"
 import { View, Text } from "react-native"
-import { useContext } from "react"
-import { AppDataContext } from "../../../context/AppDataContext"
+import { useAppData } from "../../../hooks/useAppData"
 
 export default function ProfileHeader() {
-  const { profile } = useContext(AppDataContext)
+  console.log("👤 ProfileHeader rendered")
+
+  const { profile } = useAppData()
 
   return (
-    <View>
-      <Text style={{ fontSize: 18, fontWeight: "600" }}> {profile?.name || "My Profile"} </Text>
+    <View
+      style={{
+        padding: 16,
+        borderRadius: 12,
+        backgroundColor: "#F5F5F5",
+      }}
+    >
+      <Text style={{ fontSize: 14, color: "#666" }}>Identity</Text>
 
-      <Text style={{ marginTop: 8, color: "#555" }}>
-        This kete belongs to you. It holds your health journey,
-        reflections, and intentions.
+      <Text style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
+        {profile?.name || "This kete"}
       </Text>
     </View>
   )

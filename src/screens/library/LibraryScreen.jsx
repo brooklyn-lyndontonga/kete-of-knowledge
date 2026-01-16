@@ -1,39 +1,53 @@
-/* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text, FlatList, Pressable } from "react-native"
-import conditions from "../../data/conditions.json"
+import { View, Text, ScrollView } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
-export default function LibraryScreen({ navigation }) {
-  console.log("📚 LibraryScreen rendered", {
-    conditionsCount: conditions.length,
-  })
-
+export default function LibraryScreen() {
   return (
-    <View style={{ padding: 16 }}>
-      <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 16 }}>
-        Library
-      </Text>
+    <SafeAreaView style={{ flex: 1 }}>
+    <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <Text style={heading}>Resources</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <LibraryCard />
+        <LibraryCard />
+        <LibraryCard />
+      </ScrollView>
 
-      <FlatList
-        data={conditions}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => {
-              console.log("➡️ Open condition", item.id)
-              navigation.navigate("Condition", { id: item.id })
-            }}
-            style={{ paddingVertical: 12 }}
-          >
-            <Text style={{ fontWeight: "500" }}>
-              {item.name}
-            </Text>
-            <Text style={{ color: "#666" }}>
-              {item.summary}
-            </Text>
-          </Pressable>
-        )}
-      />
+      <Text style={heading}>Latest</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <LibraryCard />
+        <LibraryCard />
+      </ScrollView>
+
+      <Text style={heading}>Other resources</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <LibraryCard />
+        <LibraryCard />
+      </ScrollView>
+    </ScrollView>
+    </SafeAreaView>
+  )
+}
+
+function LibraryCard() {
+  return (
+    <View style={card}>
+      <Text>Resource</Text>
     </View>
   )
+}
+
+const heading = {
+  fontSize: 18,
+  marginVertical: 12,
+}
+
+const card = {
+  width: 140,
+  height: 90,
+  borderRadius: 12,
+  backgroundColor: "#F5F5F5",
+  marginRight: 12,
+  justifyContent: "center",
+  alignItems: "center",
 }

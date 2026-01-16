@@ -1,29 +1,11 @@
- 
-import React, { useMemo } from "react"
+import React from "react"
 import { View, Text } from "react-native"
-import { getRandomWhakatauki } from "../../../lib/whakatauki"
+import whakatauki from "../../../data/whakatauki.json"
 
 export default function WhakataukiCard() {
   console.log("🌿 WhakataukiCard rendered")
 
-  // Stable per render (does not reshuffle during re-renders)
-  const item = useMemo(() => getRandomWhakatauki(), [])
-
-  if (!item) {
-    return (
-      <View
-        style={{
-          padding: 16,
-          borderRadius: 12,
-          backgroundColor: "#F2F2F2",
-        }}
-      >
-        <Text style={{ fontStyle: "italic", color: "#666" }}>
-          He whakataukī mō tēnei rā ka tae mai ākuanei 🌱
-        </Text>
-      </View>
-    )
-  }
+  const item = whakatauki[Math.floor(Math.random() * whakatauki.length)]
 
   return (
     <View

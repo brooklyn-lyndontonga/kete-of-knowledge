@@ -1,0 +1,17 @@
+[
+  {
+    "id": "water",
+    "label": "Drink water",
+    "frequency": "daily"
+  },
+  {
+    "id": "meds",
+    "label": "Take medicines",
+    "frequency": "daily"
+  },
+  {
+    "id": "rest",
+    "label": "Rest your body",
+    "frequency": "daily"
+  }
+]
