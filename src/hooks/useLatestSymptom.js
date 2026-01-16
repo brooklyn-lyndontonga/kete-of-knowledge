@@ -3,22 +3,26 @@ import { API_URL } from "../lib/api"
 
 export function useLatestSymptom() {
   const [latest, setLatest] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function load() {
+    async function fetchLatest() {
       try {
         const res = await fetch(`${API_URL}/symptoms`)
         const data = await res.json()
-        if (data?.length) {
-          setLatest(data[0])
+
+        if (Array.isArray(data) && data.length > 0) {
+          setLatest(data[data.length - 1])
         }
-      } catch (err) {
-        console.warn("⚠️ Failed to load latest symptom", err)
+      } catch (e) {
+        console.error("❌ Failed to load latest symptom", e)
+      } finally {
+        setLoading(false)
       }
     }
 
-    load()
+    fetchLatest()
   }, [])
 
-  return latest
+  return { latest, loading }
 }

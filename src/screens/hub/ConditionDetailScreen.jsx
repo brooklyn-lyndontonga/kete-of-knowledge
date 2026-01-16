@@ -1,44 +1,31 @@
+/* eslint-disable react/prop-types */
 import React from "react"
-import { Text } from "react-native"
-import { useRoute } from "@react-navigation/native"
+import { View, Text } from "react-native"
+import conditions from "../../data/conditions.json"
 
-import PageShell from "../../components/layout/PageShell"
-import Section from "../../components/layout/Section"
-import Card from "../../components/Card"
-import { globalStyles } from "../../theme/globalStyles"
+export default function ConditionDetailScreen({ route }) {
+  console.log("📖 ConditionDetailScreen rendered")
 
-export default function ConditionDetailScreen() {
-  const route = useRoute()
-  const condition = route.params?.condition
+  const { id } = route.params
+  const condition = conditions.find((c) => c.id === id)
 
-  // 🛑 Safety: no condition passed
   if (!condition) {
-    return (
-      <PageShell>
-        <Section title="Condition">
-          <Text style={globalStyles.mutedText}>
-            Condition details are unavailable.
-          </Text>
-        </Section>
-      </PageShell>
-    )
+    return <Text>Condition not found</Text>
   }
 
   return (
-    <PageShell>
-      <Section title={condition.name}>
-        <Card>
-          {condition.description ? (
-            <Text style={globalStyles.text}>
-              {condition.description}
-            </Text>
-          ) : (
-            <Text style={globalStyles.mutedText}>
-              No description available.
-            </Text>
-          )}
-        </Card>
-      </Section>
-    </PageShell>
+    <View style={{ padding: 16 }}>
+      <Text style={{ fontSize: 20, fontWeight: "600" }}>
+        {condition.name}
+      </Text>
+
+      <Text style={{ marginTop: 12 }}>{condition.description}</Text>
+
+      <Text style={{ marginTop: 16, fontWeight: "600" }}>Triggers</Text>
+      <Text>{condition.triggers}</Text>
+
+      <Text style={{ marginTop: 16, fontWeight: "600" }}>Supports</Text>
+      <Text>{condition.treatments}</Text>
+    </View>
   )
 }

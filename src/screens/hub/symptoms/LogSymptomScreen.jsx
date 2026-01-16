@@ -1,57 +1,47 @@
-/* eslint-disable no-redeclare */
 /* eslint-disable react/prop-types */
 import React, { useState } from "react"
 import { View, Text, TextInput, Pressable } from "react-native"
-import { useContext } from "react"
-import { AppDataContext } from "../../../context/AppDataContext"
-
+import { useAppData } from "../../../hooks/useAppData"
 
 export default function LogSymptomScreen({ navigation }) {
-  const [symptom, setSymptom] = useState("")
+  console.log("➕ LogSymptomScreen rendered")
+
+  const { addSymptom } = useAppData()
   const [severity, setSeverity] = useState("")
+  const [notes, setNotes] = useState("")
 
-  const { addSymptom } = useContext(AppDataContext)
-
-function handleSave() {
-  addSymptom({
-    id: Date.now(),
-    symptom,
-    severity,
-    date: new Date().toISOString(),
-  })
-
-  navigation.goBack()
-}
-
-  function handleSave() {
-    // MVP: console.log
-    console.log({ symptom, severity })
-
+  function save() {
+    addSymptom({
+      id: Date.now().toString(),
+      date: new Date().toISOString().slice(0, 10),
+      severity,
+      notes,
+    })
     navigation.goBack()
   }
 
   return (
     <View style={{ padding: 16 }}>
-      <Text style={{ fontWeight: "600", marginBottom: 8 }}>
-        Log a symptom
+      <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 16 }}>
+        Log symptom
       </Text>
-
-      <TextInput
-        placeholder="What are you feeling?"
-        value={symptom}
-        onChangeText={setSymptom}
-        style={{ borderBottomWidth: 1, marginBottom: 16 }}
-      />
 
       <TextInput
         placeholder="Severity (1–5)"
         value={severity}
         onChangeText={setSeverity}
         keyboardType="numeric"
-        style={{ borderBottomWidth: 1, marginBottom: 24 }}
+        style={{ borderWidth: 1, padding: 12, marginBottom: 12 }}
       />
 
-      <Pressable onPress={handleSave}>
+      <TextInput
+        placeholder="Notes"
+        value={notes}
+        onChangeText={setNotes}
+        style={{ borderWidth: 1, padding: 12, marginBottom: 24 }}
+      />
+
+      <Pressable onPress={save}>
         <Text>Save</Text>
       </Pressable>
     </View>

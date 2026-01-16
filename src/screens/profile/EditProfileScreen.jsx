@@ -1,40 +1,49 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useContext } from "react"
+import React, { useState } from "react"
 import { View, Text, TextInput, Pressable } from "react-native"
-import { AppDataContext } from "../../context/AppDataContext"
+import { useAppData } from "../../hooks/useAppData"
 
 export default function EditProfileScreen({ navigation }) {
-  const { updateProfile } = useContext(AppDataContext)
-  const [name, setName] = useState("")
-  const [goal, setGoal] = useState("")
+  console.log("✏️ EditProfileScreen rendered")
 
-  function handleSave() {
-    updateProfile({ name, goal })
+  const { profile, setProfile } = useAppData()
+  const [name, setName] = useState(profile.name)
+
+  function save() {
+    setProfile({ ...profile, name })
     navigation.goBack()
   }
 
   return (
     <View style={{ padding: 16 }}>
-      <Text style={{ fontWeight: "600", marginBottom: 12 }}>
+      <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 16 }}>
         Edit profile
       </Text>
 
       <TextInput
-        placeholder="Your name"
         value={name}
         onChangeText={setName}
-        style={{ borderBottomWidth: 1, marginBottom: 16 }}
+        placeholder="Your name"
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          padding: 12,
+          borderRadius: 8,
+          marginBottom: 24,
+        }}
       />
 
-      <TextInput
-        placeholder="Health intention or goal"
-        value={goal}
-        onChangeText={setGoal}
-        style={{ borderBottomWidth: 1, marginBottom: 24 }}
-      />
-
-      <Pressable onPress={handleSave}>
-        <Text>Save</Text>
+      <Pressable
+        onPress={save}
+        style={{
+          padding: 12,
+          backgroundColor: "#222",
+          borderRadius: 8,
+        }}
+      >
+        <Text style={{ color: "#fff", textAlign: "center" }}>
+          Save
+        </Text>
       </Pressable>
     </View>
   )

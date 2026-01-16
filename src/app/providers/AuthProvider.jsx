@@ -1,53 +1,21 @@
 /* eslint-disable react/prop-types */
-import React, { createContext, useContext, useReducer, useEffect } from "react"
+import React, { createContext, useContext, useState } from "react"
 
-const MOCK_USER = {
-  id: "dev-user-0001",
-  email: "mock@kete.local",
-  user_metadata: { name: "Mock User" },
-  app_metadata: { provider: "dev" },
-}
-
-const AuthContext = createContext()
-
-function authReducer(state, action) {
-  switch (action.type) {
-    case "LOGIN":
-      return {
-        ...state,
-        session: action.payload.session,
-        user: action.payload.user,
-        loading: false,
-      }
-    case "LOGOUT":
-      return { session: null, user: null, loading: false }
-    default:
-      return state
-  }
-}
+const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [state, dispatch] = useReducer(authReducer, {
-    loading: true,
-    session: null,
-    user: null,
-  })
+  const [session, setSession] = useState(null)
+  const [loading] = useState(false)
 
-  useEffect(() => {
-    dispatch({
-      type: "LOGIN",
-      payload: { session: { user: MOCK_USER }, user: MOCK_USER },
-    })
-  }, [])
+  const value = {
+    session,
+    loading,
+    login: (user) => setSession(user),
+    logout: () => setSession(null),
+  }
 
   return (
-    <AuthContext.Provider
-      value={{
-        session: state.session,
-        user: state.user,
-        loading: state.loading,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )

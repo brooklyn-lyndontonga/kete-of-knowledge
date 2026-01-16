@@ -8,9 +8,17 @@ const Stack = createNativeStackNavigator()
 
 export default function LibraryStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="LibraryHome" component={LibraryScreen} />
-      <Stack.Screen name="Condition" component={ConditionScreen} />
+    <Stack.Navigator>
+      <Stack.Screen
+        name="LibraryHome"
+        component={LibraryScreen}
+        options={{ title: "Library" }}
+      />
+      <Stack.Screen
+        name="Condition"
+        component={ConditionScreen}
+        options={{ title: "Condition" }}
+      />
     </Stack.Navigator>
   )
 }
