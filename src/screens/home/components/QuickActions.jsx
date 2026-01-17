@@ -8,7 +8,11 @@ export default function QuickActions({ navigation }) {
   return (
     <View>
       <Pressable
-        onPress={() => navigation.navigate("LogSymptom")}
+        onPress={() =>
+          navigation.navigate("Hub", {
+            screen: "LogSymptom",
+          })
+        }
         style={{ paddingVertical: 12 }}
       >
         <Text>➕ Log symptom</Text>

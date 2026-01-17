@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from "react"
 import { View, Text, Pressable } from "react-native"
-import { useAppData } from "../../hooks/useAppData"
+import { useAppData } from "../../../app/providers/AppDataProvider"
 
 export default function SymptomsScreen({ navigation }) {
   console.log("🩺 SymptomsScreen rendered")

@@ -1,42 +1,31 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React from "react"
 import { View, Text, Pressable } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function HubScreen({ navigation }) {
+  console.log("❤️ HubScreen rendered")
+
   return (
-    <SafeAreaView style={{ flex: 1 }}>
     <View style={{ padding: 16 }}>
-      <Text style={{ fontSize: 20, marginBottom: 16 }}>❤️ Taku Manawa</Text>
+      <Text style={{ fontSize: 20, fontWeight: "600" }}>
+        Taku Manawa
+      </Text>
 
-      <Pressable style={card}>
-        <Text style={title}>My symptoms</Text>
+      <Pressable onPress={() => navigation.navigate("Symptoms")}>
+        <Text style={{ paddingVertical: 12 }}>🩺 Symptoms</Text>
       </Pressable>
 
-      <Pressable style={card}>
-        <Text style={title}>My medicines</Text>
+      <Pressable onPress={() => navigation.navigate("Medicines")}>
+        <Text style={{ paddingVertical: 12 }}>🌿 Medicines</Text>
       </Pressable>
 
-      <Pressable style={card}>
-        <Text style={title}>Checklists & reminders</Text>
+      <Pressable onPress={() => navigation.navigate("Checklist")}>
+        <Text style={{ paddingVertical: 12 }}>📋 Checklist</Text>
       </Pressable>
 
-      <Pressable style={card}>
-        <Text style={title}>Notes</Text>
+      <Pressable onPress={() => navigation.navigate("Notes")}>
+        <Text style={{ paddingVertical: 12 }}>📝 Notes</Text>
       </Pressable>
     </View>
-    </SafeAreaView>
   )
-}
-
-const card = {
-  padding: 16,
-  borderRadius: 12,
-  backgroundColor: "#F5F5F5",
-  marginBottom: 12,
-}
-
-const title = {
-  fontSize: 16,
 }

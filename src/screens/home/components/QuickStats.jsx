@@ -1,39 +1,31 @@
+/* eslint-disable react/prop-types */
 import React from "react"
-import { View, Text } from "react-native"
-import { useLatestSymptom } from "../../../hooks/useLatestSymptom"
+import { View, Text, Pressable } from "react-native"
 
-export default function QuickStats() {
+export default function QuickStats({ navigation, latestSymptom }) {
   console.log("📊 QuickStats rendered")
 
-  const { latest, loading } = useLatestSymptom()
-
-  if (loading) {
-    return <Text style={{ color: "#666" }}>Loading…</Text>
-  }
-
-  if (!latest) {
-    return <Text style={{ color: "#666" }}>No symptoms logged yet</Text>
+  if (!latestSymptom) {
+    return (
+      <View style={{ padding: 16, backgroundColor: "#F5F5F5", borderRadius: 12 }}>
+        <Text>No symptoms logged yet</Text>
+      </View>
+    )
   }
 
   return (
-    <View
+    <Pressable
+      onPress={() => navigation.navigate("Hub", { screen: "SymptomsList" })}
       style={{
         padding: 16,
-        borderRadius: 12,
         backgroundColor: "#F5F5F5",
+        borderRadius: 12,
       }}
     >
-      <Text style={{ fontSize: 14, color: "#666" }}>
-        Latest symptom
-      </Text>
-
-      <Text style={{ marginTop: 4 }}>
-        Severity: {latest.severity}/5
-      </Text>
-
-      <Text style={{ marginTop: 4, color: "#555" }}>
-        {latest.date}
-      </Text>
-    </View>
+      <Text style={{ fontWeight: "600" }}>Latest symptom</Text>
+      <Text>{latestSymptom.name}</Text>
+      <Text>Severity: {latestSymptom.severity}</Text>
+      <Text>{latestSymptom.date}</Text>
+    </Pressable>
   )
 }
