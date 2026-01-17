@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from "react"
 import { ScrollView, View, Text } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 import WhakataukiCard from "./components/WhakataukiCard"
 import QuickStats from "./components/QuickStats"
@@ -10,6 +11,7 @@ export default function HomeScreen({ navigation }) {
   console.log("🏠 HomeScreen rendered")
 
   return (
+    <SafeAreaView style={{ flex: 1 }}>
     <ScrollView
       contentContainerStyle={{
         padding: 16,
@@ -31,5 +33,6 @@ export default function HomeScreen({ navigation }) {
         <QuickActions navigation={navigation} />
       </View>
     </ScrollView>
+    </SafeAreaView>
   )
 }
