@@ -8,7 +8,7 @@ import Section from "../../components/layout/Section"
 import Card from "../../components/Card"
 import Button from "../../components/Button"
 import { globalStyles } from "../../theme/globalStyles"
-import { useSymptoms } from "../hooks/useSymptoms"
+import { useSymptoms } from "../../../hooks/useSymptoms"
 
 export default function SymptomTrackerScreen() {
   const navigation = useNavigation()

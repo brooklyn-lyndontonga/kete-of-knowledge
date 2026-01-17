@@ -1,7 +1,8 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react"
 import { View, Text, TextInput, Pressable } from "react-native"
-import { useAppData } from "../../hooks/useAppData"
+import { useAppData } from "../../app/providers/AppDataProvider"
+
 
 export default function EditProfileScreen({ navigation }) {
   console.log("✏️ EditProfileScreen rendered")
