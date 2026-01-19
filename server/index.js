@@ -5,6 +5,7 @@ import dotenv from "dotenv"
 import { initDB } from "./db/db.js"
 
 import adminRoute from "./routes/admin.js"
+import homeRoutes from "./routes/home.js"
 import reflectionTemplatesRoutes from "./routes/reflectionTemplates.js"
 import profileRoutes from "./routes/profile.js"
 import whakataukiRoutes from "./routes/whakatauki.js"
@@ -21,6 +22,7 @@ app.use(express.json())
 
 // Routes
 app.use("/admin", adminRoute)
+app.use("/home", homeRoutes)
 app.use("/admin/reflection-templates", reflectionTemplatesRoutes)
 app.use("/whakatauki", whakataukiRoutes)
 app.use("/profile", profileRoutes)
