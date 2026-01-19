@@ -1,78 +1,61 @@
-import React, { useState } from "react"
-import { View, Text, TextInput, FlatList, Pressable } from "react-native"
-import { useAppData } from "../../../app/providers/AppDataProvider"
-
+/* eslint-disable react/react-in-jsx-scope */
+import { FlatList, Text, View } from "react-native"
+import { useEffect, useState } from "react"
+import { API_URL } from "../../../lib/api"
+import ChecklistForm from "./components/ChecklistForm"
+import ChecklistItem from "./components/ChecklistItem"
 
 export default function ChecklistScreen() {
-  console.log("📋 ChecklistScreen rendered")
+  const [items, setItems] = useState([])
+  const [editing, setEditing] = useState(null)
 
-  const {
-    checklistItems,
-    addChecklistItem,
-    deleteChecklistItem,
-  } = useAppData()
+  useEffect(() => {
+    fetchItems()
+  }, [])
 
-  const [text, setText] = useState("")
+  async function fetchItems() {
+    const res = await fetch(`${API_URL}/checklist`)
+    setItems(await res.json())
+  }
 
-  function handleAdd() {
-    if (!text.trim()) return
-
-    addChecklistItem({
-      id: Date.now(),
-      text,
-      completed: false,
-    })
-
-    setText("")
+  async function deleteItem(id) {
+    await fetch(`${API_URL}/checklist/${id}`, { method: "DELETE" })
+    fetchItems()
   }
 
   return (
-    <View style={{ padding: 16 }}>
-      <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
-        Checklist
-      </Text>
-
-      <TextInput
-        placeholder="Add checklist item…"
-        value={text}
-        onChangeText={setText}
-        style={{
-          borderWidth: 1,
-          borderColor: "#ddd",
-          padding: 10,
-          borderRadius: 8,
-          marginBottom: 12,
-        }}
-      />
-
-      <Pressable onPress={handleAdd}>
-        <Text style={{ color: "blue", marginBottom: 16 }}>＋ Add item</Text>
-      </Pressable>
-
-      <FlatList
-        data={checklistItems}
-        keyExtractor={(item) => item.id.toString()}
-        ListEmptyComponent={
-          <Text style={{ color: "#666" }}>
-            No checklist items yet 🌱
-          </Text>
-        }
-        renderItem={({ item }) => (
-          <View
-            style={{
-              paddingVertical: 12,
-              borderBottomWidth: 1,
-              borderBottomColor: "#eee",
+    <FlatList
+      data={items}
+      keyExtractor={(i) => i.id.toString()}
+      contentContainerStyle={{ padding: 16 }}
+      ListHeaderComponent={
+        <View>
+          <Text style={{ fontSize: 20 }}>Checklist</Text>
+          <ChecklistForm
+            editing={editing}
+            onSaved={() => {
+              setEditing(null)
+              fetchItems()
             }}
-          >
-            <Text>{item.text}</Text>
-
-            <Pressable onPress={() => deleteChecklistItem(item.id)}>
-              <Text style={{ color: "red", marginTop: 4 }}>Delete</Text>
-            </Pressable>
-          </View>
-        )}
-      />
-    </View>
+            onCancel={() => setEditing(null)}
+          />
+        </View>
+      }
+      renderItem={({ item }) => (
+        <ChecklistItem
+          item={item}
+          onEdit={() => setEditing(item)}
+          onDelete={() => deleteItem(item.id)}
+          onToggle={async () => {
+            await fetch(`${API_URL}/checklist/${item.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ completed: !item.completed }),
+            })
+            fetchItems()
+          }}
+        />
+      )}
+    />
   )
 }

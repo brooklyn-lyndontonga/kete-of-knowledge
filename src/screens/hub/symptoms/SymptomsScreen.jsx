@@ -1,69 +1,59 @@
-/* eslint-disable react/prop-types */
-import React from "react"
-import { View, Text, FlatList, Pressable } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { useAppData } from "../../../app/providers/AppDataProvider"
+/* eslint-disable react/react-in-jsx-scope */
+import { FlatList, Text, View } from "react-native"
+import { useEffect, useState } from "react"
+import { API_URL } from "../../../lib/api"
+import SymptomForm from "./components/SymptomForm"
+import SymptomItem from "./components/SymptomItem"
 
+export default function SymptomsScreen() {
+  const [symptoms, setSymptoms] = useState([])
+  const [editing, setEditing] = useState(null)
 
-export default function SymptomsListScreen({ navigation }) {
-  console.log("🩺 SymptomsListScreen rendered")
+  useEffect(() => {
+    fetchSymptoms()
+  }, [])
 
-  const { symptoms } = useAppData()
+  async function fetchSymptoms() {
+    const res = await fetch(`${API_URL}/symptoms`)
+    const data = await res.json()
+    setSymptoms(data)
+  }
+
+  async function deleteSymptom(id) {
+    await fetch(`${API_URL}/symptoms/${id}`, { method: "DELETE" })
+    fetchSymptoms()
+  }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ padding: 16 }}>
-        <Text style={{ fontSize: 20, fontWeight: "600", marginBottom: 16 }}>
-          My symptoms
-        </Text>
+    <FlatList
+      data={symptoms}
+      keyExtractor={(item) => item.id.toString()}
+      contentContainerStyle={{ padding: 16 }}
+      ListHeaderComponent={
+        <View>
+          <Text style={{ fontSize: 20, marginBottom: 8 }}>Symptoms</Text>
 
-        {(!symptoms || symptoms.length === 0) && (
-          <Text style={{ color: "#666" }}>
-            No symptoms logged yet 🌱
+          <SymptomForm
+            editing={editing}
+            onSaved={() => {
+              setEditing(null)
+              fetchSymptoms()
+            }}
+            onCancel={() => setEditing(null)}
+          />
+
+          <Text style={{ marginTop: 24, fontWeight: "600" }}>
+            History
           </Text>
-        )}
-
-        <FlatList
-          data={symptoms}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => (
-            <View
-              style={{
-                padding: 12,
-                borderRadius: 10,
-                backgroundColor: "#F5F5F5",
-                marginBottom: 12,
-              }}
-            >
-              <Text style={{ fontWeight: "600" }}>
-                {item.name || "Symptom"}
-              </Text>
-
-              <Text style={{ color: "#555", marginTop: 4 }}>
-                Severity: {item.severity}
-              </Text>
-
-              <Text style={{ color: "#777", marginTop: 2 }}>
-                {item.date}
-              </Text>
-            </View>
-          )}
+        </View>
+      }
+      renderItem={({ item }) => (
+        <SymptomItem
+          item={item}
+          onEdit={() => setEditing(item)}
+          onDelete={() => deleteSymptom(item.id)}
         />
-
-        <Pressable
-          onPress={() => navigation.navigate("LogSymptom")}
-          style={{
-            marginTop: 24,
-            padding: 14,
-            borderRadius: 12,
-            backgroundColor: "#000",
-          }}
-        >
-          <Text style={{ color: "#fff", textAlign: "center" }}>
-            + Log a symptom
-          </Text>
-        </Pressable>
-      </View>
-    </SafeAreaView>
+      )}
+    />
   )
 }
