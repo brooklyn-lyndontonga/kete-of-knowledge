@@ -1,23 +1,35 @@
+/* =========================
+   APP LAYOUT
+========================= */
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: clamp(1rem, 4vw, 2rem);
   text-align: center;
+  width: 100%;
 }
 
+/* =========================
+   LOGO
+========================= */
 .logo {
-  height: 6em;
-  padding: 1.5em;
+  height: clamp(4rem, 20vw, 6rem);
+  padding: 1rem;
   will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  transition: filter 300ms ease;
 }
 
+.logo:hover {
+  filter: drop-shadow(0 0 1.5em var(--primary));
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 1.5em #61dafb);
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -33,10 +45,41 @@
   }
 }
 
+/* =========================
+   CARDS (IMPORTANT)
+========================= */
 .card {
-  padding: 2em;
+  background-color: var(--bg-muted);
+  color: var(--text);
+  padding: clamp(1rem, 4vw, 2rem);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin: 1rem auto;
+  max-width: 100%;
 }
 
+/* Ensure text inside cards is readable */
+.card p {
+  color: var(--text-muted);
+}
+
+/* =========================
+   DOCS / MUTED TEXT
+========================= */
 .read-the-docs {
-  color: #888;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* =========================
+   SMALL SCREENS
+========================= */
+@media (max-width: 480px) {
+  #root {
+    padding: 1rem;
+  }
+
+  .card {
+    text-align: left;
+  }
 }
