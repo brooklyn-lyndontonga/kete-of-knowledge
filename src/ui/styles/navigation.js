@@ -1,23 +1,33 @@
+/* eslint-disable no-unused-vars */
+import React from "react"
 import { StyleSheet } from "react-native"
-import { colors, spacing } from "../../theme"
+import { spacing, radius } from "../../theme"
 
 export const navigation = StyleSheet.create({
   container: {
     flexDirection: "row",
     justifyContent: "space-around",
+    alignItems: "center",
+
     paddingVertical: spacing.sm,
+    paddingBottom: spacing.md,
+
+    backgroundColor: "rgba(255, 255, 255, 0.88)", // translucent
     borderTopWidth: 1,
-    borderColor: colors.borderLight,
-    backgroundColor: colors.white,
+    borderTopColor: "rgba(0, 0, 0, 0.06)",
+
+    // optional: slight rounding if nav is floating
+    // borderTopLeftRadius: radius.lg,
+    // borderTopRightRadius: radius.lg,
   },
 
   item: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: "#6b7280",
   },
 
   active: {
-    color: colors.accent,
+    color: "#267f53",
     fontWeight: "600",
   },
 })
