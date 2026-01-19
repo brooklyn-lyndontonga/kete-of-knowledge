@@ -1,4 +1,6 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/react-in-jsx-scope */
+import { StyleSheet } from "react-native"
 import { FlatList, Text, View } from "react-native"
 import { useEffect, useState } from "react"
 import { API_URL } from "../../../lib/api"

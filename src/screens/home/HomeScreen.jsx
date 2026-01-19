@@ -1,19 +1,17 @@
-/* eslint-disable react/react-in-jsx-scope */
+ 
 /* eslint-disable react/prop-types */
-
-import { useEffect, useState } from "react"
-import { ScrollView, View, Text } from "react-native"
+import React, { useEffect, useState } from "react"
+import { ScrollView, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 import { API_URL } from "../../lib/api"
+import { layout } from "../../ui/styles/layout"
+import { Card, Text, Spacer } from "../../ui"
 
 import WhakataukiCard from "./components/WhakataukiCard"
 import QuickOverview from "./components/QuickOverview"
-import QuickActions from "./components/QuickActions"
 
 export default function HomeScreen({ navigation }) {
-  console.log("🏠 HomeScreen rendered")
-
   const [summary, setSummary] = useState(null)
 
   useEffect(() => {
@@ -31,32 +29,30 @@ export default function HomeScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView
-        contentContainerStyle={{
-          padding: 16,
-          paddingTop: 32,
-          backgroundColor: "#fff",
-        }}
-      >
-        <Text style={{ fontSize: 18, marginBottom: 16 }}>
-          Kete of Knowledge Dashboard 🌱
-        </Text>
+    <SafeAreaView style={layout.screen}>
+      <ScrollView contentContainerStyle={{ padding: 16 }}>
+        <View style={{ alignItems: "center" }}>
+        <Text variant="title">Kete of Knowledge 🌱</Text>
+         </View>
 
-        <WhakataukiCard />
+        <Spacer size={32} />
+
+        <Card>
+          <WhakataukiCard />
+        </Card>
+
+         <Spacer size={32} />
 
         {summary && (
-          <View style={{ marginTop: 24 }}>
+          <Card>
             <QuickOverview
               navigation={navigation}
               summary={summary}
             />
-          </View>
+          </Card>
         )}
 
-        <View style={{ marginTop: 24 }}>
-          <QuickActions navigation={navigation} />
-        </View>
+        <Spacer size={16} />
       </ScrollView>
     </SafeAreaView>
   )

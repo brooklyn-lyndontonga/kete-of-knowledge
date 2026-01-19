@@ -1,10 +1,5 @@
 // src/ui/index.js
-export { default as BackButton } from "./components/BackButton"
-export { default as Button } from "./components/Button"
-export { default as Buttons } from "./components/Buttons"
 export { default as Card } from "./components/Card"
-export { default as Cards } from "./components/Cards"
-export { default as ModePill } from "./components/ModePill"
-export { default as Placeholder } from "./components/Placeholder"
-export { default as Spacer } from "./components/Spacer"
 export { default as Text } from "./components/Text"
+export { default as Spacer } from "./components/Spacer"
+export { default as ButtonPrimary } from "./components/ButtonPrimary"

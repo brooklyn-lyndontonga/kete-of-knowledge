@@ -1,7 +1,9 @@
 /* eslint-disable react/react-in-jsx-scope */
+
 import { useEffect, useState } from "react"
-import { View, Text, ActivityIndicator } from "react-native"
+import { ActivityIndicator } from "react-native"
 import { API_URL } from "../../../lib/api"
+import { Text, Spacer } from "../../../ui"
 
 export default function WhakataukiCard() {
   const [quote, setQuote] = useState(null)
@@ -26,7 +28,6 @@ export default function WhakataukiCard() {
     }
 
     fetchWhakatauki()
-
     return () => {
       isMounted = false
     }
@@ -38,31 +39,26 @@ export default function WhakataukiCard() {
 
   if (!quote) {
     return (
-      <View style={{ padding: 16 }}>
-        <Text style={{ fontStyle: "italic", color: "#666" }}>
-          He whakataukī mō tēnei rā 🌱
-        </Text>
-      </View>
+      <Text variant="muted">
+        He whakataukī mō tēnei rā 🌱
+      </Text>
     )
   }
 
   return (
-    <View
-      style={{
-        padding: 16,
-        borderRadius: 12,
-        backgroundColor: "#F5F5F5",
-      }}
-    >
-      <Text style={{ fontSize: 16, fontStyle: "italic" }}>
+    <>
+      <Text variant="body" style={{ fontStyle: "italic" }}>
         “{quote.text}”
       </Text>
 
       {quote.translation && (
-        <Text style={{ marginTop: 8, color: "#555" }}>
-          {quote.translation}
-        </Text>
+        <>
+          <Spacer size="sm" />
+          <Text variant="muted">
+            {quote.translation}
+          </Text>
+        </>
       )}
-    </View>
+    </>
   )
 }

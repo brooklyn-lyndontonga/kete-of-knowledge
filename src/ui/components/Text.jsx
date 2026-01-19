@@ -1,23 +1,16 @@
-// src/ui/components/Text.jsx
+/* eslint-disable react/prop-types */
 import React from "react"
 import { Text as RNText } from "react-native"
-import { typography, colors } from "../../theme"
+import { textStyles } from "../styles/text"
 
-export default function Text({ children, style, variant = "body", ...rest }) {
-  const base = {
-    color: colors?.text ?? "#111827",
-    fontFamily:
-      variant === "heading"
-        ? typography?.heading
-        : variant === "bold"
-        ? typography?.bold
-        : typography?.body,
-    fontSize: variant === "heading" ? 28 : 16,
-    lineHeight: variant === "heading" ? 34 : 22,
-  }
-
+export default function Text({
+  variant = "body",
+  style,
+  children,
+  ...props
+}) {
   return (
-    <RNText style={[base, style]} {...rest}>
+    <RNText style={[textStyles[variant], style]} {...props}>
       {children}
     </RNText>
   )

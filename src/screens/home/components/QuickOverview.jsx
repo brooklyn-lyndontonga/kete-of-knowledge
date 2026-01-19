@@ -1,13 +1,15 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/prop-types */
+
 import { View } from "react-native"
+import { Spacer } from "../../../ui"
 import QuickStatCard from "./QuickStatCard"
 
 export default function QuickOverview({ navigation, summary }) {
   if (!summary) return null
 
   return (
-    <View style={{ gap: 16 }}>
+    <View>
       <QuickStatCard
         title="Checklist"
         value={`${summary.checklist?.todayCount || 0} tasks today`}
@@ -15,6 +17,8 @@ export default function QuickOverview({ navigation, summary }) {
           navigation.navigate("Hub", { screen: "Checklist" })
         }
       />
+
+      <Spacer size="sm" />
 
       <QuickStatCard
         title="Medicines"
@@ -24,10 +28,13 @@ export default function QuickOverview({ navigation, summary }) {
         }
       />
 
+      <Spacer size="sm" />
+
       <QuickStatCard
         title="Symptoms"
         value={
-          summary.symptoms?.latest?.symptom || "No recent symptoms"
+          summary.symptoms?.latest?.symptom ||
+          "No recent symptoms"
         }
         subtitle={
           summary.symptoms?.latest
@@ -39,6 +46,8 @@ export default function QuickOverview({ navigation, summary }) {
         }
       />
 
+      <Spacer size="sm" />
+
       <QuickStatCard
         title="Notes"
         value={summary.notes?.latest?.title || "No notes yet"}
@@ -47,6 +56,6 @@ export default function QuickOverview({ navigation, summary }) {
           navigation.navigate("Hub", { screen: "NotesList" })
         }
       />
-   </View>
+    </View>
   )
 }
