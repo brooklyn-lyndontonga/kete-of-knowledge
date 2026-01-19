@@ -1,48 +1,34 @@
-// import {
-//   getAllWhakatauki,
-//   addWhakatauki,
-//   deleteWhakatauki,
-// } from "../models/whakataukiModel.js"
-
-// export async function listWhakatauki(req, res) {
-//   try {
-//     const db = req.app.get("db")
-//     const data = await getAllWhakatauki(db)
-//     res.json(data)
-//   } catch (err) {
-//     console.error("❌ Failed to load whakatauki:", err)
-//     res.status(500).json({ error: "Failed to load whakatauki" })
-//   }
-// }
-
-// export async function createWhakatauki(req, res) {
-//   try {
-//     const db = req.app.get("db")
-//     const item = await addWhakatauki(db, req.body)
-//     res.json(item)
-//   } catch {
-//     res.status(500).json({ error: "Failed to add whakatauki" })
-//   }
-// }
-
-// export async function removeWhakatauki(req, res) {
-//   try {
-//     const db = req.app.get("db")
-//     await deleteWhakatauki(db, req.params.id)
-//     res.json({ success: true })
-//   } catch {
-//     res.status(500).json({ error: "Failed to delete whakatauki" })
-//   }
-// }
-
-import { getAllWhakatauki } from "../models/whakataukiModel.js"
+import {
+  getAllWhakatauki,
+  getDailyWhakatauki,
+} from "../models/whakataukiModel.js"
 
 export async function listWhakatauki(req, res) {
   try {
+    console.log("🧪 listWhakatauki hit")
+
     const data = await getAllWhakatauki()
+
+    console.log("🧪 data from model:", data)
+
     res.json(data)
   } catch (err) {
-    console.error("❌ Failed to load whakataukī:", err)
-    res.status(500).json({ error: "Failed to load whakataukī" })
+    console.error("❌ Controller error (listWhakatauki):", err)
+    res.status(500).json({ error: "Failed to fetch whakataukī" })
+  }
+}
+
+export async function dailyWhakatauki(req, res) {
+  try {
+    console.log("🧪 dailyWhakatauki hit")
+
+    const item = await getDailyWhakatauki()
+
+    console.log("🧪 daily item:", item)
+
+    res.json(item)
+  } catch (err) {
+    console.error("❌ Controller error (dailyWhakatauki):", err)
+    res.status(500).json({ error: "Failed to fetch whakataukī" })
   }
 }

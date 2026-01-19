@@ -2,7 +2,7 @@
 // server/app.js
 import express from "express"
 import cors from "cors"
-import { connectDB, initTables } from "./db/init.js"
+import { getDB, initTables } from "./db/db.js"
 import { setDB } from "./db/db.js"
 
 // USER ROUTES
@@ -45,7 +45,7 @@ app.use(express.json())
 let db
 try {
   console.log("🔌 Connecting to DB...")
-  db = await connectDB()
+  db = await getDB()
 
   console.log("🧱 Running initTables()...")
   await initTables(db)

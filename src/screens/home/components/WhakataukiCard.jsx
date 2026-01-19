@@ -1,55 +1,36 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from "react"
+/* eslint-disable react/react-in-jsx-scope */
+import { useEffect, useState } from "react"
 import { View, Text, ActivityIndicator } from "react-native"
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import { API_URL } from "../../../lib/api"
-
-
-const CACHE_KEY = "daily_whakatauki"
-const CACHE_DATE_KEY = "daily_whakatauki_date"
 
 export default function WhakataukiCard() {
   const [quote, setQuote] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadWhakatauki()
-  }, [])
+    let isMounted = true
 
-  async function loadWhakatauki() {
-    try {
-      const today = new Date().toDateString()
-      const cachedDate = await AsyncStorage.getItem(CACHE_DATE_KEY)
-      const cachedQuote = await AsyncStorage.getItem(CACHE_KEY)
+    async function fetchWhakatauki() {
+      try {
+        const res = await fetch(`${API_URL}/whakatauki/daily`)
+        const data = await res.json()
 
-      // ✅ Use cache if already fetched today
-      if (cachedDate === today && cachedQuote) {
-        setQuote(JSON.parse(cachedQuote))
-        setLoading(false)
-        return
+        if (isMounted && data?.text) {
+          setQuote(data)
+        }
+      } catch (err) {
+        console.warn("Failed to load whakataukī", err)
+      } finally {
+        if (isMounted) setLoading(false)
       }
-
-      // 🌐 Fetch from backend
-      const res = await fetch(
-        `${API_URL}/admin/whakatauki/latest`
-      )
-      const data = await res.json()
-
-      setQuote(data)
-
-      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(data))
-      await AsyncStorage.setItem(CACHE_DATE_KEY, today)
-    } catch (err) {
-      console.warn("⚠️ Whakataukī fetch failed, using fallback")
-
-      if (cachedQuote) {
-        setQuote(JSON.parse(cachedQuote))
-      }
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchWhakatauki()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   if (loading) {
     return <ActivityIndicator />
@@ -59,7 +40,7 @@ export default function WhakataukiCard() {
     return (
       <View style={{ padding: 16 }}>
         <Text style={{ fontStyle: "italic", color: "#666" }}>
-          He whakataukī mō tēnei rā ka tae mai ākuanei 🌱
+          He whakataukī mō tēnei rā 🌱
         </Text>
       </View>
     )
@@ -80,12 +61,6 @@ export default function WhakataukiCard() {
       {quote.translation && (
         <Text style={{ marginTop: 8, color: "#555" }}>
           {quote.translation}
-        </Text>
-      )}
-
-      {quote.attribution && (
-        <Text style={{ marginTop: 8, fontSize: 12, textAlign: "right" }}>
-          — {quote.attribution}
         </Text>
       )}
     </View>

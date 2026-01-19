@@ -9,6 +9,7 @@ export async function initDB() {
   if (dbInstance) return dbInstance
 
   const dbPath = path.join(process.cwd(), "db/database.db")
+  console.log("🔥 DB Path:", dbPath)
 
   const db = await open({
     filename: dbPath,
@@ -42,6 +43,12 @@ export async function initDB() {
       title TEXT,
       content TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS whakatauki (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      text TEXT NOT NULL,
+      translation TEXT
+    );
   `)
 
   dbInstance = db
@@ -50,6 +57,8 @@ export async function initDB() {
 }
 
 export function getDB() {
-  if (!dbInstance) throw new Error("DB not initialised")
+  if (!dbInstance) {
+    throw new Error("DB not initialised. Call initDB() first.")
+  }
   return dbInstance
 }
