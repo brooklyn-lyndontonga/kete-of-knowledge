@@ -1,34 +1,53 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/prop-types */
-import React from "react"
-import { View, Text, Pressable } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { View, Text } from "react-native"
+import { useEffect, useState } from "react"
+import { API_URL } from "../../lib/api"
+
+import ProfileIdentity from "./components/ProfileIdentity"
+import ProfileGoalsPreview from "./components/ProfileGoalsPreview"
+import ProfileFocusPreview from "./components/ProfileFocusPreview"
+import ProfileMeta from "./components/ProfileMeta"
 
 export default function ProfileScreen({ navigation }) {
+  const [profile, setProfile] = useState(null)
+
+  useEffect(() => {
+    loadProfile()
+  }, [])
+
+  async function loadProfile() {
+    const res = await fetch(`${API_URL}/profile`)
+    const data = await res.json()
+    setProfile(data)
+  }
+
+  if (!profile) {
+    return (
+      <View style={{ padding: 16 }}>
+        <Text>Loading profile…</Text>
+      </View>
+    )
+  }
+
   return (
-    <SafeAreaView style={{ flex: 1 }}>
     <View style={{ padding: 16 }}>
-      
-      <View style={card}>
-        <Text style={{ fontSize: 14, color: "#666" }}>Identity</Text>
-        <Text style={{ fontSize: 18, marginTop: 4 }}>This kete</Text>
-      </View>
+      <ProfileIdentity
+        profile={profile}
+        onEdit={() => navigation.navigate("EditProfileDetails")}
+      />
 
-      <View style={[card, { marginTop: 16 }]}>
-        <Text>Health goals</Text>
-      </View>
+      <ProfileGoalsPreview
+        goals={profile.goals}
+        onEdit={() => navigation.navigate("EditProfileGoals")}
+      />
 
-      <Pressable style={[card, { marginTop: 24 }]}>
-        <Text>Edit profile</Text>
-      </Pressable>
+      <ProfileFocusPreview
+        focus={profile.goals}
+        onEdit={() => navigation.navigate("EditProfileFocus")}
+      />
 
+      <ProfileMeta />
     </View>
-    </SafeAreaView>
   )
-}
-
-const card = {
-  padding: 16,
-  borderRadius: 12,
-  backgroundColor: "#F5F5F5",
 }
