@@ -1,16 +1,12 @@
+/* eslint-disable react/prop-types */
 import React from "react"
-import { View, StyleSheet } from "react-native"
+import { View } from "react-native"
+import { cards } from "../styles/cards"
 
-export default function Card({ children, style }) {
-  return <View style={[styles.card, style]}>{children}</View>
+export default function Card({ soft = false, style, children }) {
+  return (
+    <View style={[cards.card, soft && cards.soft, style]}>
+      {children}
+    </View>
+  )
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(0,0,0,0.08)",
-  },
-})

@@ -1,33 +1,20 @@
 /* eslint-disable react/prop-types */
-// src/ui/components/ButtonPrimary.jsx
 import React from "react"
-import { TouchableOpacity, Text } from "react-native"
-import { useTheme } from "../../app/providers/ThemeProvider"
+import { Pressable } from "react-native"
+import Text from "./Text"
+import { buttons } from "../styles/buttons"
 
-
-export default function ButtonPrimary({ label, onPress }) {
-  const { colors, spacing, typography } = useTheme()
-
+export default function ButtonPrimary({ label, onPress, style }) {
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
-      style={{
-        backgroundColor: colors.primary,
-        paddingVertical: spacing.md,
-        paddingHorizontal: spacing.lg,
-        borderRadius: 12,
-        alignItems: "center",
-      }}
+      style={({ pressed }) => [
+        buttons.primary,
+        pressed && { opacity: 0.85 },
+        style,
+      ]}
     >
-      <Text
-        style={{
-          color: "#fff",
-          fontFamily: typography.medium,
-          fontSize: 15,
-        }}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
+      <Text style={{ color: "white" }}>{label}</Text>
+    </Pressable>
   )
 }
