@@ -20,7 +20,7 @@ export default function HomeScreen({ navigation }) {
       }}
     >
       <Text style={{ fontSize: 18, marginBottom: 16 }}>
-        Home is alive 🌱
+        Kete of Knowledge Dashboard 🌱
       </Text>
 
       <WhakataukiCard />

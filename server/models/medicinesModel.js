@@ -1,12 +1,12 @@
-import { connectDB } from "../db/init.js"
+import { getDB } from "../db/db.js"
 
 export async function getMedicines() {
-  const db = await connectDB()
+  const db = await getDB()
   return db.all("SELECT * FROM mymedicines ORDER BY id DESC")
 }
 
 export async function addMedicine(data) {
-  const db = await connectDB()
+  const db = await getDB()
   const result = await db.run(
     "INSERT INTO mymedicines (name, dosage, frequency) VALUES (?, ?, ?)",
     [data.name, data.dosage, data.frequency]
@@ -15,7 +15,7 @@ export async function addMedicine(data) {
 }
 
 export async function deleteMedicine(id) {
-  const db = await connectDB()
+  const db = await getDB()
   await db.run("DELETE FROM mymedicines WHERE id=?", id)
   return true
 }
