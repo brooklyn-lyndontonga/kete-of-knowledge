@@ -1,32 +1,25 @@
 import React from "react"
-import { Link, useLocation, Outlet } from "react-router-dom"
-import "./AdminLayout.css"
+import { Link, Outlet, useLocation } from "react-router-dom"
 
 export default function AdminLayout() {
   const { pathname } = useLocation()
 
   const menu = [
     { path: "/", label: "Dashboard" },
-    { path: "/reflection-templates", label: "Reflection Templates" },
-    { path: "/snapshots", label: "Progress Snapshots" },
-    { path: "/profile-seeds", label: "Profile Seeds" },
-
-    { path: "/resources", label: "Resources" },
-    { path: "/resource-categories", label: "Resource Categories" },
-    { path: "/conditions", label: "Conditions" },
-    { path: "/support-contacts", label: "Support Contacts" },
-
     { path: "/whakatauki", label: "Whakataukī" },
-
-    { path: "/exports", label: "Exports" },
+    { path: "/conditions", label: "Conditions" },
+    { path: "/resources", label: "Resources" },
+    { path: "/snapshots", label: "Snapshots" },
+    { path: "/settings", label: "Settings" },
   ]
 
   return (
     <div className="admin-root">
+      {/* Sidebar */}
       <aside className="admin-sidebar">
         <h1 className="admin-title">Kete Admin</h1>
 
-        <nav>
+        <nav className="admin-nav">
           {menu.map((m) => {
             const isActive =
               pathname === m.path || pathname.startsWith(m.path + "/")
@@ -44,12 +37,18 @@ export default function AdminLayout() {
         </nav>
       </aside>
 
+      {/* Main content */}
       <main className="admin-main">
-        <div className="admin-header">Kete Admin</div>
+        {/* Header (mirrors app ScreenHeader) */}
+        <header className="admin-header">
+          <span className="admin-header__path">
+            {pathname === "/" ? "Dashboard" : pathname.replace("/", "")}
+          </span>
+        </header>
 
-        <div className="admin-content">
+        <section className="admin-content">
           <Outlet />
-        </div>
+        </section>
       </main>
     </div>
   )

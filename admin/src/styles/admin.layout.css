@@ -1,0 +1,54 @@
+.admin-root {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  background: var(--bg-page);
+}
+
+.admin-sidebar {
+  background: var(--bg-sidebar);
+  color: var(--text-inverse);
+  padding: 1.5rem 1rem;
+}
+
+.admin-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-link {
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-inverse);
+  text-decoration: none;
+  opacity: 0.85;
+}
+
+.admin-link.active,
+.admin-link:hover {
+  background: rgba(255,255,255,0.1);
+  opacity: 1;
+}
+
+.admin-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+.admin-content {
+  padding: 1.5rem;
+  max-width: 1200px;
+}

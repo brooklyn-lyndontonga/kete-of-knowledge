@@ -1,0 +1,24 @@
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --surface-muted: #f3f4f6;
+
+  --text: #111827;
+  --text-muted: #6b7280;
+
+  --border: #e5e7eb;
+
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --danger: #dc2626;
+
+  --sidebar-bg: #0f172a;
+  --sidebar-text: #e5e7eb;
+  --sidebar-hover: #1e293b;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+
+  --font-base: system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}

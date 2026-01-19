@@ -1,68 +1,326 @@
+/* =========================
+   DESIGN TOKENS
+========================= */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* Colours */
+  --bg-page: #f7f8fa;
+  --bg-surface: #ffffff;
+  --bg-sidebar: #0f172a;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --border: #e5e7eb;
+
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --danger: #dc2626;
+
+  /* Spacing & shape */
+  --radius: 10px;
+  --radius-sm: 6px;
+
+  /* Shadow */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* =========================
+   RESET / BASE
+========================= */
+* {
+  box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-page);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 0.75rem;
+  line-height: 1.25;
+}
+
+p {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
+}
+
+/* =========================
+   LAYOUT
+========================= */
+.admin-root {
   display: flex;
-  place-items: center;
-  min-width: 320px;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Sidebar */
+.admin-sidebar {
+  width: 240px;
+  background: var(--bg-sidebar);
+  color: var(--text-inverse);
+  padding: 1.5rem 1rem;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+.admin-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+/* Sidebar links */
+.admin-link {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.25rem;
+  border-radius: var(--radius-sm);
+  color: #cbd5f5;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.admin-link:hover {
+  background: #1e293b;
+  color: white;
+}
+
+.admin-link.active {
+  background: #1e293b;
+  color: white;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* Main */
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-content {
+  padding: 2rem;
+  background: var(--bg-page);
+  min-height: 100vh;
+}
+
+/* =========================
+   PAGE STRUCTURE
+========================= */
+.page-container {
+  max-width: 1100px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+/* =========================
+   CARDS
+========================= */
+.card {
+  background: var(--bg-surface);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.card + .card {
+  margin-top: 1.5rem;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.btn {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-small {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* =========================
+   TABLES
+========================= */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.admin-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: #f9fafb;
+  padding: 0.75rem;
+}
+
+.admin-table td {
+  padding: 0.75rem;
+  color: var(--text-primary);
+  border-top: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.admin-table tr:hover td {
+  background: #f9fafb;
+}
+
+.table-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.table-cell--wrap {
+  max-width: 420px;
+  white-space: normal;
+}
+
+/* =========================
+   DASHBOARD
+========================= */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.dashboard-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dashboard-stat__value {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dashboard-stat__label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* =========================
+   FORMS
+========================= */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field--full {
+  grid-column: 1 / -1;
+}
+
+.form-field label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  color: var(--text-secondary);
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* =========================
+   MODALS
+========================= */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: var(--shadow-sm);
+}
+
+.modal--small {
+  max-width: 400px;
+}
+
+/* =========================
+   TEXT STATES
+========================= */
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-error {
+  color: var(--danger);
 }

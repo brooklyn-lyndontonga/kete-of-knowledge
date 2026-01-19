@@ -1,22 +1,9 @@
-// src/components/ProtectedRoute.jsx
-import React from "react"
-import { Navigate } from "react-router-dom"
-import { useAuth } from "../auth/AuthContext"
-
+/* eslint-disable no-undef */
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth()
+  const { admin, loading } = useAuth()
 
-  if (loading) {
-    return (
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        Checking admin session...
-      </div>
-    )
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
+  if (loading) return null
+  if (!admin) return <Navigate to="/login" replace />
 
   return children
 }
