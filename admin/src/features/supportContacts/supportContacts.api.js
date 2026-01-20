@@ -1,5 +1,6 @@
 // src/api/supportContacts.js
-import { api } from "../../api/client"
+import { api } from "../../api/adminClient"
+
 
 export function fetchSupportContacts() {
   return api.get("/api/admin/support")

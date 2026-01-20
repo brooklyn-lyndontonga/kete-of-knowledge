@@ -1,17 +1,17 @@
-import { api } from "./client";
+import { api } from "../../api/adminClient"
 
 export function fetchResourceCategories() {
-  return api.get("/admin/resourceCategories");
+  return api.get("/api/admin/resource-categories").then(r => r.data)
 }
 
 export function createResourceCategory(data) {
-  return api.post("/admin/resourceCategories", data);
+  return api.post("/api/admin/resource-categories", data);
 }
 
 export function updateResourceCategory(id, data) {
-  return api.put(`/admin/resourceCategories/${id}`, data);
+  return api.put(`/api/admin/resource-categories${id}`, data);
 }
 
 export function deleteResourceCategory(id) {
-  return api.delete(`/admin/resourceCategories/${id}`);
+  return api.delete(`/api/admin/resource-categories${id}`);
 }

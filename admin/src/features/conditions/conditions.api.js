@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { api } from "../../api/adminClient"
 
 export function fetchConditions() {
   return api.get("/admin/conditions");

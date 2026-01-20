@@ -1,9 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
-import { useAdminToast } from "../components/AdminToastProvider"
+import CrudTable from "../../ui/CrudTable.jsx"
+import CrudModal from "../../ui/CrudModal.jsx"
+import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
+import { useAdminToast } from "../../components/AdminToastProvider"
+
 import * as whakataukiApi from "./whakatauki.api"
 
 export default function WhakataukiPage() {

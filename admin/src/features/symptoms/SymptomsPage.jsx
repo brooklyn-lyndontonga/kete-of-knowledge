@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
-import { useAdminToast } from "../components/AdminToastProvider"
+import CrudTable from "../../ui/CrudTable.jsx"
+import CrudModal from "../../ui/CrudModal.jsx"
+import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
+import { useAdminToast } from "../../components/AdminToastProvider"
+
 import * as symptomsApi from "./symptoms.api"
 
 export default function SymptomsPage() {

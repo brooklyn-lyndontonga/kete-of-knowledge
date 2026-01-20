@@ -1,5 +1,6 @@
 // admin/src/api/reflectionTemplates.js
-import { api } from "./client"
+import { api } from "../../api/adminClient"
+
 
 // GET all templates
 export async function fetchReflectionTemplates() {
