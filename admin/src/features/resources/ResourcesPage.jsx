@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react"
-import CrudTable from "../components/CrudTable"
-import CrudModal from "../components/CrudModal"
-import DeleteConfirmModal from "../components/DeleteConfirmModal"
-import { useAdminToast } from "../components/AdminToastProvider"
-import * as resourcesApi from "../api/resources"
-import * as categoriesApi from "./resources.api"
+import CrudTable from "../../ui/CrudTable.jsx"
+import CrudModal from "../../ui/CrudModal.jsx"
+import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
+import { useAdminToast } from "../../components/AdminToastProvider"
+
+import * as resourcesApi from "./resources.api"
+import * as categoriesApi from "../resourceCategories/resourceCategories.api"
+
 
 export default function ResourcesPage() {
   const { showToast } = useAdminToast()
@@ -19,30 +21,27 @@ export default function ResourcesPage() {
   const [deleteId, setDeleteId] = useState(null)
 
   useEffect(() => {
-    const controller = new AbortController()
+  async function loadData() {
+    try {
+      setLoading(true)
 
-    async function loadData() {
-      try {
-        setLoading(true)
-        const [res, cats] = await Promise.all([
-          resourcesApi.fetchResources({ signal: controller.signal }),
-          categoriesApi.fetchResourceCategories({ signal: controller.signal }),
-        ])
+      const [res, cats] = await Promise.all([
+        resourcesApi.fetchResources(),
+        categoriesApi.fetchResourceCategories(),
+      ])
 
-        setRows(res || [])
-        setCategories(cats || [])
-      } catch (err) {
-        if (err.name === "AbortError") return
-        setError(err.message)
-        showToast(err.message, "error")
-      } finally {
-        setLoading(false)
-      }
+      setRows(res || [])
+      setCategories(cats || [])
+    } catch (err) {
+      setError(err.message)
+      showToast(err.message, "error")
+    } finally {
+      setLoading(false)
     }
+  }
 
-    loadData()
-    return () => controller.abort()
-  }, [showToast])
+  loadData()
+}, [showToast])
 
   async function handleSave(formData) {
     try {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-import { useAdminToast } from "../components/AdminToastProvider"
+import { useAdminToast } from "../../components/AdminToastProvider"
+
 import * as templatesApi from "./reflectionTemplates.api"
 
 export default function ReflectionTemplatesPage() {

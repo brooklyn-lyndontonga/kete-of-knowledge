@@ -1,5 +1,4 @@
 import React from "react"
-import "./CrudTable.css"
 
 export default function CrudTable({
   rows = [],

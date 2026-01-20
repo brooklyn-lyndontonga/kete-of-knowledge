@@ -1,4 +1,5 @@
-import { api } from "./client";
+import { api } from "../../api/adminClient"
+
 
 export function fetchSymptoms() {
   return api.get("/user/symptoms");

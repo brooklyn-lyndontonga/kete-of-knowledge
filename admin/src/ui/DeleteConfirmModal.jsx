@@ -1,5 +1,4 @@
 import React from "react"
-import "./AdminFormModal.css"
 
 export default function DeleteConfirmModal({
   open,

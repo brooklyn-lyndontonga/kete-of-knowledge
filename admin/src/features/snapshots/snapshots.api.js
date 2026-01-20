@@ -1,5 +1,6 @@
 /* eslint-disable no-empty-pattern */
-import { api } from "./client"
+import { api } from "../../api/adminClient"
+
 
 // Fetch all snapshots
 export async function fetchSnapshots({ } = {}) {
