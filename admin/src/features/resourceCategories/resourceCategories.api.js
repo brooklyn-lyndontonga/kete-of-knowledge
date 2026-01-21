@@ -1,17 +1,36 @@
 import { api } from "../../api/adminClient"
 
-export function fetchResourceCategories() {
-  return api.get("/api/admin/resource-categories").then(r => r.data)
+// GET all categories
+export async function fetchResourceCategories({ signal } = {}) {
+  const { data } = await api.get(
+    "/api/admin/resource-categories",
+    { signal }
+  )
+  return data
 }
 
-export function createResourceCategory(data) {
-  return api.post("/api/admin/resource-categories", data);
+// CREATE
+export async function createResourceCategory(category) {
+  const { data } = await api.post(
+    "/api/admin/resource-categories",
+    category
+  )
+  return data
 }
 
-export function updateResourceCategory(id, data) {
-  return api.put(`/api/admin/resource-categories${id}`, data);
+// UPDATE
+export async function updateResourceCategory(id, category) {
+  const { data } = await api.put(
+    `/api/admin/resource-categories/${id}`,
+    category
+  )
+  return data
 }
 
-export function deleteResourceCategory(id) {
-  return api.delete(`/api/admin/resource-categories${id}`);
+// DELETE
+export async function deleteResourceCategory(id) {
+  const { data } = await api.delete(
+    `/api/admin/resource-categories/${id}`
+  )
+  return data
 }

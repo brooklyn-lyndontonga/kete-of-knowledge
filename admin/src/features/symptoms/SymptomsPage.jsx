@@ -17,19 +17,31 @@ export default function SymptomsPage() {
   const [deleteId, setDeleteId] = useState(null)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     async function load() {
       try {
         setLoading(true)
-        setRows(await symptomsApi.fetchSymptoms())
+        const data = await symptomsApi.fetchSymptoms({
+          signal: controller.signal,
+        })
+        setRows(data)
       } catch (err) {
+        if (err.name === "AbortError") return
         setError(err.message)
+        showToast(err.message, "error")
       } finally {
         setLoading(false)
       }
     }
 
     load()
-  }, [])
+    return () => controller.abort()
+  }, [showToast])
+
+  async function reload() {
+    setRows(await symptomsApi.fetchSymptoms())
+  }
 
   async function handleSave(formData) {
     try {
@@ -43,7 +55,7 @@ export default function SymptomsPage() {
 
       setEditing(null)
       setModalOpen(false)
-      setRows(await symptomsApi.fetchSymptoms())
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }
@@ -54,7 +66,7 @@ export default function SymptomsPage() {
       await symptomsApi.deleteSymptom(deleteId)
       showToast("Symptom deleted")
       setDeleteId(null)
-      setRows(await symptomsApi.fetchSymptoms())
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }

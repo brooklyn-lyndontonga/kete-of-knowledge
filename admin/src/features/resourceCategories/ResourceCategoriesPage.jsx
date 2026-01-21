@@ -4,7 +4,6 @@ import CrudModal from "../../ui/CrudModal.jsx"
 import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
 import { useAdminToast } from "../../components/AdminToastProvider"
 
-
 import * as categoriesApi from "./resourceCategories.api"
 
 export default function ResourceCategoriesPage() {
@@ -40,6 +39,10 @@ export default function ResourceCategoriesPage() {
     return () => controller.abort()
   }, [showToast])
 
+  async function reload() {
+    setRows(await categoriesApi.fetchResourceCategories())
+  }
+
   async function handleSave(formData) {
     try {
       if (editing) {
@@ -52,8 +55,7 @@ export default function ResourceCategoriesPage() {
 
       setEditing(null)
       setModalOpen(false)
-      const refreshed = await categoriesApi.fetchResourceCategories()
-      setRows(refreshed)
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }
@@ -64,8 +66,7 @@ export default function ResourceCategoriesPage() {
       await categoriesApi.deleteResourceCategory(deleteId)
       showToast("Category deleted")
       setDeleteId(null)
-      const refreshed = await categoriesApi.fetchResourceCategories()
-      setRows(refreshed)
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }

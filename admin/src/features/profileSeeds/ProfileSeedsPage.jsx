@@ -4,7 +4,6 @@ import CrudModal from "../../ui/CrudModal.jsx"
 import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
 import { useAdminToast } from "../../components/AdminToastProvider"
 
-
 import * as seedsApi from "./profileSeeds.api"
 
 export default function ProfileSeedsPage() {
@@ -26,7 +25,7 @@ export default function ProfileSeedsPage() {
         const data = await seedsApi.fetchProfileSeeds({
           signal: controller.signal,
         })
-        setRows(Array.isArray(data) ? data : [])
+        setRows(data)
       } catch (err) {
         if (err.name === "AbortError") return
         setError(err.message)
@@ -40,6 +39,10 @@ export default function ProfileSeedsPage() {
     return () => controller.abort()
   }, [showToast])
 
+  async function reload() {
+    setRows(await seedsApi.fetchProfileSeeds())
+  }
+
   async function handleSave(formData) {
     try {
       if (editing) {
@@ -52,9 +55,7 @@ export default function ProfileSeedsPage() {
 
       setEditing(null)
       setModalOpen(false)
-
-      const updated = await seedsApi.fetchProfileSeeds()
-      setRows(updated)
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }
@@ -65,9 +66,7 @@ export default function ProfileSeedsPage() {
       await seedsApi.deleteProfileSeed(deleteId)
       showToast("Seed deleted")
       setDeleteId(null)
-
-      const updated = await seedsApi.fetchProfileSeeds()
-      setRows(updated)
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }

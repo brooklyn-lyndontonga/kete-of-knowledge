@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react"
 import CrudTable from "../../ui/CrudTable.jsx"
 import CrudModal from "../../ui/CrudModal.jsx"
@@ -13,24 +12,20 @@ export default function WhakataukiPage() {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
   const [editing, setEditing] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
 
-  // -----------------------------
-  // LOAD DATA (React 18 safe)
-  // -----------------------------
   useEffect(() => {
     const controller = new AbortController()
 
-    async function loadData() {
+    async function load() {
       try {
         setLoading(true)
         const data = await whakataukiApi.fetchWhakatauki({
           signal: controller.signal,
         })
-        setRows(Array.isArray(data) ? data : [])
+        setRows(data)
       } catch (err) {
         if (err.name === "AbortError") return
         setError(err.message)
@@ -40,13 +35,14 @@ export default function WhakataukiPage() {
       }
     }
 
-    loadData()
+    load()
     return () => controller.abort()
-  }, [])
+  }, [showToast])
 
-  // -----------------------------
-  // SAVE
-  // -----------------------------
+  async function reload() {
+    setRows(await whakataukiApi.fetchWhakatauki())
+  }
+
   async function handleSave(formData) {
     try {
       if (editing) {
@@ -59,29 +55,23 @@ export default function WhakataukiPage() {
 
       setEditing(null)
       setModalOpen(false)
-      setRows(await whakataukiApi.fetchWhakatauki())
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }
   }
 
-  // -----------------------------
-  // DELETE
-  // -----------------------------
   async function handleDelete() {
     try {
       await whakataukiApi.deleteWhakatauki(deleteId)
       showToast("Whakataukī deleted")
       setDeleteId(null)
-      setRows(await whakataukiApi.fetchWhakatauki())
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }
   }
 
-  // -----------------------------
-  // RENDER
-  // -----------------------------
   return (
     <>
       <div className="flex gap-2 mb-2">
@@ -121,11 +111,7 @@ export default function WhakataukiPage() {
         initial={editing}
         fields={[
           { name: "text", label: "Whakataukī", type: "textarea" },
-          {
-            name: "translation",
-            label: "Translation",
-            type: "textarea",
-          },
+          { name: "translation", label: "Translation", type: "textarea" },
           { name: "theme", label: "Theme (optional)" },
           { name: "source", label: "Source (optional)" },
         ]}

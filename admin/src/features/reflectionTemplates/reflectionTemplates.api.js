@@ -1,28 +1,39 @@
-// admin/src/api/reflectionTemplates.js
 import { api } from "../../api/adminClient"
 
-
 // GET all templates
-export async function fetchReflectionTemplates() {
-  return api.get("/admin/reflection-templates")
+export async function fetchReflectionTemplates({ signal } = {}) {
+  const { data } = await api.get("/api/admin/reflection-templates", { signal })
+  return data
 }
 
-// GET one by id
+// GET one
 export async function fetchReflectionTemplate(id) {
-  return api.get(`/admin/reflection-templates/${id}`)
+  const { data } = await api.get(`/api/admin/reflection-templates/${id}`)
+  return data
 }
 
 // CREATE
 export async function createReflectionTemplate(payload) {
-  return api.post("/admin/reflection-templates", payload)
+  const { data } = await api.post(
+    "/api/admin/reflection-templates",
+    payload
+  )
+  return data
 }
 
 // UPDATE
 export async function updateReflectionTemplate(id, payload) {
-  return api.put(`/admin/reflection-templates/${id}`, payload)
+  const { data } = await api.put(
+    `/api/admin/reflection-templates/${id}`,
+    payload
+  )
+  return data
 }
 
 // DELETE
 export async function deleteReflectionTemplate(id) {
-  return api.del(`/admin/reflection-templates/${id}`)
+  const { data } = await api.delete(
+    `/api/admin/reflection-templates/${id}`
+  )
+  return data
 }

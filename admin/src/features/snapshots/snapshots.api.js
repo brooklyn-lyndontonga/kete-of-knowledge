@@ -1,23 +1,26 @@
-/* eslint-disable no-empty-pattern */
+ 
 import { api } from "../../api/adminClient"
 
-
 // Fetch all snapshots
-export async function fetchSnapshots({ } = {}) {
-  return api.get("/admin/snapshots")
+export async function fetchSnapshots() {
+  const { data } = await api.get("/api/admin/snapshots")
+  return data
 }
 
 // Create snapshot
-export async function createSnapshot(data) {
-  return api.post("/admin/snapshots", data)
+export async function createSnapshot(snapshot) {
+  const { data } = await api.post("/api/admin/snapshots", snapshot)
+  return data
 }
 
 // Update snapshot
-export async function updateSnapshot(id, data) {
-  return api.put(`/admin/snapshots/${id}`, data)
+export async function updateSnapshot(id, snapshot) {
+  const { data } = await api.put(`/api/admin/snapshots/${id}`, snapshot)
+  return data
 }
 
 // Delete snapshot
 export async function deleteSnapshot(id) {
-  return api.delete(`/admin/snapshots/${id}`)
+  const { data } = await api.delete(`/api/admin/snapshots/${id}`)
+  return data
 }

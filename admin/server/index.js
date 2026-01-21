@@ -5,6 +5,7 @@ import multer from "multer"
 import path from "path"
 import { fileURLToPath } from "url"
 
+import adminAuthRoutes from "./routes/adminAuth.js"
 import resourcesRoutes from "./routes/resources.js"
 import resourceCategoriesRoutes from "./routes/resourceCategories.js"
 import conditionsRoutes from "./routes/conditions.js"
@@ -39,6 +40,8 @@ const uploadPdf = multer({
 
 app.use(cors())
 app.use(express.json())
+
+app.use("/api/admin", adminAuthRoutes)
 
 app.use("/uploads", express.static("server/uploads"))
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))

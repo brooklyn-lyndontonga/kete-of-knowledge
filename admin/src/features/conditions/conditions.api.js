@@ -1,17 +1,25 @@
 import { api } from "../../api/adminClient"
 
-export function fetchConditions() {
-  return api.get("/admin/conditions");
+// Fetch all conditions
+export async function fetchConditions({ signal } = {}) {
+  const { data } = await api.get("/api/admin/conditions", { signal })
+  return data
 }
 
-export function createCondition(data) {
-  return api.post("/admin/conditions", data);
+// Create condition
+export async function createCondition(condition) {
+  const { data } = await api.post("/api/admin/conditions", condition)
+  return data
 }
 
-export function updateCondition(id, data) {
-  return api.put(`/admin/conditions/${id}`, data);
+// Update condition
+export async function updateCondition(id, condition) {
+  const { data } = await api.put(`/api/admin/conditions/${id}`, condition)
+  return data
 }
 
-export function deleteCondition(id) {
-  return api.delete(`/admin/conditions/${id}`);
+// Delete condition
+export async function deleteCondition(id) {
+  const { data } = await api.delete(`/api/admin/conditions/${id}`)
+  return data
 }
