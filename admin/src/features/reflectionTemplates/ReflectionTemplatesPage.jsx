@@ -26,7 +26,7 @@ export default function ReflectionTemplatesPage() {
         const data = await templatesApi.fetchReflectionTemplates({
           signal: controller.signal,
         })
-        setTemplates(Array.isArray(data) ? data : [])
+        setTemplates(data)
       } catch (err) {
         if (err.name === "AbortError") return
         showToast(err.message || "Failed to load templates", "error")

@@ -1,17 +1,30 @@
 import { api } from "../../api/adminClient"
 
-export function fetchResources() {
-  return api.get("/api/admin/resources").then(r => r.data)
+// GET all resources
+export async function fetchResources({ signal } = {}) {
+  const { data } = await api.get("/api/admin/resources", { signal })
+  return data
 }
 
-export function createResource(data) {
-  return api.post("/api/admin/resources", data)
+// CREATE
+export async function createResource(resource) {
+  const { data } = await api.post("/api/admin/resources", resource)
+  return data
 }
 
-export function updateResource(id, data) {
-  return api.put(`/api/admin/resources/${id}`, data)
+// UPDATE
+export async function updateResource(id, resource) {
+  const { data } = await api.put(
+    `/api/admin/resources/${id}`,
+    resource
+  )
+  return data
 }
 
-export function deleteResource(id) {
-  return api.delete(`/api/admin/resources/${id}`)
+// DELETE
+export async function deleteResource(id) {
+  const { data } = await api.delete(
+    `/api/admin/resources/${id}`
+  )
+  return data
 }

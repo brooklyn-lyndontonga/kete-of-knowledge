@@ -45,11 +45,11 @@ export function clearStoredAdmin() {
 // API calls
 // --------------------
 export async function loginAdminApi(credentials) {
-  const { data } = await api.post("/admin/login", credentials)
+  const { data } = await api.post("/api/admin/login", credentials)
   return data
 }
 
 export async function fetchAdminMe() {
-  const { data } = await api.get("/admin/me")
+  const { data } = await api.get("/api/admin/me")
   return data
 }

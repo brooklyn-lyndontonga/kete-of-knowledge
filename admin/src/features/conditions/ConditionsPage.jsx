@@ -27,7 +27,7 @@ export default function ConditionsPage() {
         const data = await conditionsApi.fetchConditions({
           signal: controller.signal,
         })
-        setRows(Array.isArray(data) ? data : [])
+        setRows(data)
       } catch (err) {
         if (err.name === "AbortError") return
         setError(err.message)
@@ -56,6 +56,10 @@ export default function ConditionsPage() {
     }
   }
 
+  async function reload() {
+    setRows(await conditionsApi.fetchConditions())
+  }
+
   async function handleSave(formData) {
     try {
       const cleaned = normalize(formData)
@@ -70,9 +74,7 @@ export default function ConditionsPage() {
 
       setModalOpen(false)
       setEditing(null)
-
-      const refreshed = await conditionsApi.fetchConditions()
-      setRows(refreshed)
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }
@@ -83,9 +85,7 @@ export default function ConditionsPage() {
       await conditionsApi.deleteCondition(deleteId)
       showToast("Condition deleted")
       setDeleteId(null)
-
-      const refreshed = await conditionsApi.fetchConditions()
-      setRows(refreshed)
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }

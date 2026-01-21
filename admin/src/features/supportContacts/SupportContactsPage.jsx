@@ -4,7 +4,6 @@ import CrudModal from "../../ui/CrudModal.jsx"
 import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
 import { useAdminToast } from "../../components/AdminToastProvider"
 
-
 import * as supportApi from "./supportContacts.api"
 
 export default function SupportContactsPage() {
@@ -26,7 +25,7 @@ export default function SupportContactsPage() {
         const data = await supportApi.fetchSupportContacts({
           signal: controller.signal,
         })
-        setRows(data || [])
+        setRows(data)
       } catch (err) {
         if (err.name === "AbortError") return
         setError(err.message)
@@ -40,6 +39,10 @@ export default function SupportContactsPage() {
     return () => controller.abort()
   }, [showToast])
 
+  async function reload() {
+    setRows(await supportApi.fetchSupportContacts())
+  }
+
   async function handleSave(formData) {
     try {
       if (editing) {
@@ -52,7 +55,7 @@ export default function SupportContactsPage() {
 
       setEditing(null)
       setModalOpen(false)
-      setRows(await supportApi.fetchSupportContacts())
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }
@@ -63,7 +66,7 @@ export default function SupportContactsPage() {
       await supportApi.deleteSupport(deleteId)
       showToast("Support contact deleted")
       setDeleteId(null)
-      setRows(await supportApi.fetchSupportContacts())
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }

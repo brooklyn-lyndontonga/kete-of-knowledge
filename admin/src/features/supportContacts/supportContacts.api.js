@@ -1,19 +1,36 @@
-// src/api/supportContacts.js
 import { api } from "../../api/adminClient"
 
-
-export function fetchSupportContacts() {
-  return api.get("/api/admin/support")
+// GET all
+export async function fetchSupportContacts({ signal } = {}) {
+  const { data } = await api.get(
+    "/api/admin/support",
+    { signal }
+  )
+  return data
 }
 
-export function createSupport(body) {
-  return api.post("/api/admin/support", body)
+// CREATE
+export async function createSupport(payload) {
+  const { data } = await api.post(
+    "/api/admin/support",
+    payload
+  )
+  return data
 }
 
-export function updateSupport(id, body) {
-  return api.put(`/api/admin/support/${id}`, body)
+// UPDATE
+export async function updateSupport(id, payload) {
+  const { data } = await api.put(
+    `/api/admin/support/${id}`,
+    payload
+  )
+  return data
 }
 
-export function deleteSupport(id) {
-  return api.delete(`/api/admin/support/${id}`)
+// DELETE
+export async function deleteSupport(id) {
+  const { data } = await api.delete(
+    `/api/admin/support/${id}`
+  )
+  return data
 }

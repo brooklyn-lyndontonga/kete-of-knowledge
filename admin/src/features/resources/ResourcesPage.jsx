@@ -7,7 +7,6 @@ import { useAdminToast } from "../../components/AdminToastProvider"
 import * as resourcesApi from "./resources.api"
 import * as categoriesApi from "../resourceCategories/resourceCategories.api"
 
-
 export default function ResourcesPage() {
   const { showToast } = useAdminToast()
 
@@ -21,27 +20,35 @@ export default function ResourcesPage() {
   const [deleteId, setDeleteId] = useState(null)
 
   useEffect(() => {
-  async function loadData() {
-    try {
-      setLoading(true)
+    const controller = new AbortController()
 
-      const [res, cats] = await Promise.all([
-        resourcesApi.fetchResources(),
-        categoriesApi.fetchResourceCategories(),
-      ])
+    async function loadData() {
+      try {
+        setLoading(true)
 
-      setRows(res || [])
-      setCategories(cats || [])
-    } catch (err) {
-      setError(err.message)
-      showToast(err.message, "error")
-    } finally {
-      setLoading(false)
+        const [res, cats] = await Promise.all([
+          resourcesApi.fetchResources({ signal: controller.signal }),
+          categoriesApi.fetchResourceCategories({ signal: controller.signal }),
+        ])
+
+        setRows(res)
+        setCategories(cats)
+      } catch (err) {
+        if (err.name === "AbortError") return
+        setError(err.message)
+        showToast(err.message, "error")
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
-  loadData()
-}, [showToast])
+    loadData()
+    return () => controller.abort()
+  }, [showToast])
+
+  async function reload() {
+    setRows(await resourcesApi.fetchResources())
+  }
 
   async function handleSave(formData) {
     try {
@@ -55,9 +62,7 @@ export default function ResourcesPage() {
 
       setEditing(null)
       setModalOpen(false)
-
-      const refreshed = await resourcesApi.fetchResources()
-      setRows(refreshed)
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }
@@ -68,9 +73,7 @@ export default function ResourcesPage() {
       await resourcesApi.deleteResource(deleteId)
       showToast("Resource deleted")
       setDeleteId(null)
-
-      const refreshed = await resourcesApi.fetchResources()
-      setRows(refreshed)
+      await reload()
     } catch (err) {
       showToast(err.message, "error")
     }
