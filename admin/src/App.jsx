@@ -1,12 +1,11 @@
-// admin/src/App.jsx
-import React from "react"
-import { Outlet } from "react-router-dom"
-import AdminLayout from "./layout/AdminLayout"
+import { AuthProvider } from "./auth/AuthContext"
+import AdminApp from "./app/AdminApp"
+import "./App.css"
 
 export default function App() {
   return (
-    <AdminLayout>
-      <Outlet />
-    </AdminLayout>
+    <AuthProvider>
+      <AdminApp />
+    </AuthProvider>
   )
 }

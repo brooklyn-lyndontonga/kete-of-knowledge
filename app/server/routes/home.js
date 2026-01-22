@@ -3,6 +3,7 @@ import { getHomeSummary } from "../controllers/homeController.js"
 
 const router = express.Router()
 
+router.get("/", getHomeSummary)
 router.get("/summary", getHomeSummary)
 
 export default router

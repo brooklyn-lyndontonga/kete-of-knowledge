@@ -1,9 +1,14 @@
-/* eslint-disable no-undef */
+import { Navigate } from "react-router-dom"
+import { useAuth } from "../auth/AuthContext"
+
 export default function ProtectedRoute({ children }) {
-  const { admin, loading } = useAuth()
+  const { isAuthenticated, loading } = useAuth()
 
   if (loading) return null
-  if (!admin) return <Navigate to="/login" replace />
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
 
   return children
 }

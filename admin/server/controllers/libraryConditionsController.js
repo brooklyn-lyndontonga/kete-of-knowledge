@@ -1,8 +1,6 @@
-import { getDB } from "../../db/database.js"
-
 // GET /library/conditions
 export async function listLibraryConditions(req, res) {
-  const db = getDB()
+  const db = req.app.get("db")
 
   const rows = await db.all(`
     SELECT
@@ -17,7 +15,7 @@ export async function listLibraryConditions(req, res) {
 
 // GET /library/conditions/:id
 export async function getLibraryCondition(req, res) {
-  const db = getDB()
+  const db = req.app.get("db")
 
   const row = await db.get(
     `

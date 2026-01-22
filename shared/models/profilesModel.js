@@ -1,7 +1,9 @@
 // server/models/profilesModel.js
-export async function getProfiles(db) {
+export async function getAllProfiles(db) {
   return db.all("SELECT * FROM profiles")
 }
+
+
 
 export async function createProfile(db, { name, age, goals }) {
   await db.run(

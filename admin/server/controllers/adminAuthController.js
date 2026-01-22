@@ -1,9 +1,11 @@
+/* eslint-disable no-undef */
 import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
 
-const JWT_SECRET = "dev_admin_secret"
+const JWT_SECRET = process.env.ADMIN_JWT_SECRET || "dev_admin_secret"
 const TOKEN_EXPIRY = "7d"
 
+// TEMP admin user (replace with DB later)
 const ADMIN_USER = {
   id: 1,
   email: "admin@kete.nz",

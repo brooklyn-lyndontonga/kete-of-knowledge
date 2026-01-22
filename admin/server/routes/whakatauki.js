@@ -1,13 +1,9 @@
 import express from "express"
-import { connectDB } from "../../../db/database.js"
+import { listWhakatauki, dailyWhakatauki } from "../controllers/whakataukiController.js"
 
 const router = express.Router()
 
-router.get("/", async (_, res) => {
-  const db = await connectDB()
-  const rows = await db.all("SELECT * FROM whakatauki")
-  res.json(rows)
-})
+router.get("/", listWhakatauki)
+router.get("/daily", dailyWhakatauki)
 
 export default router
-                                    

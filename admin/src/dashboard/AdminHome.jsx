@@ -7,17 +7,17 @@ export default function AdminHome() {
 
       <div className="dashboard-grid">
         <div className="card dashboard-stat">
-          <div className="dashboard-stat__value">42</div>
+          <div className="dashboard-stat__value">0</div>
           <div className="dashboard-stat__label">Total Users</div>
         </div>
 
         <div className="card dashboard-stat">
-          <div className="dashboard-stat__value">18</div>
+          <div className="dashboard-stat__value">0</div>
           <div className="dashboard-stat__label">Resources</div>
         </div>
 
         <div className="card dashboard-stat">
-          <div className="dashboard-stat__value">9</div>
+          <div className="dashboard-stat__value">0</div>
           <div className="dashboard-stat__label">Conditions</div>
         </div>
       </div>

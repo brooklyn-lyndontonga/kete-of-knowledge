@@ -1,12 +1,14 @@
 import express from "express"
-import { connectDB } from "../../../db/database.js"
+import {
+  listSnapshots,
+  createSnapshot,
+  deleteSnapshot,
+} from "../controllers/snapshotsController.js"
 
 const router = express.Router()
 
-router.get("/", async (_, res) => {
-  const db = await connectDB()
-  const rows = await db.all("SELECT * FROM snapshots")
-  res.json(rows)
-})
+router.get("/", listSnapshots)
+router.post("/", createSnapshot)
+router.delete("/:id", deleteSnapshot)
 
 export default router

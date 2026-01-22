@@ -1,9 +1,8 @@
-import { getResourcesByCategory } from "../models/resourcesModel.js"
-import { getDB } from "../../db/database.js"
+import { getResourcesByCategory } from "../../../shared/models/resourcesModel.js"
 
 export async function listResourcesByCategory(req, res) {
   try {
-    const db = getDB()
+    const db = req.app.get("db")
     const categoryId = req.params.id
 
     const resources = await getResourcesByCategory(db, categoryId)

@@ -1,12 +1,26 @@
 import express from "express"
-import { connectDB } from "../../../db/database.js"
+import {
+  listResourceCategoriesController,
+  getResourceCategoryController,
+  createResourceCategoryController,
+  updateResourceCategoryController,
+  deleteResourceCategoryController,
+} from "../controllers/resourceCategoriesController.js"
+
+import { listResourcesByCategory } from "../controllers/libraryResourcesController.js"
 
 const router = express.Router()
 
-router.get("/", async (_, res) => {
-  const db = await connectDB()
-  const rows = await db.all("SELECT * FROM resource_categories")
-  res.json(rows)
-})
+// Categories
+router.get("/", listResourceCategoriesController)
+router.get("/:id", getResourceCategoryController)
+
+// Resources by category
+router.get("/:id/resources", listResourcesByCategory)
+
+// Admin
+router.post("/", createResourceCategoryController)
+router.put("/:id", updateResourceCategoryController)
+router.delete("/:id", deleteResourceCategoryController)
 
 export default router

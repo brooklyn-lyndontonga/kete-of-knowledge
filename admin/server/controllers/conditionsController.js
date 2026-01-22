@@ -1,11 +1,9 @@
-import { getDB } from "../../db/database.js"
-
 // =======================
 // ADMIN: LIST ALL CONDITIONS
 // GET /admin/conditions
 // =======================
 export async function getAllConditions(req, res) {
-  const db = getDB()
+  const db = req.app.get("db")
 
   const rows = await db.all(`
     SELECT
@@ -27,7 +25,7 @@ export async function getAllConditions(req, res) {
 // GET /admin/conditions/:id
 // =======================
 export async function getConditionById(req, res) {
-  const db = getDB()
+  const db = req.app.get("db")
 
   const row = await db.get(
     `
@@ -64,7 +62,7 @@ export async function createCondition(req, res) {
     images = null,
   } = req.body
 
-  const db = getDB()
+  const db = req.app.get("db")
 
   await db.run(
     `
@@ -90,7 +88,7 @@ export async function updateCondition(req, res) {
     images = null,
   } = req.body
 
-  const db = getDB()
+  const db = req.app.get("db")
 
   await db.run(
     `
@@ -114,7 +112,7 @@ export async function updateCondition(req, res) {
 // DELETE /admin/conditions/:id
 // =======================
 export async function deleteCondition(req, res) {
-  const db = getDB()
+  const db = req.app.get("db")
 
   await db.run(
     "DELETE FROM conditions WHERE id = ?",
