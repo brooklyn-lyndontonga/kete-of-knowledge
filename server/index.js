@@ -1,11 +1,12 @@
- 
 /* eslint-disable no-undef */
 import express from "express"
 import cors from "cors"
 import dotenv from "dotenv"
-import { initDB } from "./db/db.js"
 import path from "path"
 
+import { initDB } from "../db/database.js"
+
+// routes
 import adminRoute from "./routes/admin.js"
 import homeRoutes from "./routes/home.js"
 import reflectionTemplatesRoutes from "./routes/reflectionTemplates.js"
@@ -23,21 +24,20 @@ const PORT = process.env.PORT || 3000
 app.use(cors())
 app.use(express.json())
 
-// Routes
-app.use("/admin", adminRoute)
-app.use("/home", homeRoutes)
-app.use("/admin/reflection-templates", reflectionTemplatesRoutes)
-app.use("/whakatauki", whakataukiRoutes)
-app.use("/profile", profileRoutes)
-app.use("/upload", uploadRoutes)
+// routes
+app.use("/api/admin", adminRoute)
+app.use("/api/home", homeRoutes)
+app.use("/api/admin/reflection-templates", reflectionTemplatesRoutes)
+app.use("/api/whakatauki", whakataukiRoutes)
+app.use("/api/profile", profileRoutes)
+app.use("/api/upload", uploadRoutes)
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")))
-app.use("/library", libraryRoutes)
-app.use("/symptoms", symptomsRoutes)
+app.use("/api/library", libraryRoutes)
+app.use("/api/symptoms", symptomsRoutes)
 
-
-// Boot
+// boot
 initDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀 API running at http://0.0.0.0:${PORT}`)
+    console.log(`🚀 API running at http://localhost:${PORT}`)
   })
 })

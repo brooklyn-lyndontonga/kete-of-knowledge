@@ -1,4 +1,4 @@
-import { getDB } from "../db/db.js"
+import { getDB } from "../../db/database.js"
 
 // GET /library/conditions
 export async function listLibraryConditions(req, res) {
