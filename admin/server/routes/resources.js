@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import express from "express"
 import { uploadPdf } from "../middleware/upload.js"
-import { connectDB } from "../db/init.js"
+import { connectDB } from "../../../db/database.js"
 
 const router = express.Router()
 

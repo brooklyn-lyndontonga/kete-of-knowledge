@@ -1,5 +1,5 @@
 import { getResourcesByCategory } from "../models/resourcesModel.js"
-import { getDB } from "../db/db.js"
+import { getDB } from "../../db/database.js"
 
 export async function listResourcesByCategory(req, res) {
   try {

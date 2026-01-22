@@ -1,4 +1,4 @@
-import { getDB } from "../db/db.js"
+import { getDB } from "../../db/database.js"
 
 export async function getAllWhakatauki() {
   const db = getDB()
