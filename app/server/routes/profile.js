@@ -1,12 +1,12 @@
 import express from "express"
 import {
-  getProfile,
-  saveProfile,
+  getCurrentProfile,
+  updateCurrentProfile,
 } from "../controllers/profileController.js"
 
 const router = express.Router()
 
-router.get("/", getProfile)
-router.post("/", saveProfile)
+router.get("/", getCurrentProfile)
+router.put("/", updateCurrentProfile)
 
 export default router

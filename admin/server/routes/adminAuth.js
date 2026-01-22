@@ -1,13 +1,15 @@
-// admin/server/routes/adminAuth.js
 import express from "express"
 import {
   loginAdmin,
   getAdminMe,
-} from "../controllers/adminAuth.controller.js"
+} from "../controllers/adminAuthController.js"
 
 const router = express.Router()
 
+// POST /api/admin/login
 router.post("/login", loginAdmin)
+
+// GET /api/admin/me
 router.get("/me", getAdminMe)
 
 export default router

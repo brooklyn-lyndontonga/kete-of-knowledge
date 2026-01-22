@@ -1,7 +1,7 @@
 import {
   getAllWhakatauki,
   getDailyWhakatauki,
-} from "../models/whakataukiModel.js"
+} from "../../../shared/models/whakataukiModel.js"
 
 export async function listWhakatauki(req, res) {
   try {

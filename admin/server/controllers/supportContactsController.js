@@ -4,7 +4,7 @@ import {
   addSupportContact,
   updateSupportContact,
   deleteSupportContact,
-} from "../models/supportContactsModel.js"
+} from "../../../shared/models/supportContactsModel.js"
 
 export async function listSupportContacts(req, res) {
   try {

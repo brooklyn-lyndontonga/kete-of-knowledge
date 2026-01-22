@@ -1,12 +1,19 @@
+// server/routes/conditions.js
 import express from "express"
-import { connectDB } from "../../../db/database.js"
+import {
+  getAllConditions,
+  getConditionById,
+  createCondition,
+  updateCondition,
+  deleteCondition,
+} from "../controllers/conditionsController.js"
 
 const router = express.Router()
 
-router.get("/", async (req, res) => {
-  const db = await connectDB()
-  const rows = await db.all("SELECT * FROM conditions")
-  res.json(rows)
-})
+router.get("/", getAllConditions)
+router.get("/:id", getConditionById)
+router.post("/", createCondition)
+router.put("/:id", updateCondition)
+router.delete("/:id", deleteCondition)
 
 export default router

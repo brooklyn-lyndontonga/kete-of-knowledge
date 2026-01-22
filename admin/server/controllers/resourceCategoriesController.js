@@ -4,7 +4,7 @@ import {
   createResourceCategory,
   updateResourceCategory,
   deleteResourceCategory,
-} from "../models/resourceCategoriesModel.js"
+} from "../../../shared/models/resourceCategoriesModel.js"
 
 export async function listResourceCategoriesController(req, res) {
   try {

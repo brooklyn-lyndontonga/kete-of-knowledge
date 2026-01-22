@@ -1,14 +1,12 @@
-import { getDB } from "../../db/database.js"
-
 export async function listTemplates(req, res) {
-  const db = getDB()
+  const db = req.app.get("db")
   const rows = await db.all("SELECT * FROM reflection_templates")
   res.json(rows)
 }
 
 export async function createTemplate(req, res) {
   const { title, body } = req.body
-  const db = getDB()
+  const db = req.app.get("db")
 
   await db.run(
     `
@@ -22,13 +20,16 @@ export async function createTemplate(req, res) {
 }
 
 export async function getLatestTemplate(req, res) {
-  const db = getDB()
+  const db = req.app.get("db")
+
   const row = await db.get(
     `
-    SELECT * FROM reflection_templates
+    SELECT *
+    FROM reflection_templates
     ORDER BY id DESC
     LIMIT 1
     `
   )
+
   res.json(row ?? null)
 }

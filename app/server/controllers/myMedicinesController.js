@@ -1,9 +1,8 @@
-/* eslint-disable no-unused-vars */
 import {
   getMedicines,
   addMedicine,
   deleteMedicine,
-} from "../models/myMedicinesModel.js"
+} from "../../../shared/models/myMedicinesModel.js"
 
 export async function listMedicines(req, res) {
   try {
@@ -11,6 +10,7 @@ export async function listMedicines(req, res) {
     const meds = await getMedicines(db)
     res.json(meds)
   } catch (err) {
+    console.error(err)
     res.status(500).json({ error: "Failed to load medicines" })
   }
 }
@@ -19,8 +19,9 @@ export async function createMedicine(req, res) {
   try {
     const db = req.app.get("db")
     const med = await addMedicine(db, req.body)
-    res.json(med)
+    res.status(201).json(med)
   } catch (err) {
+    console.error(err)
     res.status(500).json({ error: "Failed to add medicine" })
   }
 }
@@ -31,6 +32,7 @@ export async function removeMedicine(req, res) {
     await deleteMedicine(db, req.params.id)
     res.json({ success: true })
   } catch (err) {
+    console.error(err)
     res.status(500).json({ error: "Failed to delete medicine" })
   }
 }
