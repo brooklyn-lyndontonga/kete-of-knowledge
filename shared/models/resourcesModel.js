@@ -1,4 +1,4 @@
-import { getDB } from "../../db/database.js"
+import { getDB } from "../../db/index.js"
 
 // Get ALL resources (optional, admin use later)
 export async function getResources() {
