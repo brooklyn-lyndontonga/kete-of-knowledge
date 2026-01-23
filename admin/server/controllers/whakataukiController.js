@@ -3,11 +3,18 @@ import {
   getDailyWhakatauki,
 } from "../../../shared/models/whakataukiModel.js"
 
+/**
+ * GET /api/admin/whakatauki
+ */
 export async function listWhakatauki(req, res) {
   try {
     console.log("🧪 listWhakatauki hit")
 
-    const data = await getAllWhakatauki()
+    // ✅ GET THE INITIALISED DB FROM EXPRESS
+    const db = req.app.get("db")
+
+    // ✅ PASS DB INTO MODEL
+    const data = await getAllWhakatauki(db)
 
     console.log("🧪 data from model:", data)
 
@@ -18,11 +25,17 @@ export async function listWhakatauki(req, res) {
   }
 }
 
+/**
+ * GET /api/admin/whakatauki/daily
+ */
 export async function dailyWhakatauki(req, res) {
   try {
     console.log("🧪 dailyWhakatauki hit")
 
-    const item = await getDailyWhakatauki()
+    // ✅ SAME DB INSTANCE
+    const db = req.app.get("db")
+
+    const item = await getDailyWhakatauki(db)
 
     console.log("🧪 daily item:", item)
 

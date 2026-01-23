@@ -1,4 +1,4 @@
-import { getDB } from "../../db/database.js"
+import { getDB } from "../../db/index.js"
 
 export async function getMedicines() {
   const db = await getDB()

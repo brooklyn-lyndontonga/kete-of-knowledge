@@ -1,13 +1,34 @@
-import { getDB } from "../../db/database.js"
+// shared/models/whakataukiModel.js
 
-export async function getAllWhakatauki() {
-  const db = getDB()
-  return db.all("SELECT * FROM whakatauki")
+/**
+ * Get all whakataukī
+ * @param {import("sqlite").Database} db
+ */
+export async function getAllWhakatauki(db) {
+  if (!db) {
+    throw new Error("DB missing in getAllWhakatauki")
+  }
+
+  return db.all(`
+    SELECT *
+    FROM whakatauki
+    ORDER BY id DESC
+  `)
 }
 
-export async function getDailyWhakatauki() {
-  const db = getDB()
-  return db.get(
-    "SELECT * FROM whakatauki ORDER BY RANDOM() LIMIT 1"
-  )
+/**
+ * Get daily whakataukī
+ * @param {import("sqlite").Database} db
+ */
+export async function getDailyWhakatauki(db) {
+  if (!db) {
+    throw new Error("DB missing in getDailyWhakatauki")
+  }
+
+  return db.get(`
+    SELECT *
+    FROM whakatauki
+    ORDER BY RANDOM()
+    LIMIT 1
+  `)
 }
