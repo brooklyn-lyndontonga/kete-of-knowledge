@@ -7,9 +7,11 @@ export default function CrudModal({
   fields,
   onSave,
   onClose,
+  children,
 }) {
   const [form, setForm] = useState({})
 
+  // Populate form when opening or editing
   useEffect(() => {
     setForm(initial || {})
   }, [initial, open])
@@ -17,8 +19,21 @@ export default function CrudModal({
   if (!open) return null
 
   function handleChange(e) {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+    const { name, value, type, files } = e.target
+
+    // Handle file uploads
+    if (type === "file") {
+      setForm((prev) => ({
+        ...prev,
+        [name]: files[0] || null,
+      }))
+      return
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
   }
 
   function handleSubmit(e) {
@@ -32,6 +47,7 @@ export default function CrudModal({
         <h2>{initial ? "Edit" : "Create"}</h2>
 
         <form className="form-grid" onSubmit={handleSubmit}>
+          {/* Standard fields */}
           {fields.map((f) => (
             <div
               key={f.name}
@@ -60,6 +76,12 @@ export default function CrudModal({
                     </option>
                   ))}
                 </select>
+              ) : f.type === "file" ? (
+                <input
+                  type="file"
+                  name={f.name}
+                  onChange={handleChange}
+                />
               ) : (
                 <input
                   type="text"
@@ -71,6 +93,10 @@ export default function CrudModal({
             </div>
           ))}
 
+          {/* 🔹 Custom content (categories, checkboxes, helpers) */}
+          {children}
+
+          {/* Actions */}
           <div className="form-actions">
             <button
               type="button"

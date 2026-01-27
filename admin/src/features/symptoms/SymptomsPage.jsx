@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react"
-import CrudTable from "../../ui/CrudTable.jsx"
-import CrudModal from "../../ui/CrudModal.jsx"
-import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
-import { useAdminToast } from "../../components/AdminToastProvider"
+import { useEffect, useState } from 'react'
+import CrudTable from '../../../../clean/admin/src/components/ui/CrudTable.jsx'
+import CrudModal from '../../../../clean/admin/src/components/ui/CrudModal.jsx'
+import DeleteConfirmModal from '../../../../clean/admin/src/components/ui/DeleteConfirmModal.jsx'
+import { useAdminToast } from '../../components/AdminToastProvider'
 
-import * as symptomsApi from "./symptoms.api"
+import * as symptomsApi from './symptoms.api'
 
 export default function SymptomsPage() {
   const { showToast } = useAdminToast()
@@ -27,9 +27,9 @@ export default function SymptomsPage() {
         })
         setRows(data)
       } catch (err) {
-        if (err.name === "AbortError") return
+        if (err.name === 'AbortError') return
         setError(err.message)
-        showToast(err.message, "error")
+        showToast(err.message, 'error')
       } finally {
         setLoading(false)
       }
@@ -47,28 +47,28 @@ export default function SymptomsPage() {
     try {
       if (editing) {
         await symptomsApi.updateSymptom(editing.id, formData)
-        showToast("Symptom updated")
+        showToast('Symptom updated')
       } else {
         await symptomsApi.createSymptom(formData)
-        showToast("Symptom created")
+        showToast('Symptom created')
       }
 
       setEditing(null)
       setModalOpen(false)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
   async function handleDelete() {
     try {
       await symptomsApi.deleteSymptom(deleteId)
-      showToast("Symptom deleted")
+      showToast('Symptom deleted')
       setDeleteId(null)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
@@ -95,8 +95,8 @@ export default function SymptomsPage() {
         loading={loading}
         error={error}
         columns={[
-          { key: "name", label: "Name" },
-          { key: "severity", label: "Severity" },
+          { key: 'name', label: 'Name' },
+          { key: 'severity', label: 'Severity' },
         ]}
         onEdit={(row) => {
           setEditing(row)
@@ -109,9 +109,9 @@ export default function SymptomsPage() {
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "name", label: "Name" },
-          { name: "severity", label: "Severity" },
-          { name: "notes", label: "Notes", type: "textarea" },
+          { name: 'name', label: 'Name' },
+          { name: 'severity', label: 'Severity' },
+          { name: 'notes', label: 'Notes', type: 'textarea' },
         ]}
         onSave={handleSave}
         onClose={() => {

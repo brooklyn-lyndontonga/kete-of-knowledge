@@ -1,11 +1,16 @@
 import { getDB } from "../db/index.js"
 
 export async function getAllWhakatauki(req, res) {
-  const db = getDB()
-  const rows = await db.all(
-    `SELECT * FROM whakatauki ORDER BY id DESC`
-  )
-  res.json(rows)
+  try {
+    const db = await getDB()   // 👈 THIS MUST BE AWAITED
+    const rows = await db.all(
+      "SELECT * FROM whakatauki ORDER BY id ASC"
+    )
+    res.json(rows)
+  } catch (err) {
+    console.error("❌ getAllWhakatauki error:", err)
+    res.status(500).json({ error: "Failed to fetch whakatauki" })
+  }
 }
 
 export async function createWhakatauki(req, res) {

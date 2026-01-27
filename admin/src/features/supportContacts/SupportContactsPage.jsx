@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react"
-import CrudTable from "../../ui/CrudTable.jsx"
-import CrudModal from "../../ui/CrudModal.jsx"
-import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
-import { useAdminToast } from "../../components/AdminToastProvider"
+import { useEffect, useState } from 'react'
+import CrudTable from '../../../../clean/admin/src/components/ui/CrudTable.jsx'
+import CrudModal from '../../../../clean/admin/src/components/ui/CrudModal.jsx'
+import DeleteConfirmModal from '../../../../clean/admin/src/components/ui/DeleteConfirmModal.jsx'
+import { useAdminToast } from '../../components/AdminToastProvider'
 
-import * as supportApi from "./supportContacts.api"
+import * as supportApi from './supportContacts.api'
 
 export default function SupportContactsPage() {
   const { showToast } = useAdminToast()
@@ -27,9 +27,9 @@ export default function SupportContactsPage() {
         })
         setRows(data)
       } catch (err) {
-        if (err.name === "AbortError") return
+        if (err.name === 'AbortError') return
         setError(err.message)
-        showToast(err.message, "error")
+        showToast(err.message, 'error')
       } finally {
         setLoading(false)
       }
@@ -47,28 +47,28 @@ export default function SupportContactsPage() {
     try {
       if (editing) {
         await supportApi.updateSupport(editing.id, formData)
-        showToast("Support contact updated")
+        showToast('Support contact updated')
       } else {
         await supportApi.createSupport(formData)
-        showToast("Support contact created")
+        showToast('Support contact created')
       }
 
       setEditing(null)
       setModalOpen(false)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
   async function handleDelete() {
     try {
       await supportApi.deleteSupport(deleteId)
-      showToast("Support contact deleted")
+      showToast('Support contact deleted')
       setDeleteId(null)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
@@ -95,9 +95,9 @@ export default function SupportContactsPage() {
         loading={loading}
         error={error}
         columns={[
-          { key: "name", label: "Name" },
-          { key: "role", label: "Role" },
-          { key: "organisation", label: "Organisation" },
+          { key: 'name', label: 'Name' },
+          { key: 'role', label: 'Role' },
+          { key: 'organisation', label: 'Organisation' },
         ]}
         onEdit={(row) => {
           setEditing(row)
@@ -110,11 +110,11 @@ export default function SupportContactsPage() {
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "name", label: "Name" },
-          { name: "role", label: "Role" },
-          { name: "organisation", label: "Organisation" },
-          { name: "phone", label: "Phone" },
-          { name: "email", label: "Email" },
+          { name: 'name', label: 'Name' },
+          { name: 'role', label: 'Role' },
+          { name: 'organisation', label: 'Organisation' },
+          { name: 'phone', label: 'Phone' },
+          { name: 'email', label: 'Email' },
         ]}
         onSave={handleSave}
         onClose={() => {
