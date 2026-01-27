@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react"
-import CrudTable from "../../ui/CrudTable.jsx"
-import CrudModal from "../../ui/CrudModal.jsx"
-import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
-import { useAdminToast } from "../../components/AdminToastProvider"
+import { useEffect, useState } from 'react'
+import CrudTable from '../../../../clean/admin/src/components/ui/CrudTable.jsx'
+import CrudModal from '../../../../clean/admin/src/components/ui/CrudModal.jsx'
+import DeleteConfirmModal from '../../../../clean/admin/src/components/ui/DeleteConfirmModal.jsx'
+import { useAdminToast } from '../../components/AdminToastProvider'
 
-import * as resourcesApi from "./resources.api"
-import * as categoriesApi from "../resourceCategories/resourceCategories.api"
+import * as resourcesApi from './resources.api'
+import * as categoriesApi from '../resourceCategories/resourceCategories.api'
 
 export default function ResourcesPage() {
   const { showToast } = useAdminToast()
@@ -34,9 +34,9 @@ export default function ResourcesPage() {
         setRows(res)
         setCategories(cats)
       } catch (err) {
-        if (err.name === "AbortError") return
+        if (err.name === 'AbortError') return
         setError(err.message)
-        showToast(err.message, "error")
+        showToast(err.message, 'error')
       } finally {
         setLoading(false)
       }
@@ -54,28 +54,28 @@ export default function ResourcesPage() {
     try {
       if (editing) {
         await resourcesApi.updateResource(editing.id, formData)
-        showToast("Resource updated")
+        showToast('Resource updated')
       } else {
         await resourcesApi.createResource(formData)
-        showToast("Resource created")
+        showToast('Resource created')
       }
 
       setEditing(null)
       setModalOpen(false)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
   async function handleDelete() {
     try {
       await resourcesApi.deleteResource(deleteId)
-      showToast("Resource deleted")
+      showToast('Resource deleted')
       setDeleteId(null)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
@@ -102,9 +102,9 @@ export default function ResourcesPage() {
         loading={loading}
         error={error}
         columns={[
-          { key: "title", label: "Title" },
-          { key: "summary", label: "Summary" },
-          { key: "categoryId", label: "Category" },
+          { key: 'title', label: 'Title' },
+          { key: 'summary', label: 'Summary' },
+          { key: 'categoryId', label: 'Category' },
         ]}
         onEdit={(row) => {
           setEditing(row)
@@ -117,13 +117,13 @@ export default function ResourcesPage() {
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "title", label: "Title" },
-          { name: "summary", label: "Summary", type: "textarea" },
-          { name: "image", label: "Image Path" },
+          { name: 'title', label: 'Title' },
+          { name: 'summary', label: 'Summary', type: 'textarea' },
+          { name: 'image', label: 'Image Path' },
           {
-            name: "categoryId",
-            label: "Category",
-            type: "select",
+            name: 'categoryId',
+            label: 'Category',
+            type: 'select',
             options: categories.map((c) => ({
               label: c.name,
               value: c.id,

@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react"
-import CrudTable from "../../ui/CrudTable.jsx"
-import CrudModal from "../../ui/CrudModal.jsx"
-import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
-import { useAdminToast } from "../../components/AdminToastProvider"
 
-import * as seedsApi from "./profileSeeds.api"
+import CrudTable from "../components/ui/CrudTable"
+import CrudModal from "../components/ui/CrudModal"
+import DeleteConfirmModal from "../components/ui/DeleteConfirmModal"
+
+import {
+  fetchProfileSeeds,
+  createProfileSeed,
+  updateProfileSeed,
+  deleteProfileSeed,
+} from "../api/content.api"
+
+function showToast(message, type = "info") {
+  console.log(`[${type}]`, message)
+}
 
 export default function ProfileSeedsPage() {
-  const { showToast } = useAdminToast()
-
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -17,45 +24,33 @@ export default function ProfileSeedsPage() {
   const [deleteId, setDeleteId] = useState(null)
 
   useEffect(() => {
-    const controller = new AbortController()
+    load()
+  }, [])
 
-    async function loadData() {
-      try {
-        setLoading(true)
-        const data = await seedsApi.fetchProfileSeeds({
-          signal: controller.signal,
-        })
-        setRows(data)
-      } catch (err) {
-        if (err.name === "AbortError") return
-        setError(err.message)
-        showToast(err.message, "error")
-      } finally {
-        setLoading(false)
-      }
+  async function load() {
+    try {
+      setLoading(true)
+      setRows(await fetchProfileSeeds())
+    } catch (err) {
+      setError(err.message)
+      showToast(err.message, "error")
+    } finally {
+      setLoading(false)
     }
-
-    loadData()
-    return () => controller.abort()
-  }, [showToast])
-
-  async function reload() {
-    setRows(await seedsApi.fetchProfileSeeds())
   }
 
   async function handleSave(formData) {
     try {
       if (editing) {
-        await seedsApi.updateProfileSeed(editing.id, formData)
+        await updateProfileSeed(editing.id, formData)
         showToast("Seed updated")
       } else {
-        await seedsApi.createProfileSeed(formData)
+        await createProfileSeed(formData)
         showToast("Seed created")
       }
-
       setEditing(null)
       setModalOpen(false)
-      await reload()
+      load()
     } catch (err) {
       showToast(err.message, "error")
     }
@@ -63,10 +58,10 @@ export default function ProfileSeedsPage() {
 
   async function handleDelete() {
     try {
-      await seedsApi.deleteProfileSeed(deleteId)
-      showToast("Seed deleted")
+      await deleteProfileSeed(deleteId)
       setDeleteId(null)
-      await reload()
+      showToast("Seed deleted")
+      load()
     } catch (err) {
       showToast(err.message, "error")
     }

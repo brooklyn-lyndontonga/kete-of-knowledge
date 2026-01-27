@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from "react"
-import CrudTable from "../../ui/CrudTable.jsx"
-import CrudModal from "../../ui/CrudModal.jsx"
-import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
-import { useAdminToast } from "../../components/AdminToastProvider"
+import { useEffect, useState } from 'react'
+import CrudTable from '../../../../clean/admin/src/components/ui/CrudTable.jsx'
+import CrudModal from '../../../../clean/admin/src/components/ui/CrudModal.jsx'
+import DeleteConfirmModal from '../../../../clean/admin/src/components/ui/DeleteConfirmModal.jsx'
+import { useAdminToast } from '../../components/AdminToastProvider'
 
-import * as conditionsApi from "./conditions.api"
+import * as conditionsApi from './conditions.api'
 
 export default function ConditionsPage() {
   const { showToast } = useAdminToast()
@@ -29,9 +29,9 @@ export default function ConditionsPage() {
         })
         setRows(data)
       } catch (err) {
-        if (err.name === "AbortError") return
+        if (err.name === 'AbortError') return
         setError(err.message)
-        showToast(err.message, "error")
+        showToast(err.message, 'error')
       } finally {
         setLoading(false)
       }
@@ -45,13 +45,13 @@ export default function ConditionsPage() {
     return {
       ...formData,
       triggers: formData.triggers
-        ? formData.triggers.split(",").map((s) => s.trim())
+        ? formData.triggers.split(',').map((s) => s.trim())
         : [],
       treatments: formData.treatments
-        ? formData.treatments.split(",").map((s) => s.trim())
+        ? formData.treatments.split(',').map((s) => s.trim())
         : [],
       images: formData.images
-        ? formData.images.split(",").map((s) => s.trim())
+        ? formData.images.split(',').map((s) => s.trim())
         : [],
     }
   }
@@ -66,28 +66,28 @@ export default function ConditionsPage() {
 
       if (editing) {
         await conditionsApi.updateCondition(editing.id, cleaned)
-        showToast("Condition updated")
+        showToast('Condition updated')
       } else {
         await conditionsApi.createCondition(cleaned)
-        showToast("Condition created")
+        showToast('Condition created')
       }
 
       setModalOpen(false)
       setEditing(null)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
   async function handleDelete() {
     try {
       await conditionsApi.deleteCondition(deleteId)
-      showToast("Condition deleted")
+      showToast('Condition deleted')
       setDeleteId(null)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
@@ -112,15 +112,15 @@ export default function ConditionsPage() {
         loading={loading}
         error={error}
         columns={[
-          { key: "title", label: "Title" },
-          { key: "summary", label: "Summary" },
+          { key: 'title', label: 'Title' },
+          { key: 'summary', label: 'Summary' },
         ]}
         onEdit={(row) => {
           setEditing({
             ...row,
-            triggers: row.triggers?.join(", ") || "",
-            treatments: row.treatments?.join(", ") || "",
-            images: row.images?.join(", ") || "",
+            triggers: row.triggers?.join(', ') || '',
+            treatments: row.treatments?.join(', ') || '',
+            images: row.images?.join(', ') || '',
           })
           setModalOpen(true)
         }}
@@ -131,12 +131,12 @@ export default function ConditionsPage() {
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "title", label: "Title" },
-          { name: "summary", label: "Summary", type: "textarea" },
-          { name: "image", label: "Image Path" },
-          { name: "triggers", label: "Triggers (comma-separated)" },
-          { name: "treatments", label: "Treatments (comma-separated)" },
-          { name: "images", label: "Images (comma-separated)" },
+          { name: 'title', label: 'Title' },
+          { name: 'summary', label: 'Summary', type: 'textarea' },
+          { name: 'image', label: 'Image Path' },
+          { name: 'triggers', label: 'Triggers (comma-separated)' },
+          { name: 'treatments', label: 'Treatments (comma-separated)' },
+          { name: 'images', label: 'Images (comma-separated)' },
         ]}
         onSave={handleSave}
         onClose={() => {

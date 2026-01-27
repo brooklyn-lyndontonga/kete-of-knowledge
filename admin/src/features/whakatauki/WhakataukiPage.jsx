@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react"
-import CrudTable from "../../ui/CrudTable.jsx"
-import CrudModal from "../../ui/CrudModal.jsx"
-import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
-import { useAdminToast } from "../../components/AdminToastProvider"
+import { useEffect, useState } from 'react'
+import CrudTable from '../../../../clean/admin/src/components/ui/CrudTable.jsx'
+import CrudModal from '../../../../clean/admin/src/components/ui/CrudModal.jsx'
+import DeleteConfirmModal from '../../../../clean/admin/src/components/ui/DeleteConfirmModal.jsx'
+import { useAdminToast } from '../../components/AdminToastProvider'
 
-import * as whakataukiApi from "./whakatauki.api"
+import * as whakataukiApi from './whakatauki.api'
 
 export default function WhakataukiPage() {
   const { showToast } = useAdminToast()
@@ -27,9 +27,9 @@ export default function WhakataukiPage() {
         })
         setRows(data)
       } catch (err) {
-        if (err.name === "AbortError") return
+        if (err.name === 'AbortError') return
         setError(err.message)
-        showToast(err.message, "error")
+        showToast(err.message, 'error')
       } finally {
         setLoading(false)
       }
@@ -47,28 +47,28 @@ export default function WhakataukiPage() {
     try {
       if (editing) {
         await whakataukiApi.updateWhakatauki(editing.id, formData)
-        showToast("Whakataukī updated")
+        showToast('Whakataukī updated')
       } else {
         await whakataukiApi.createWhakatauki(formData)
-        showToast("Whakataukī created")
+        showToast('Whakataukī created')
       }
 
       setEditing(null)
       setModalOpen(false)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
   async function handleDelete() {
     try {
       await whakataukiApi.deleteWhakatauki(deleteId)
-      showToast("Whakataukī deleted")
+      showToast('Whakataukī deleted')
       setDeleteId(null)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
@@ -95,9 +95,9 @@ export default function WhakataukiPage() {
         loading={loading}
         error={error}
         columns={[
-          { key: "text", label: "Whakataukī" },
-          { key: "translation", label: "Translation" },
-          { key: "theme", label: "Theme" },
+          { key: 'text', label: 'Whakataukī' },
+          { key: 'translation', label: 'Translation' },
+          { key: 'theme', label: 'Theme' },
         ]}
         onEdit={(row) => {
           setEditing(row)
@@ -110,10 +110,10 @@ export default function WhakataukiPage() {
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "text", label: "Whakataukī", type: "textarea" },
-          { name: "translation", label: "Translation", type: "textarea" },
-          { name: "theme", label: "Theme (optional)" },
-          { name: "source", label: "Source (optional)" },
+          { name: 'text', label: 'Whakataukī', type: 'textarea' },
+          { name: 'translation', label: 'Translation', type: 'textarea' },
+          { name: 'theme', label: 'Theme (optional)' },
+          { name: 'source', label: 'Source (optional)' },
         ]}
         onSave={handleSave}
         onClose={() => {

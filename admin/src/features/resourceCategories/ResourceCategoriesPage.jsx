@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react"
-import CrudTable from "../../ui/CrudTable.jsx"
-import CrudModal from "../../ui/CrudModal.jsx"
-import DeleteConfirmModal from "../../ui/DeleteConfirmModal.jsx"
-import { useAdminToast } from "../../components/AdminToastProvider"
+import { useEffect, useState } from 'react'
+import CrudTable from '../../../../clean/admin/src/components/ui/CrudTable.jsx'
+import CrudModal from '../../../../clean/admin/src/components/ui/CrudModal.jsx'
+import DeleteConfirmModal from '../../../../clean/admin/src/components/ui/DeleteConfirmModal.jsx'
+import { useAdminToast } from '../../components/AdminToastProvider'
 
-import * as categoriesApi from "./resourceCategories.api"
+import * as categoriesApi from './resourceCategories.api'
 
 export default function ResourceCategoriesPage() {
   const { showToast } = useAdminToast()
@@ -27,9 +27,9 @@ export default function ResourceCategoriesPage() {
         })
         setRows(data)
       } catch (err) {
-        if (err.name === "AbortError") return
+        if (err.name === 'AbortError') return
         setError(err.message)
-        showToast(err.message, "error")
+        showToast(err.message, 'error')
       } finally {
         setLoading(false)
       }
@@ -47,28 +47,28 @@ export default function ResourceCategoriesPage() {
     try {
       if (editing) {
         await categoriesApi.updateResourceCategory(editing.id, formData)
-        showToast("Category updated")
+        showToast('Category updated')
       } else {
         await categoriesApi.createResourceCategory(formData)
-        showToast("Category created")
+        showToast('Category created')
       }
 
       setEditing(null)
       setModalOpen(false)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
   async function handleDelete() {
     try {
       await categoriesApi.deleteResourceCategory(deleteId)
-      showToast("Category deleted")
+      showToast('Category deleted')
       setDeleteId(null)
       await reload()
     } catch (err) {
-      showToast(err.message, "error")
+      showToast(err.message, 'error')
     }
   }
 
@@ -95,9 +95,9 @@ export default function ResourceCategoriesPage() {
         loading={loading}
         error={error}
         columns={[
-          { key: "name", label: "Name" },
-          { key: "slug", label: "Slug" },
-          { key: "image", label: "Image" },
+          { key: 'name', label: 'Name' },
+          { key: 'slug', label: 'Slug' },
+          { key: 'image', label: 'Image' },
         ]}
         onEdit={(row) => {
           setEditing(row)
@@ -110,10 +110,10 @@ export default function ResourceCategoriesPage() {
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "name", label: "Name" },
-          { name: "slug", label: "Slug" },
-          { name: "description", label: "Description", type: "textarea" },
-          { name: "image", label: "Image Path" },
+          { name: 'name', label: 'Name' },
+          { name: 'slug', label: 'Slug' },
+          { name: 'description', label: 'Description', type: 'textarea' },
+          { name: 'image', label: 'Image Path' },
         ]}
         onSave={handleSave}
         onClose={() => {

@@ -1,5 +1,10 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react"
+
+import CrudTable from "../components/ui/CrudTable"
+import CrudModal from "../components/ui/CrudModal"
+import DeleteConfirmModal from "../components/ui/DeleteConfirmModal"
+
 import {
   fetchReflectionTemplates,
   createReflectionTemplate,
@@ -7,114 +12,113 @@ import {
   deleteReflectionTemplate,
 } from "../api/content.api"
 
-function showToast(message, type = "info") {
-  console.log(`[${type}]`, message)
-}
-
 export default function ReflectionTemplatesPage() {
-  const [templates, setTemplates] = useState([])
+  const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [editingId, setEditingId] = useState(null)
+  const [error, setError] = useState(null)
 
-  const [formValues, setFormValues] = useState({
-    category: "",
-    title: "",
-    prompt: "",
-  })
+  const [editing, setEditing] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState(null)
 
-  useEffect(() => {
-    fetchReflectionTemplates()
-      .then(setTemplates)
-      .finally(() => setLoading(false))
-  }, [])
-
-  function handleChange(e) {
-    const { name, value } = e.target
-    setFormValues((prev) => ({ ...prev, [name]: value }))
-  }
-
-  function resetForm() {
-    setEditingId(null)
-    setFormValues({ category: "", title: "", prompt: "" })
-  }
-
-  function startEdit(tpl) {
-    setEditingId(tpl.id)
-    setFormValues({
-      category: tpl.category || "",
-      title: tpl.title || "",
-      prompt: tpl.prompt || "",
-    })
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setSaving(true)
-
+  async function load() {
     try {
-      if (editingId) {
-        const updated = await updateReflectionTemplate(editingId, formValues)
-        setTemplates((prev) =>
-          prev.map((t) => (t.id === editingId ? updated : t))
-        )
-        showToast("Template updated")
-      } else {
-        const created = await createReflectionTemplate(formValues)
-        setTemplates((prev) => [created, ...prev])
-        showToast("Template created")
-      }
-      resetForm()
+      setLoading(true)
+      const data = await fetchReflectionTemplates()
+      setRows(data || [])
     } catch (err) {
-      showToast(err.message, "error")
+      setError("Failed to load reflection templates")
     } finally {
-      setSaving(false)
+      setLoading(false)
     }
   }
 
-  async function handleDelete(id) {
-    if (!window.confirm("Delete this template?")) return
-    await deleteReflectionTemplate(id)
-    setTemplates((prev) => prev.filter((t) => t.id !== id))
-    showToast("Template deleted")
+  useEffect(() => {
+    load()
+  }, [])
+
+  async function handleSave(formData) {
+    try {
+      if (editing) {
+        await updateReflectionTemplate(editing.id, formData)
+      } else {
+        await createReflectionTemplate(formData)
+      }
+
+      setEditing(null)
+      setModalOpen(false)
+      load()
+    } catch (err) {
+      alert("Failed to save reflection template")
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await deleteReflectionTemplate(deleteId)
+      setDeleteId(null)
+      load()
+    } catch (err) {
+      alert("Failed to delete reflection template")
+    }
   }
 
   return (
     <>
-      <h1>Reflection Templates</h1>
-
-      <form onSubmit={handleSubmit} className="card mt-2">
-        <input name="category" placeholder="Category" value={formValues.category} onChange={handleChange} />
-        <input name="title" placeholder="Title" value={formValues.title} onChange={handleChange} />
-        <textarea name="prompt" rows={3} placeholder="Prompt" value={formValues.prompt} onChange={handleChange} />
-        <button className="btn btn-primary" disabled={saving}>
-          {editingId ? "Save Changes" : "Create"}
+      <div className="flex justify-between items-center mb-4">
+        <h1>Reflection Templates</h1>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            setEditing(null)
+            setModalOpen(true)
+          }}
+        >
+          + Add Template
         </button>
-      </form>
+      </div>
 
-      <table className="admin-table mt-2">
-        <thead>
-          <tr>
-            <th>Category</th>
-            <th>Title</th>
-            <th>Prompt</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          {templates.map((tpl) => (
-            <tr key={tpl.id}>
-              <td>{tpl.category}</td>
-              <td>{tpl.title}</td>
-              <td>{tpl.prompt}</td>
-              <td>
-                <button onClick={() => startEdit(tpl)}>Edit</button>
-                <button onClick={() => handleDelete(tpl.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {error && <p className="text-muted">{error}</p>}
+
+      <CrudTable
+        rows={rows}
+        loading={loading}
+        columns={[
+          { key: "category", label: "Category" },
+          { key: "title", label: "Title" },
+          { key: "prompt", label: "Prompt" },
+        ]}
+        onEdit={(row) => {
+          setEditing(row)
+          setModalOpen(true)
+        }}
+        onDelete={(row) => setDeleteId(row.id)}
+      />
+
+      <CrudModal
+        open={modalOpen}
+        initial={editing}
+        fields={[
+          { name: "category", label: "Category" },
+          { name: "title", label: "Title" },
+          {
+            name: "prompt",
+            label: "Prompt",
+            type: "textarea",
+          },
+        ]}
+        onSave={handleSave}
+        onClose={() => {
+          setEditing(null)
+          setModalOpen(false)
+        }}
+      />
+
+      <DeleteConfirmModal
+        open={deleteId !== null}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </>
   )
 }

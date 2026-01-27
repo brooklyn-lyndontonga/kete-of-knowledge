@@ -1,7 +1,9 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react"
-import CrudTable from "../ui/CrudTable.jsx"
-import CrudModal from "../ui/CrudModal.jsx"
-import DeleteConfirmModal from "../ui/DeleteConfirmModal.jsx"
+
+import CrudTable from "../components/ui/CrudTable"
+import CrudModal from "../components/ui/CrudModal"
+import DeleteConfirmModal from "../components/ui/DeleteConfirmModal"
 
 import {
   fetchConditions,
@@ -10,54 +12,77 @@ import {
   deleteCondition,
 } from "../api/content.api"
 
-function showToast(message, type = "info") {
-  console.log(`[${type}]`, message)
-}
-
 export default function ConditionsPage() {
   const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
   const [editing, setEditing] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
 
-  useEffect(() => {
-    fetchConditions().then(setRows)
-  }, [])
-
-  async function reload() {
-    setRows(await fetchConditions())
+  async function load() {
+    try {
+      setLoading(true)
+      const data = await fetchConditions()
+      setRows(data || [])
+    } catch (err) {
+      setError("Failed to load conditions")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  async function handleSave(data) {
-    if (editing) {
-      await updateCondition(editing.id, data)
-      showToast("Condition updated")
-    } else {
-      await createCondition(data)
-      showToast("Condition created")
+  useEffect(() => {
+    load()
+  }, [])
+
+  async function handleSave(formData) {
+    try {
+      if (editing) {
+        await updateCondition(editing.id, formData)
+      } else {
+        await createCondition(formData)
+      }
+
+      setEditing(null)
+      setModalOpen(false)
+      load()
+    } catch (err) {
+      alert("Failed to save condition")
     }
-    setEditing(null)
-    setModalOpen(false)
-    reload()
   }
 
   async function handleDelete() {
-    await deleteCondition(deleteId)
-    setDeleteId(null)
-    reload()
-    showToast("Condition deleted")
+    try {
+      await deleteCondition(deleteId)
+      setDeleteId(null)
+      load()
+    } catch (err) {
+      alert("Failed to delete condition")
+    }
   }
 
   return (
     <>
-      <h1>Conditions</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1>Conditions</h1>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            setEditing(null)
+            setModalOpen(true)
+          }}
+        >
+          + Add Condition
+        </button>
+      </div>
 
-      <button className="btn btn-primary" onClick={() => setModalOpen(true)}>
-        + Add Condition
-      </button>
+      {error && <p className="text-muted">{error}</p>}
 
       <CrudTable
         rows={rows}
+        loading={loading}
         columns={[
           { key: "title", label: "Title" },
           { key: "summary", label: "Summary" },
