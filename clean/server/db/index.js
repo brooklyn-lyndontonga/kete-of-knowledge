@@ -3,15 +3,19 @@ import { open } from "sqlite"
 import path from "path"
 import { fileURLToPath } from "url"
 
+// --------------------------------------------------
+// SQLite singleton connection
+// --------------------------------------------------
+
 let db = null
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const DB_PATH = path.join(__dirname, "database.db")
 
-// --------------------
-// Init DB connection
-// --------------------
+// --------------------------------------------------
+// Init DB connection (singleton)
+// --------------------------------------------------
 export async function initDB() {
   if (db) return db
 
@@ -26,18 +30,25 @@ export async function initDB() {
   return db
 }
 
-// 🔑 THIS IS WHAT ROUTES SHOULD USE
+// 🔑 All routes should call this
 export async function getDB() {
   return initDB()
 }
 
-// --------------------
-// Init schema
-// --------------------
+// --------------------------------------------------
+// Init schema (safe to run on every startup)
+// --------------------------------------------------
 export async function initSchema() {
   const db = await initDB()
 
+  // Enable foreign key support
+  await db.exec(`PRAGMA foreign_keys = ON;`)
+
   await db.exec(`
+    -- ======================
+    -- Admin / App Shared Tables
+    -- ======================
+
     CREATE TABLE IF NOT EXISTS snapshots (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       mood TEXT,
@@ -76,6 +87,10 @@ export async function initSchema() {
       createdAt TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- ======================
+    -- Library Categorisation
+    -- ======================
+
     CREATE TABLE IF NOT EXISTS library_categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       key TEXT UNIQUE NOT NULL,
@@ -87,9 +102,17 @@ export async function initSchema() {
       resource_id INTEGER NOT NULL,
       category_id INTEGER NOT NULL,
       PRIMARY KEY (resource_id, category_id),
-      FOREIGN KEY (resource_id) REFERENCES learning_resources(id) ON DELETE CASCADE,
-      FOREIGN KEY (category_id) REFERENCES library_categories(id) ON DELETE CASCADE
+      FOREIGN KEY (resource_id)
+        REFERENCES learning_resources(id)
+        ON DELETE CASCADE,
+      FOREIGN KEY (category_id)
+        REFERENCES library_categories(id)
+        ON DELETE CASCADE
     );
+
+    -- ======================
+    -- Conditions / Education
+    -- ======================
 
     CREATE TABLE IF NOT EXISTS conditions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,6 +123,7 @@ export async function initSchema() {
     );
   `)
 
+  // Seed base library categories (safe to re-run)
   await db.exec(`
     INSERT OR IGNORE INTO library_categories (key, title, description)
     VALUES

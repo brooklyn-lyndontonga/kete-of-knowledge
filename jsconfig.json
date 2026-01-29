@@ -2,13 +2,16 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@app/*": ["src/app/*"],
-      "@features/*": ["src/features/*"],
-      "@ui/*": ["src/ui/*"],
-      "@lib/*": ["src/lib/*"]
+      "@/*": ["clean/mobile/src/*"],
+      "@screens/*": ["clean/mobile/src/screens/*"],
+      "@stacks/*": ["clean/mobile/src/stacks/*"],
+      "@components/*": ["clean/mobile/src/components/*"],
+      "@api/*": ["clean/mobile/src/api/*"],
+      "@storage/*": ["clean/mobile/src/storage/*"]
     },
     "typeRoots": ["./node_modules/@types"],
     "types": []
   },
-  "exclude": ["node_modules", "dist"]
+  "include": ["clean/mobile/**/*"],
+  "exclude": ["node_modules", "**/node_modules/*", "dist"]
 }

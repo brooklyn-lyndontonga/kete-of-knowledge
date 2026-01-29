@@ -1,0 +1,50 @@
+export const schema = `
+CREATE TABLE IF NOT EXISTS app_state (
+  key TEXT PRIMARY KEY,
+  value TEXT
+);
+
+CREATE TABLE IF NOT EXISTS consent (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  accepted INTEGER NOT NULL,
+  accepted_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS profiles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  notes TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS symptoms (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  symptom TEXT NOT NULL,
+  severity INTEGER,
+  notes TEXT,
+  tags TEXT,
+  logged_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS medicines (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  type TEXT,
+  dosage TEXT,
+  notes TEXT,
+  active INTEGER DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS goals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  description TEXT,
+  active INTEGER DEFAULT 1,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT
+);
+`;
