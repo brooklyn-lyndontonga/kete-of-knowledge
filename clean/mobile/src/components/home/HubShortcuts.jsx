@@ -1,5 +1,6 @@
-/* eslint-disable react/prop-types */
 /* eslint-disable react/react-in-jsx-scope */
+/* eslint-disable react/prop-types */
+
 import { View, Text, Pressable } from "react-native"
 
 export default function HubShortcuts({ onNavigate }) {
@@ -11,7 +12,11 @@ export default function HubShortcuts({ onNavigate }) {
         <Pressable
           key={item}
           onPress={() => onNavigate(item)}
-          style={{ padding: 12, backgroundColor: "#DDD", borderRadius: 10 }}
+          style={{
+            padding: 12,
+            backgroundColor: "#DDD",
+            borderRadius: 10,
+          }}
         >
           <Text>{item}</Text>
         </Pressable>

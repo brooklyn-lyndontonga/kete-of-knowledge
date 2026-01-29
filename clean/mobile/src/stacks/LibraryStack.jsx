@@ -7,11 +7,7 @@ const Stack = createNativeStackNavigator()
 export default function LibraryStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="LibraryMain"
-        component={LibraryScreen}
-        options={{ title: "Library" }}
-      />
+      <Stack.Screen name="LibraryMain" component={LibraryScreen} />
     </Stack.Navigator>
   )
 }

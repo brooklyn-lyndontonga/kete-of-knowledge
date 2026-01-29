@@ -1,31 +1,31 @@
-import { getDB } from "../db";
+import { getDB } from "../db"
 
 // -------------------------
 // Add a symptom entry
 // -------------------------
-export function addSymptom({ symptom, severity, notes, tags }) {
-  const db = getDB();
+export function addSymptom({ symptom, severity = null, notes = "" }) {
+  const db = getDB()
 
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
         `
-        INSERT INTO symptoms (symptom, severity, notes, tags)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO symptoms (symptom, severity, notes)
+        VALUES (?, ?, ?)
         `,
-        [symptom, severity, notes, tags],
+        [symptom, severity, notes],
         (_, result) => resolve(result),
         (_, error) => reject(error)
-      );
-    });
-  });
+      )
+    })
+  })
 }
 
 // -------------------------
 // Get all symptoms
 // -------------------------
 export function getSymptoms() {
-  const db = getDB();
+  const db = getDB()
 
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
@@ -38,7 +38,7 @@ export function getSymptoms() {
         [],
         (_, { rows }) => resolve(rows._array),
         (_, error) => reject(error)
-      );
-    });
-  });
+      )
+    })
+  })
 }

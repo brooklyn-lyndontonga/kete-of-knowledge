@@ -1,14 +1,12 @@
-/* eslint-disable react/prop-types */
 /* eslint-disable react/react-in-jsx-scope */
+/* eslint-disable react/prop-types */
 import { View, Text } from "react-native"
 
 export default function WhakataukiBanner({ text, translation }) {
   return (
-    <View style={{ padding: 16, backgroundColor: "#F5F5F5", borderRadius: 12 }}>
-      <Text style={{ fontSize: 18, fontWeight: "600" }}>{text}</Text>
-      {translation && (
-        <Text style={{ marginTop: 8, color: "#666" }}>{translation}</Text>
-      )}
+    <View style={{ padding: 16, backgroundColor: "#EEE", borderRadius: 10 }}>
+      <Text style={{ fontSize: 18 }}>{text}</Text>
+      <Text>{translation}</Text>
     </View>
   )
 }

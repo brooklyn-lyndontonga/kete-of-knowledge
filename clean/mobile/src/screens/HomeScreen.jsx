@@ -1,23 +1,40 @@
-/* eslint-disable react/prop-types */
 /* eslint-disable react/react-in-jsx-scope */
+/* eslint-disable react/prop-types */
+
 import { ScrollView } from "react-native"
+import { useState } from "react"
 
 import WhakataukiBanner from "../components/home/WhakataukiBanner"
-import QuickView from "../components/home/QuickView"
 import HubShortcuts from "../components/home/HubShortcuts"
+import RemindersPreview from "../components/home/RemindersPreview"
 
 export default function HomeScreen({ navigation }) {
+  // MVP: reminders can be empty or mocked
+  const [reminders] = useState([])
+
   return (
     <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+      {/* 🌿 Grounding */}
       <WhakataukiBanner
-        text="He oranga ngākau, he pikinga waiora"
-        translation="Positive feelings enhance wellbeing"
+        text="He aha te mea nui o te ao?"
+        translation="What is the most important thing in the world?"
       />
 
-      <QuickView label="Symptoms today" value="3" />
-      <QuickView label="Active goals" value="2" />
+      {/* 🧭 Navigation shortcuts */}
+     <HubShortcuts
+        onNavigate={(item) => {
+          if (item === "Symptoms") navigation.navigate("SymptomsHub")
+          if (item === "Rongoā") navigation.navigate("MedicinesHub")
+          if (item === "Notes") navigation.navigate("Hub")
+          if (item === "Checklists") navigation.navigate("Hub")
+        }}
+      />
 
-      <HubShortcuts onNavigate={(route) => navigation.navigate(route)} />
+      {/* ⏰ Reminders */}
+      <RemindersPreview
+        items={reminders}
+        onAdd={() => navigation.navigate("Hub")}
+      />
     </ScrollView>
   )
 }
