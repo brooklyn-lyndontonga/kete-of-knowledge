@@ -1,16 +1,11 @@
 /* eslint-disable react/react-in-jsx-scope */
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { View, Text } from "react-native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
-const Stack = createNativeStackNavigator();
+import ProfileScreen from "../screens/profile/ProfileScreen"
+import AddGoalScreen from "../screens/profile/AddGoalScreen"
+import EditProfileScreen from "../screens/profile/EditProfileScreen"
 
-function ProfileScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Text>Profile</Text>
-    </View>
-  );
-}
+const Stack = createNativeStackNavigator()
 
 export default function ProfileStack() {
   return (
@@ -20,6 +15,18 @@ export default function ProfileStack() {
         component={ProfileScreen}
         options={{ title: "Profile" }}
       />
+
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{ title: "Edit Profile" }}
+      />
+
+      <Stack.Screen
+        name="AddGoal"
+        component={AddGoalScreen}
+        options={{ title: "Add Goal" }}
+      />
     </Stack.Navigator>
-  );
+  )
 }

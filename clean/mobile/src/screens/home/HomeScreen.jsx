@@ -1,12 +1,12 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/prop-types */
 
-import { ScrollView } from "react-native"
-import { useState } from "react"
+import { ScrollView } from 'react-native'
+import { useState } from 'react'
 
-import WhakataukiBanner from "../components/home/WhakataukiBanner"
-import HubShortcuts from "../components/home/HubShortcuts"
-import RemindersPreview from "../components/home/RemindersPreview"
+import WhakataukiBanner from '../../components/home/WhakataukiBanner'
+import HubShortcuts from '../../components/home/HubShortcuts'
+import RemindersPreview from '../../components/home/RemindersPreview'
 
 export default function HomeScreen({ navigation }) {
   // MVP: reminders can be empty or mocked
@@ -21,19 +21,19 @@ export default function HomeScreen({ navigation }) {
       />
 
       {/* 🧭 Navigation shortcuts */}
-     <HubShortcuts
+      <HubShortcuts
         onNavigate={(item) => {
-          if (item === "Symptoms") navigation.navigate("SymptomsHub")
-          if (item === "Rongoā") navigation.navigate("MedicinesHub")
-          if (item === "Notes") navigation.navigate("Hub")
-          if (item === "Checklists") navigation.navigate("Hub")
+          if (item === 'Symptoms') navigation.navigate('SymptomsHub')
+          if (item === 'Rongoā') navigation.navigate('MedicinesHub')
+          if (item === 'Notes') navigation.navigate('Hub')
+          if (item === 'Checklists') navigation.navigate('Hub')
         }}
       />
 
       {/* ⏰ Reminders */}
       <RemindersPreview
         items={reminders}
-        onAdd={() => navigation.navigate("Hub")}
+        onAdd={() => navigation.navigate('Hub')}
       />
     </ScrollView>
   )

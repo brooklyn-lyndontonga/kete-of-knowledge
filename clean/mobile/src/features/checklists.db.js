@@ -1,19 +1,19 @@
 import { getDB } from "../db"
 
 // -------------------------
-// Add symptom
+// Add checklist
 // -------------------------
-export function addSymptom({ symptom, severity = null, notes = "", tags = "" }) {
+export function addChecklist({ title }) {
   const db = getDB()
 
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
         `
-        INSERT INTO symptoms (symptom, severity, notes, tags)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO checklists (title)
+        VALUES (?)
         `,
-        [symptom, severity, notes, tags],
+        [title],
         (_, result) => resolve(result),
         (_, error) => reject(error)
       )
@@ -22,9 +22,9 @@ export function addSymptom({ symptom, severity = null, notes = "", tags = "" }) 
 }
 
 // -------------------------
-// Get all symptoms
+// Get checklists
 // -------------------------
-export function getSymptoms() {
+export function getChecklists() {
   const db = getDB()
 
   return new Promise((resolve, reject) => {
@@ -32,8 +32,8 @@ export function getSymptoms() {
       tx.executeSql(
         `
         SELECT *
-        FROM symptoms
-        ORDER BY logged_at DESC
+        FROM checklists
+        ORDER BY id DESC
         `,
         [],
         (_, { rows }) => resolve(rows._array),

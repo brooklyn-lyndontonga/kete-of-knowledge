@@ -2,7 +2,8 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { View, TextInput, Button } from "react-native"
 import { useState } from "react"
-import { addSymptom } from "../features/symptoms.db.js"
+
+import { addSymptom } from "../../features/symptoms.db.js"
 
 export default function AddSymptomScreen({ navigation }) {
   const [symptom, setSymptom] = useState("")
@@ -22,7 +23,7 @@ export default function AddSymptomScreen({ navigation }) {
   return (
     <View style={{ padding: 16, gap: 12 }}>
       <TextInput placeholder="Symptom" value={symptom} onChangeText={setSymptom} />
-      <TextInput placeholder="Severity" value={severity} onChangeText={setSeverity} />
+      <TextInput placeholder="Severity (1–10)" value={severity} onChangeText={setSeverity} />
       <TextInput placeholder="Notes" value={notes} onChangeText={setNotes} />
       <Button title="Save" onPress={save} />
     </View>

@@ -1,19 +1,23 @@
 import { getDB } from "../db"
 
 // -------------------------
-// Add symptom
+// Add reminder
 // -------------------------
-export function addSymptom({ symptom, severity = null, notes = "", tags = "" }) {
+export function addReminder({
+  title,
+  schedule = "",
+  notes = "",
+}) {
   const db = getDB()
 
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
         `
-        INSERT INTO symptoms (symptom, severity, notes, tags)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO reminders (title, schedule, notes, active)
+        VALUES (?, ?, ?, 1)
         `,
-        [symptom, severity, notes, tags],
+        [title, schedule, notes],
         (_, result) => resolve(result),
         (_, error) => reject(error)
       )
@@ -22,9 +26,9 @@ export function addSymptom({ symptom, severity = null, notes = "", tags = "" }) 
 }
 
 // -------------------------
-// Get all symptoms
+// Get reminders
 // -------------------------
-export function getSymptoms() {
+export function getReminders() {
   const db = getDB()
 
   return new Promise((resolve, reject) => {
@@ -32,8 +36,8 @@ export function getSymptoms() {
       tx.executeSql(
         `
         SELECT *
-        FROM symptoms
-        ORDER BY logged_at DESC
+        FROM reminders
+        ORDER BY active DESC, id DESC
         `,
         [],
         (_, { rows }) => resolve(rows._array),
