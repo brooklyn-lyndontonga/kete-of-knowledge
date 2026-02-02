@@ -1,6 +1,7 @@
  
 /* eslint-disable react/react-in-jsx-scope */
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import { colors, typography } from "../theme"
 
 import HubScreen from "../screens/hub/HubScreen"
 import MySymptomsScreen from "../screens/hub/MySymptomsScreen"
@@ -18,11 +19,21 @@ const Stack = createNativeStackNavigator()
 
 export default function HubStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.cornsilk },
+        headerTintColor: colors.olive,
+        headerTitleStyle: {
+          fontFamily: typography.title.fontFamily,
+          fontSize: typography.title.fontSize,
+          color: colors.text,
+        },
+      }}
+    >
       <Stack.Screen
         name="HubMain"
         component={HubScreen}
-        options={{ title: "My Hub" }}
+        options={{ title: "My Hub / Te Puna" }}
       />
 
       <Stack.Screen name="MySymptoms" component={MySymptomsScreen} />

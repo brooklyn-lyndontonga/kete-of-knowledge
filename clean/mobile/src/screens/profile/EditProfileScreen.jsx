@@ -1,17 +1,18 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/prop-types */
 
-import { View, TextInput, Button } from "react-native";
-import { useState } from "react";
-import { saveProfile } from "../../features/profile.db.js";
+import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
+import { useState } from "react"
+import { saveProfile } from "../../features/profile.db.js"
+import { colors, radii, spacing, typography } from "../../theme"
 
 export default function EditProfileScreen({ navigation }) {
-  const [name, setName] = useState("");
-  const [dob, setDob] = useState("");
-  const [healthInfo, setHealthInfo] = useState("");
+  const [name, setName] = useState("")
+  const [dob, setDob] = useState("")
+  const [healthInfo, setHealthInfo] = useState("")
 
   async function save() {
-    if (!name) return;
+    if (!name) return
 
     await saveProfile({
       name,
@@ -19,23 +20,71 @@ export default function EditProfileScreen({ navigation }) {
       health_info: healthInfo,
       health_providers: [],
       emergency_contacts: [],
-    });
+    })
 
-    navigation.goBack();
+    navigation.goBack()
   }
 
   return (
-    <View style={{ padding: 16, gap: 12 }}>
-      <TextInput placeholder="Name" value={name} onChangeText={setName} />
-      <TextInput placeholder="Date of birth" value={dob} onChangeText={setDob} />
+    <View style={styles.container}>
+      <Text style={styles.title}>Edit Profile</Text>
+      <TextInput
+        placeholder="Name"
+        value={name}
+        onChangeText={setName}
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Date of birth"
+        value={dob}
+        onChangeText={setDob}
+        style={styles.input}
+      />
       <TextInput
         placeholder="Health info (conditions, allergies, etc)"
         value={healthInfo}
         onChangeText={setHealthInfo}
         multiline
+        style={[styles.input, styles.inputMultiline]}
       />
 
-      <Button title="Save Profile" onPress={save} />
+      <Pressable onPress={save} style={styles.primaryButton}>
+        <Text style={styles.primaryText}>Save Profile</Text>
+      </Pressable>
     </View>
-  );
+  )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: spacing.lg,
+    gap: spacing.md,
+    backgroundColor: colors.cornsilk,
+    flex: 1,
+  },
+  title: {
+    ...typography.title,
+    color: colors.text,
+  },
+  input: {
+    padding: spacing.md,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+  },
+  inputMultiline: {
+    minHeight: 120,
+    textAlignVertical: "top",
+  },
+  primaryButton: {
+    padding: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.olive,
+    alignItems: "center",
+  },
+  primaryText: {
+    ...typography.bodyStrong,
+    color: colors.cornsilk,
+  },
+})

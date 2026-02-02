@@ -1,36 +1,69 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/prop-types */
 
-import { View, Text, Pressable } from "react-native"
+import { View, Text, Pressable, StyleSheet } from "react-native"
+import { colors, radii, shadow, spacing, typography } from "../theme"
 
 export default function MedicinesHubScreen({ navigation }) {
   return (
-    <View style={{ padding: 16, gap: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: "600" }}>
-        Rongoā & Medicines
-      </Text>
+    <View style={styles.container}>
+      <View>
+        <Text style={styles.title}>Rongoā & Medicines</Text>
+        <Text style={styles.subtitle}>Rongoā Māori</Text>
+      </View>
 
       <Pressable
         onPress={() => navigation.navigate("AddMedicine")}
-        style={{
-          padding: 16,
-          backgroundColor: "#EEE",
-          borderRadius: 10,
-        }}
+        style={({ pressed }) => [
+          styles.card,
+          pressed && styles.cardPressed,
+        ]}
       >
-        <Text>Log a medicine / rongoā</Text>
+        <Text style={styles.cardText}>Log a medicine / rongoā</Text>
       </Pressable>
 
       <Pressable
         onPress={() => navigation.navigate("Library")}
-        style={{
-          padding: 16,
-          backgroundColor: "#EEE",
-          borderRadius: 10,
-        }}
+        style={({ pressed }) => [
+          styles.card,
+          pressed && styles.cardPressed,
+        ]}
       >
-        <Text>Learn about rongoā & medicines</Text>
+        <Text style={styles.cardText}>Learn about rongoā & medicines</Text>
       </Pressable>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: spacing.lg,
+    gap: spacing.md,
+    backgroundColor: colors.cornsilk,
+    flex: 1,
+  },
+  title: {
+    ...typography.title,
+    color: colors.text,
+  },
+  subtitle: {
+    ...typography.caption,
+    color: colors.muted,
+  },
+  card: {
+    padding: spacing.lg,
+    backgroundColor: colors.card,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.card,
+  },
+  cardPressed: {
+    transform: [{ scale: 0.99 }],
+    opacity: 0.92,
+  },
+  cardText: {
+    ...typography.bodyStrong,
+    color: colors.text,
+  },
+})

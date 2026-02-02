@@ -1,7 +1,8 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { useEffect, useState } from "react"
-import { View, Text, ScrollView, ActivityIndicator } from "react-native"
-import { fetchWhakatauki } from "../api/appApi.js"
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native"
+import { fetchWhakatauki } from "../../api/appApi.js"
+import { colors, radii, shadow, spacing, typography } from "../../theme"
 
 export default function WhakataukiScreen() {
   const [data, setData] = useState(null)
@@ -11,24 +12,48 @@ export default function WhakataukiScreen() {
   }, [])
 
   if (!data) {
-    return <ActivityIndicator style={{ marginTop: 40 }} />
+    return <ActivityIndicator style={{ marginTop: 40 }} color={colors.olive} />
   }
 
   return (
-    <ScrollView style={{ padding: 16 }}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       {data.map((item) => (
-        <View key={item.id} style={{ marginBottom: 16 }}>
-          <Text style={{ fontSize: 18, fontWeight: "600" }}>
-            {item.text}
-          </Text>
+        <View key={item.id} style={styles.card}>
+          <Text style={styles.title}>{item.text}</Text>
 
           {item.translation && (
-            <Text style={{ opacity: 0.7 }}>
-              {item.translation}
-            </Text>
+            <Text style={styles.translation}>{item.translation}</Text>
           )}
         </View>
       ))}
     </ScrollView>
   )
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: colors.cornsilk,
+  },
+  content: {
+    padding: spacing.lg,
+    gap: spacing.md,
+    paddingBottom: 40,
+  },
+  card: {
+    padding: spacing.lg,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+    ...shadow.card,
+  },
+  title: {
+    ...typography.title,
+    color: colors.text,
+  },
+  translation: {
+    ...typography.body,
+    color: colors.muted,
+    marginTop: spacing.xs,
+  },
+})

@@ -1,7 +1,8 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/prop-types */
-import { View, TextInput, Button, Text } from "react-native"
+import { View, TextInput, Pressable, Text, StyleSheet } from "react-native"
 import { useState } from "react"
+import { colors, radii, spacing, typography } from "../../theme"
 
 export default function AddChecklistScreen({ navigation }) {
   const [title, setTitle] = useState("")
@@ -21,24 +22,88 @@ export default function AddChecklistScreen({ navigation }) {
   }
 
   return (
-    <View style={{ padding: 16, gap: 12 }}>
-      <TextInput placeholder="Checklist title" value={title} onChangeText={setTitle} />
+    <View style={styles.container}>
+      <Text style={styles.title}>New Checklist</Text>
+      <TextInput
+        placeholder="Checklist title"
+        value={title}
+        onChangeText={setTitle}
+        style={styles.input}
+      />
 
-      <View style={{ flexDirection: "row", gap: 8 }}>
+      <View style={styles.row}>
         <TextInput
           placeholder="Add item"
           value={item}
           onChangeText={setItem}
-          style={{ flex: 1 }}
+          style={[styles.input, styles.rowInput]}
         />
-        <Button title="Add" onPress={addItem} />
+        <Pressable onPress={addItem} style={styles.secondaryButton}>
+          <Text style={styles.secondaryText}>Add</Text>
+        </Pressable>
       </View>
 
       {items.map((i, idx) => (
-        <Text key={idx}>• {i.label}</Text>
+        <Text key={idx} style={styles.listItem}>
+          • {i.label}
+        </Text>
       ))}
 
-      <Button title="Save Checklist" onPress={save} />
+      <Pressable onPress={save} style={styles.primaryButton}>
+        <Text style={styles.primaryText}>Save Checklist</Text>
+      </Pressable>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: spacing.lg,
+    gap: spacing.md,
+    backgroundColor: colors.cornsilk,
+    flex: 1,
+  },
+  title: {
+    ...typography.title,
+    color: colors.text,
+  },
+  row: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    alignItems: "center",
+  },
+  input: {
+    padding: spacing.md,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+  },
+  rowInput: {
+    flex: 1,
+  },
+  listItem: {
+    ...typography.body,
+    color: colors.text,
+  },
+  secondaryButton: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.pill,
+    backgroundColor: colors.meringue,
+  },
+  secondaryText: {
+    ...typography.bodyStrong,
+    color: colors.olive,
+  },
+  primaryButton: {
+    padding: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.olive,
+    alignItems: "center",
+  },
+  primaryText: {
+    ...typography.bodyStrong,
+    color: colors.cornsilk,
+  },
+})

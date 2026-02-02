@@ -1,43 +1,33 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/prop-types */
 
-import { View, Text, Pressable } from "react-native"
+import { View, Text, Pressable, StyleSheet } from "react-native"
+import { colors, radii, shadow, spacing, typography } from "../../theme"
 
 export default function RemindersPreview({ items = [], onAdd }) {
   return (
-    <View style={{ gap: 8 }}>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ fontSize: 18, fontWeight: "600" }}>
-          Reminders
-        </Text>
-        <Pressable onPress={onAdd}>
-          <Text style={{ color: "#007AFF" }}>Add</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>Reminders</Text>
+          <Text style={styles.subtitle}>Whakamahara</Text>
+        </View>
+        <Pressable onPress={onAdd} style={styles.action}>
+          <Text style={styles.actionText}>Add</Text>
         </Pressable>
       </View>
 
       {items.length === 0 ? (
-        <Text style={{ opacity: 0.6 }}>
-          No reminders set for today
-        </Text>
+        <Text style={styles.empty}>No reminders set for today</Text>
       ) : (
         items.map((item) => (
           <View
             key={item.id}
-            style={{
-              padding: 12,
-              borderRadius: 8,
-              backgroundColor: "#f3f3f3",
-            }}
+            style={styles.card}
           >
-            <Text style={{ fontWeight: "500" }}>{item.title}</Text>
+            <Text style={styles.cardTitle}>{item.title}</Text>
             {item.time ? (
-              <Text style={{ opacity: 0.6 }}>{item.time}</Text>
+              <Text style={styles.cardMeta}>{item.time}</Text>
             ) : null}
           </View>
         ))
@@ -45,3 +35,52 @@ export default function RemindersPreview({ items = [], onAdd }) {
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    gap: spacing.sm,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  title: {
+    ...typography.title,
+    color: colors.text,
+  },
+  subtitle: {
+    ...typography.caption,
+    color: colors.muted,
+  },
+  action: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    borderRadius: radii.pill,
+    backgroundColor: colors.olive,
+  },
+  actionText: {
+    ...typography.caption,
+    color: colors.cornsilk,
+  },
+  empty: {
+    ...typography.body,
+    color: colors.muted,
+  },
+  card: {
+    padding: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.card,
+  },
+  cardTitle: {
+    ...typography.bodyStrong,
+    color: colors.text,
+  },
+  cardMeta: {
+    ...typography.caption,
+    color: colors.muted,
+  },
+})

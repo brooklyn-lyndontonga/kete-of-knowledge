@@ -1,22 +1,45 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/react-in-jsx-scope */
-import { View, Text, Pressable } from "react-native"
+import { View, Text, Pressable, StyleSheet } from "react-native"
+import { colors, radii, shadow, spacing, typography } from "../../theme"
 
-export default function HubSection({ title, onPress }) {
+export default function HubSection({ title, subtitle, onPress }) {
   return (
     <Pressable
       onPress={onPress}
-      style={{
-        padding: 16,
-        backgroundColor: "#F0F0F0",
-        borderRadius: 12,
-        marginBottom: 12,
-      }}
+      style={({ pressed }) => [
+        styles.card,
+        pressed && styles.cardPressed,
+      ]}
     >
-      <Text style={{ fontSize: 18, fontWeight: "600" }}>
-        {title}
-      </Text>
+      <Text style={styles.title}>{title}</Text>
+      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </Pressable>
   )
 }
+
+const styles = StyleSheet.create({
+  card: {
+    padding: spacing.lg,
+    backgroundColor: colors.card,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.sm,
+    ...shadow.card,
+  },
+  cardPressed: {
+    transform: [{ scale: 0.99 }],
+    opacity: 0.92,
+  },
+  title: {
+    ...typography.title,
+    color: colors.text,
+  },
+  subtitle: {
+    ...typography.caption,
+    color: colors.muted,
+    marginTop: 2,
+  },
+})

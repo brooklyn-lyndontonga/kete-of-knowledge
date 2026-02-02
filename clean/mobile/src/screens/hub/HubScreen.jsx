@@ -1,36 +1,59 @@
 /* eslint-disable react/prop-types */
-/* eslint-disable no-unused-vars */
+ 
 /* eslint-disable react/react-in-jsx-scope */
 
-import { ScrollView, View, Text, Pressable } from "react-native"
+import { ScrollView, StyleSheet, Text, View } from "react-native"
+import HubSection from "../../components/hub/HubSection"
+import { colors, layout, spacing, typography } from "../../theme"
 
 export default function HubScreen({ navigation }) {
   const sections = [
-    { label: "My Symptoms", route: "MySymptoms" },
-    { label: "My Medicines", route: "MyMedicines" },
-    { label: "Reminders", route: "Reminders" },
-    { label: "Checklists", route: "Checklists" },
-    { label: "Notes", route: "Notes" },
+    { label: "My Symptoms", subtitle: "Āku tohu", route: "MySymptoms" },
+    { label: "My Medicines", subtitle: "Āku rongoā", route: "MyMedicines" },
+    { label: "Reminders", subtitle: "Whakamahara", route: "Reminders" },
+    { label: "Checklists", subtitle: "Rārangi arowhai", route: "Checklists" },
+    { label: "Notes", subtitle: "Tuhipoka", route: "Notes" },
   ]
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+    >
+      <View style={styles.header}>
+        <Text style={styles.title}>My Hub</Text>
+        <Text style={styles.subtitle}>Te Puna</Text>
+      </View>
+
       {sections.map((item) => (
-        <Pressable
+        <HubSection
           key={item.route}
+          title={item.label}
+          subtitle={item.subtitle}
           onPress={() => navigation.navigate(item.route)}
-          style={{
-            padding: 14,
-            borderRadius: 8,
-            backgroundColor: "#ddd",
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ fontSize: 16, fontWeight: "600" }}>
-            {item.label}
-          </Text>
-        </Pressable>
+        />
       ))}
     </ScrollView>
   )
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: colors.cornsilk,
+  },
+  content: {
+    padding: layout.screenPadding,
+    paddingBottom: 40,
+  },
+  header: {
+    marginBottom: spacing.md,
+  },
+  title: {
+    ...typography.title,
+    color: colors.text,
+  },
+  subtitle: {
+    ...typography.caption,
+    color: colors.muted,
+  },
+})

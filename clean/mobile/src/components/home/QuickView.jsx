@@ -1,12 +1,27 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/prop-types */
-import { View, Text } from "react-native"
+import { View, Text, StyleSheet } from "react-native"
+import { colors, spacing, typography } from "../../theme"
 
 export default function QuickView({ label, value }) {
   return (
-    <View>
-      <Text>{label}</Text>
-      <Text style={{ fontSize: 24 }}>{value}</Text>
+    <View style={styles.container}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{value}</Text>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    gap: spacing.xs,
+  },
+  label: {
+    ...typography.caption,
+    color: colors.muted,
+  },
+  value: {
+    ...typography.display,
+    color: colors.olive,
+  },
+})

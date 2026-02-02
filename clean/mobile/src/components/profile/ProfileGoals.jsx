@@ -1,32 +1,37 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/prop-types */
 
-import { View, Text, Pressable } from "react-native"
+import { View, Text, Pressable, StyleSheet } from "react-native"
+import { colors, radii, shadow, spacing, typography } from "../../theme"
 
 export default function ProfileGoals({ goals = [], onToggle, onAdd }) {
   const active = goals.filter((g) => g.active === 1)
   const achieved = goals.filter((g) => g.active === 0)
 
   return (
-    <View style={{ gap: 16 }}>
-      <Text style={{ fontSize: 18, fontWeight: "600" }}>My Goals</Text>
+    <View style={styles.container}>
+      <View>
+        <Text style={styles.title}>My Goals</Text>
+        <Text style={styles.subtitle}>Ngā whāinga</Text>
+      </View>
 
       {/* Active goals */}
       {active.length === 0 ? (
-        <Text style={{ opacity: 0.6 }}>No active goals</Text>
+        <Text style={styles.empty}>No active goals</Text>
       ) : (
         active.map((goal) => (
           <Pressable
             key={goal.id}
             onPress={() => onToggle(goal)}
-            style={{
-              padding: 12,
-              borderRadius: 8,
-              backgroundColor: "#e8f5e9",
-            }}
+            style={({ pressed }) => [
+              styles.goalCard,
+              pressed && styles.cardPressed,
+            ]}
           >
-            <Text style={{ fontWeight: "600" }}>{goal.title}</Text>
-            {goal.description ? <Text>{goal.description}</Text> : null}
+            <Text style={styles.goalTitle}>{goal.title}</Text>
+            {goal.description ? (
+              <Text style={styles.goalBody}>{goal.description}</Text>
+            ) : null}
           </Pressable>
         ))
       )}
@@ -34,26 +39,24 @@ export default function ProfileGoals({ goals = [], onToggle, onAdd }) {
       {/* Add */}
       <Pressable
         onPress={onAdd}
-        style={{
-          padding: 12,
-          borderRadius: 8,
-          backgroundColor: "#ddd",
-          alignItems: "center",
-        }}
+        style={({ pressed }) => [
+          styles.addButton,
+          pressed && styles.cardPressed,
+        ]}
       >
-        <Text>Add Goal</Text>
+        <Text style={styles.addText}>Add Goal</Text>
       </Pressable>
 
       {/* Achieved */}
       {achieved.length > 0 && (
-        <View style={{ gap: 8 }}>
-          <Text style={{ fontWeight: "600" }}>Achieved</Text>
+        <View style={styles.achieved}>
+          <Text style={styles.achievedTitle}>Achieved</Text>
           {achieved.map((goal) => (
             <Pressable
               key={goal.id}
               onPress={() => onToggle(goal)}
             >
-              <Text style={{ textDecorationLine: "line-through", opacity: 0.6 }}>
+              <Text style={styles.achievedItem}>
                 {goal.title}
               </Text>
             </Pressable>
@@ -63,3 +66,64 @@ export default function ProfileGoals({ goals = [], onToggle, onAdd }) {
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    gap: spacing.md,
+  },
+  title: {
+    ...typography.title,
+    color: colors.text,
+  },
+  subtitle: {
+    ...typography.caption,
+    color: colors.muted,
+  },
+  empty: {
+    ...typography.body,
+    color: colors.muted,
+  },
+  goalCard: {
+    padding: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.card,
+  },
+  cardPressed: {
+    transform: [{ scale: 0.99 }],
+    opacity: 0.92,
+  },
+  goalTitle: {
+    ...typography.bodyStrong,
+    color: colors.text,
+  },
+  goalBody: {
+    ...typography.body,
+    color: colors.muted,
+    marginTop: 4,
+  },
+  addButton: {
+    padding: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.olive,
+    alignItems: "center",
+  },
+  addText: {
+    ...typography.bodyStrong,
+    color: colors.cornsilk,
+  },
+  achieved: {
+    gap: spacing.xs,
+  },
+  achievedTitle: {
+    ...typography.bodyStrong,
+    color: colors.text,
+  },
+  achievedItem: {
+    ...typography.body,
+    color: colors.muted,
+    textDecorationLine: "line-through",
+  },
+})

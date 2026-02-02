@@ -2,19 +2,90 @@
 import { NavigationContainer } from "@react-navigation/native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useEffect } from "react"
+import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native"
+import { StatusBar } from "expo-status-bar"
+import { useFonts } from "expo-font"
+import {
+  Manrope_400Regular,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+} from "@expo-google-fonts/manrope"
 import AppTabs from "./src/stacks/AppTabs"
 import { initDB } from "./src/db"
+import { colors, typography } from "./src/theme"
+
+Text.defaultProps = Text.defaultProps || {}
+Text.defaultProps.style = [
+  { color: colors.text, fontFamily: typography.body.fontFamily },
+  Text.defaultProps.style,
+]
+TextInput.defaultProps = TextInput.defaultProps || {}
+TextInput.defaultProps.placeholderTextColor = colors.muted
+TextInput.defaultProps.style = [
+  { color: colors.text, fontFamily: typography.body.fontFamily },
+  TextInput.defaultProps.style,
+]
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Manrope_400Regular,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+  })
+
   useEffect(() => {
     initDB()
   }, [])
 
+  if (!fontsLoaded) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ActivityIndicator size="large" color={colors.olive} />
+      </SafeAreaView>
+    )
+  }
+
   return (
     <NavigationContainer>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style="dark" />
+        <View pointerEvents="none" style={styles.background}>
+          <View style={styles.glowTop} />
+          <View style={styles.glowBottom} />
+        </View>
         <AppTabs />
       </SafeAreaView>
     </NavigationContainer>
   )
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.cornsilk,
+  },
+  background: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: -1,
+  },
+  glowTop: {
+    position: "absolute",
+    top: -120,
+    right: -120,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: colors.meringue,
+    opacity: 0.9,
+  },
+  glowBottom: {
+    position: "absolute",
+    bottom: -140,
+    left: -120,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: colors.laurel,
+    opacity: 0.18,
+  },
+})

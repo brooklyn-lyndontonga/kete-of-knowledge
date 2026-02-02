@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/prop-types */
 
-import { ScrollView } from "react-native"
+import { ScrollView, StyleSheet } from "react-native"
 import { useEffect, useState } from "react"
 import { useIsFocused } from "@react-navigation/native"
 
@@ -10,6 +10,7 @@ import ProfileGoals from "../../components/profile/ProfileGoals"
 import ProfileNotes from "../../components/profile/ProfileNotes"
 
 import { getGoals, toggleGoal } from "../../features/goals.db.js"
+import { colors, layout, spacing } from "../../theme"
 
 export default function ProfileScreen({ navigation }) {
   const [goals, setGoals] = useState([])
@@ -30,7 +31,10 @@ export default function ProfileScreen({ navigation }) {
   }, [isFocused])
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+    >
       {/* 👤 Personal details */}
       <ProfileHeader onEdit={() => navigation.navigate("EditProfile")} />
 
@@ -48,3 +52,14 @@ export default function ProfileScreen({ navigation }) {
     </ScrollView>
   )
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: colors.cornsilk,
+  },
+  content: {
+    padding: layout.screenPadding,
+    gap: spacing.lg,
+    paddingBottom: 40,
+  },
+})

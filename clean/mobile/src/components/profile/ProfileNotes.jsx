@@ -1,10 +1,11 @@
 /* eslint-disable react/react-in-jsx-scope */
 
-import { View, Text, Pressable } from "react-native"
+import { View, Text, Pressable, StyleSheet } from "react-native"
 import { useEffect, useState } from "react"
 
 import { getNotes, addNote, updateNote } from "../../features/notes.db.js"
 import ProfileNotesModal from "./ProfileNotesModal"
+import { colors, radii, shadow, spacing, typography } from "../../theme"
 
 export default function ProfileNotes() {
   const [notes, setNotes] = useState([])
@@ -40,11 +41,14 @@ export default function ProfileNotes() {
   }
 
   return (
-    <View style={{ gap: 12 }}>
-      <Text style={{ fontSize: 18, fontWeight: "600" }}>Notes</Text>
+    <View style={styles.container}>
+      <View>
+        <Text style={styles.title}>Notes</Text>
+        <Text style={styles.subtitle}>Tuhipoka</Text>
+      </View>
 
       {notes.length === 0 && (
-        <Text style={{ opacity: 0.6 }}>No notes yet</Text>
+        <Text style={styles.empty}>No notes yet</Text>
       )}
 
       {notes.map((note) => (
@@ -54,13 +58,14 @@ export default function ProfileNotes() {
             setActiveNote(note)
             setModalOpen(true)
           }}
-          style={{
-            padding: 12,
-            borderRadius: 10,
-            backgroundColor: "#f3f3f3",
-          }}
+          style={({ pressed }) => [
+            styles.card,
+            pressed && styles.cardPressed,
+          ]}
         >
-          <Text numberOfLines={3}>{note.content}</Text>
+          <Text numberOfLines={3} style={styles.cardText}>
+            {note.content}
+          </Text>
         </Pressable>
       ))}
 
@@ -70,14 +75,12 @@ export default function ProfileNotes() {
           setActiveNote(null)
           setModalOpen(true)
         }}
-        style={{
-          padding: 12,
-          borderRadius: 8,
-          backgroundColor: "#ddd",
-          alignItems: "center",
-        }}
+        style={({ pressed }) => [
+          styles.addButton,
+          pressed && styles.cardPressed,
+        ]}
       >
-        <Text>Add Note</Text>
+        <Text style={styles.addText}>Add Note</Text>
       </Pressable>
 
       <ProfileNotesModal
@@ -92,3 +95,47 @@ export default function ProfileNotes() {
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    gap: spacing.md,
+  },
+  title: {
+    ...typography.title,
+    color: colors.text,
+  },
+  subtitle: {
+    ...typography.caption,
+    color: colors.muted,
+  },
+  empty: {
+    ...typography.body,
+    color: colors.muted,
+  },
+  card: {
+    padding: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.card,
+  },
+  cardPressed: {
+    transform: [{ scale: 0.99 }],
+    opacity: 0.92,
+  },
+  cardText: {
+    ...typography.body,
+    color: colors.text,
+  },
+  addButton: {
+    padding: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.olive,
+    alignItems: "center",
+  },
+  addText: {
+    ...typography.bodyStrong,
+    color: colors.cornsilk,
+  },
+})

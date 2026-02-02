@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/react-in-jsx-scope */
-import { View, TextInput, Button } from "react-native"
+import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 
 import { addNote } from "../../features/notes.db.js"
+import { colors, radii, spacing, typography } from "../../theme"
 
 export default function AddNoteScreen({ navigation }) {
   const [title, setTitle] = useState("")
@@ -21,20 +22,58 @@ export default function AddNoteScreen({ navigation }) {
   }
 
   return (
-    <View style={{ padding: 16, gap: 12 }}>
+    <View style={styles.container}>
+      <Text style={styles.title}>Add Note</Text>
       <TextInput
         placeholder="Title (optional)"
         value={title}
         onChangeText={setTitle}
+        style={styles.input}
       />
       <TextInput
         placeholder="Write your note"
         value={content}
         onChangeText={setContent}
         multiline
-        style={{ minHeight: 120 }}
+        style={[styles.input, styles.inputMultiline]}
       />
-      <Button title="Save Note" onPress={save} />
+      <Pressable onPress={save} style={styles.primaryButton}>
+        <Text style={styles.primaryText}>Save Note</Text>
+      </Pressable>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: spacing.lg,
+    gap: spacing.md,
+    backgroundColor: colors.cornsilk,
+    flex: 1,
+  },
+  title: {
+    ...typography.title,
+    color: colors.text,
+  },
+  input: {
+    padding: spacing.md,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+  },
+  inputMultiline: {
+    minHeight: 120,
+    textAlignVertical: "top",
+  },
+  primaryButton: {
+    padding: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.olive,
+    alignItems: "center",
+  },
+  primaryText: {
+    ...typography.bodyStrong,
+    color: colors.cornsilk,
+  },
+})

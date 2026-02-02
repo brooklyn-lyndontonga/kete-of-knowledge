@@ -1,10 +1,11 @@
 /* eslint-disable react/react-in-jsx-scope */
-import { ScrollView, Text, ActivityIndicator } from "react-native"
+import { ScrollView, Text, ActivityIndicator, StyleSheet, View } from "react-native"
 import { useEffect, useState } from "react"
 
 import { fetchLearningResources } from "../api/appApi"
 import SearchBar from "../components/library/SearchBar"
 import CategorySection from "../components/library/CategorySection"
+import { colors, layout, spacing, typography } from "../theme"
 
 export default function LibraryScreen() {
   const [resources, setResources] = useState([])   // ✅ default array
@@ -20,7 +21,7 @@ export default function LibraryScreen() {
   }, [])
 
   if (loading) {
-    return <ActivityIndicator style={{ marginTop: 40 }} />
+    return <ActivityIndicator style={{ marginTop: 40 }} color={colors.olive} />
   }
 
   const filterByCategory = (category) =>
@@ -31,8 +32,14 @@ export default function LibraryScreen() {
     )
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Text style={{ fontSize: 24, marginBottom: 12 }}>Library</Text>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+    >
+      <View style={styles.header}>
+        <Text style={styles.title}>Library</Text>
+        <Text style={styles.subtitle}>Puna mātauranga</Text>
+      </View>
 
       <SearchBar value={query} onChange={setQuery} />
 
@@ -53,3 +60,25 @@ export default function LibraryScreen() {
     </ScrollView>
   )
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: colors.cornsilk,
+  },
+  content: {
+    padding: layout.screenPadding,
+    gap: spacing.md,
+    paddingBottom: 40,
+  },
+  header: {
+    gap: spacing.xs,
+  },
+  title: {
+    ...typography.display,
+    color: colors.olive,
+  },
+  subtitle: {
+    ...typography.caption,
+    color: colors.muted,
+  },
+})
