@@ -5,11 +5,14 @@ import { useState } from "react"
 
 import { addSymptom } from "../../features/symptoms.db.js"
 import { colors, radii, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import GuestGate from "../../auth/GuestGate"
 
 export default function AddSymptomScreen({ navigation }) {
   const [symptom, setSymptom] = useState("")
   const [severity, setSeverity] = useState("")
   const [notes, setNotes] = useState("")
+  const { isGuest } = useAuth()
 
   async function save() {
     if (!symptom) return
@@ -19,6 +22,16 @@ export default function AddSymptomScreen({ navigation }) {
       notes,
     })
     navigation.goBack()
+  }
+
+  if (isGuest) {
+    return (
+      <GuestGate
+        title="Sign in to log symptoms"
+        subtitle="Takiuru kia tuhi tohu"
+        description="Create an account to keep track of your symptoms."
+      />
+    )
   }
 
   return (

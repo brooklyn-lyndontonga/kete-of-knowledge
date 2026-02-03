@@ -4,10 +4,14 @@
 import { ScrollView, Text, View, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import { useAuthGuard } from "../../auth/useAuthGuard"
 
 export default function RemindersScreen({ navigation }) {
   // MVP: local-only reminders
   const [reminders, setReminders] = useState([])
+  const { isGuest } = useAuth()
+  const guard = useAuthGuard()
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -16,8 +20,11 @@ export default function RemindersScreen({ navigation }) {
         <Text style={styles.subtitle}>Whakamahara</Text>
       </View>
       <Pressable
-        onPress={() => navigation.navigate("AddReminder")}
-        style={styles.primaryButton}
+        onPress={() => guard(() => navigation.navigate("AddReminder"))}
+        style={({ pressed }) => [
+          styles.primaryButton,
+          (isGuest || pressed) && styles.primaryButtonDisabled,
+        ]}
       >
         <Text style={styles.primaryText}>Add Reminder</Text>
       </Pressable>
@@ -64,6 +71,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     backgroundColor: colors.olive,
     alignItems: "center",
+  },
+  primaryButtonDisabled: {
+    opacity: 0.6,
   },
   primaryText: {
     ...typography.bodyStrong,

@@ -5,10 +5,13 @@ import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 import { addMedicine } from "../../features/medicines.db.js"
 import { colors, radii, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import GuestGate from "../../auth/GuestGate"
 
 export default function AddMedicineScreen({ navigation }) {
   const [name, setName] = useState("")
   const [notes, setNotes] = useState("")
+  const { isGuest } = useAuth()
 
   async function save() {
     if (!name) return
@@ -19,6 +22,16 @@ export default function AddMedicineScreen({ navigation }) {
     })
 
     navigation.goBack()
+  }
+
+  if (isGuest) {
+    return (
+      <GuestGate
+        title="Sign in to log medicines"
+        subtitle="Takiuru kia tuhi rongoā"
+        description="Create an account to save your medicines and rongoā."
+      />
+    )
   }
 
   return (

@@ -7,10 +7,14 @@ import { useIsFocused } from "@react-navigation/native"
 
 import { getMedicines } from "../../features/medicines.db.js"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import { useAuthGuard } from "../../auth/useAuthGuard"
 
 export default function MyMedicinesScreen({ navigation }) {
   const [items, setItems] = useState([])
   const isFocused = useIsFocused()
+  const { isGuest } = useAuth()
+  const guard = useAuthGuard()
 
   useEffect(() => {
     if (isFocused) {
@@ -25,8 +29,11 @@ export default function MyMedicinesScreen({ navigation }) {
         <Text style={styles.subtitle}>Āku rongoā</Text>
       </View>
       <Pressable
-        onPress={() => navigation.navigate("AddMedicine")}
-        style={styles.primaryButton}
+        onPress={() => guard(() => navigation.navigate("AddMedicine"))}
+        style={({ pressed }) => [
+          styles.primaryButton,
+          (isGuest || pressed) && styles.primaryButtonDisabled,
+        ]}
       >
         <Text style={styles.primaryText}>Add Medicine</Text>
       </Pressable>
@@ -72,6 +79,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     backgroundColor: colors.olive,
     alignItems: "center",
+  },
+  primaryButtonDisabled: {
+    opacity: 0.6,
   },
   primaryText: {
     ...typography.bodyStrong,

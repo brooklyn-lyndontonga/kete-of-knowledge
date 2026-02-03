@@ -3,8 +3,13 @@
 
 import { View, Text, Pressable, StyleSheet } from "react-native"
 import { colors, radii, shadow, spacing, typography } from "../theme"
+import { useAuth } from "../auth/AuthContext"
+import { useAuthGuard } from "../auth/useAuthGuard"
 
 export default function MedicinesHubScreen({ navigation }) {
+  const { isGuest } = useAuth()
+  const guard = useAuthGuard()
+
   return (
     <View style={styles.container}>
       <View>
@@ -13,10 +18,10 @@ export default function MedicinesHubScreen({ navigation }) {
       </View>
 
       <Pressable
-        onPress={() => navigation.navigate("AddMedicine")}
+        onPress={() => guard(() => navigation.navigate("AddMedicine"))}
         style={({ pressed }) => [
           styles.card,
-          pressed && styles.cardPressed,
+          (isGuest || pressed) && styles.cardPressed,
         ]}
       >
         <Text style={styles.cardText}>Log a medicine / rongoā</Text>

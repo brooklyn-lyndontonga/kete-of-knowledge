@@ -20,7 +20,7 @@ export default function HomeScreen({ navigation }) {
     >
       <View style={styles.hero}>
         <Text style={styles.kicker}>Heart Health</Text>
-        <Text style={styles.title}>Ngākau Ora</Text>
+        <Text style={styles.title}>Kete Of Knowledge</Text>
         <Text style={styles.subtitle}>
           Care for your heart, your whānau, and your daily rhythm.
         </Text>

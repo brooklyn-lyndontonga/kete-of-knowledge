@@ -3,11 +3,14 @@
 import { View, TextInput, Pressable, Text, StyleSheet } from "react-native"
 import { useState } from "react"
 import { colors, radii, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import GuestGate from "../../auth/GuestGate"
 
 export default function AddChecklistScreen({ navigation }) {
   const [title, setTitle] = useState("")
   const [item, setItem] = useState("")
   const [items, setItems] = useState([])
+  const { isGuest } = useAuth()
 
   function addItem() {
     if (!item) return
@@ -19,6 +22,16 @@ export default function AddChecklistScreen({ navigation }) {
     if (!title) return
     // later → SQLite insert
     navigation.goBack()
+  }
+
+  if (isGuest) {
+    return (
+      <GuestGate
+        title="Sign in to create checklists"
+        subtitle="Takiuru kia hanga rārangi"
+        description="Create an account to save your checklists."
+      />
+    )
   }
 
   return (

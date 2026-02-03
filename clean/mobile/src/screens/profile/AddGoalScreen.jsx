@@ -5,15 +5,28 @@ import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 import { addGoal } from "../../features/goals.db.js"
 import { colors, radii, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import GuestGate from "../../auth/GuestGate"
 
 export default function AddGoalScreen({ navigation }) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
+  const { isGuest } = useAuth()
 
   async function save() {
     if (!title) return
     await addGoal({ title, description })
     navigation.goBack()
+  }
+
+  if (isGuest) {
+    return (
+      <GuestGate
+        title="Sign in to add goals"
+        subtitle="Takiuru kia tāpiri whāinga"
+        description="Create an account to save your goals."
+      />
+    )
   }
 
   return (

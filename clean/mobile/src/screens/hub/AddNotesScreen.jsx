@@ -5,10 +5,13 @@ import { useState } from "react"
 
 import { addNote } from "../../features/notes.db.js"
 import { colors, radii, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import GuestGate from "../../auth/GuestGate"
 
 export default function AddNoteScreen({ navigation }) {
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
+  const { isGuest } = useAuth()
 
   async function save() {
     if (!content) return
@@ -19,6 +22,16 @@ export default function AddNoteScreen({ navigation }) {
     })
 
     navigation.goBack()
+  }
+
+  if (isGuest) {
+    return (
+      <GuestGate
+        title="Sign in to add notes"
+        subtitle="Takiuru kia tuhi kōrero"
+        description="Create an account to save your notes."
+      />
+    )
   }
 
   return (

@@ -2,6 +2,7 @@ import sqlite3 from "sqlite3"
 import { open } from "sqlite"
 import path from "path"
 import { fileURLToPath } from "url"
+import bcrypt from "bcryptjs"
 
 // --------------------------------------------------
 // SQLite singleton connection
@@ -121,6 +122,17 @@ export async function initSchema() {
       triggers TEXT,
       treatments TEXT
     );
+
+    -- ======================
+    -- Admin Auth
+    -- ======================
+
+    CREATE TABLE IF NOT EXISTS admin_users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+    );
   `)
 
   // Seed base library categories (safe to re-run)
@@ -132,5 +144,31 @@ export async function initSchema() {
       ('support', 'Support', 'Help, guidance, and support resources');
   `)
 
+  await seedAdminUser(db)
+
   console.log("📦 Database schema ready")
+}
+
+async function seedAdminUser(db) {
+  const email = process.env.ADMIN_SEED_EMAIL
+  const password = process.env.ADMIN_SEED_PASSWORD
+
+  if (!email || !password) return
+
+  const existing = await db.get(
+    "SELECT id FROM admin_users WHERE email = ?",
+    email
+  )
+
+  if (existing) return
+
+  const passwordHash = await bcrypt.hash(password, 10)
+
+  await db.run(
+    "INSERT INTO admin_users (email, password_hash) VALUES (?, ?)",
+    email,
+    passwordHash
+  )
+
+  console.log("🔐 Seeded admin user:", email)
 }

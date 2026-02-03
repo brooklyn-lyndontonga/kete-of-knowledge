@@ -10,9 +10,10 @@ import {
   Manrope_600SemiBold,
   Manrope_700Bold,
 } from "@expo-google-fonts/manrope"
-import AppTabs from "./src/stacks/AppTabs"
+import RootStack from "./src/stacks/RootStack"
 import { initDB } from "./src/db"
 import { colors, typography } from "./src/theme"
+import { AuthProvider } from "./src/auth/AuthContext"
 
 Text.defaultProps = Text.defaultProps || {}
 Text.defaultProps.style = [
@@ -53,10 +54,16 @@ export default function App() {
           <View style={styles.glowTop} />
           <View style={styles.glowBottom} />
         </View>
-        <AppTabs />
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
       </SafeAreaView>
     </NavigationContainer>
   )
+}
+
+function AppContent() {
+  return <RootStack />
 }
 
 const styles = StyleSheet.create({

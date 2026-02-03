@@ -3,8 +3,13 @@
 
 import { View, Text, Pressable, StyleSheet } from "react-native"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import { useAuthGuard } from "../../auth/useAuthGuard"
 
 export default function SymptomsHubScreen({ navigation }) {
+  const { isGuest } = useAuth()
+  const guard = useAuthGuard()
+
   return (
     <View style={styles.container}>
       <View>
@@ -13,10 +18,10 @@ export default function SymptomsHubScreen({ navigation }) {
       </View>
 
       <Pressable
-        onPress={() => navigation.navigate("AddSymptom")}
+        onPress={() => guard(() => navigation.navigate("AddSymptom"))}
         style={({ pressed }) => [
           styles.card,
-          pressed && styles.cardPressed,
+          (isGuest || pressed) && styles.cardPressed,
         ]}
       >
         <Text style={styles.cardText}>Log a symptom</Text>

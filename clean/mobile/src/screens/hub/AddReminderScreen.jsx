@@ -3,16 +3,29 @@
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 import { colors, radii, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import GuestGate from "../../auth/GuestGate"
 
 export default function AddReminderScreen({ navigation }) {
   const [title, setTitle] = useState("")
   const [time, setTime] = useState("")
   const [notes, setNotes] = useState("")
+  const { isGuest } = useAuth()
 
   function save() {
     if (!title) return
     // later → SQLite insert
     navigation.goBack()
+  }
+
+  if (isGuest) {
+    return (
+      <GuestGate
+        title="Sign in to add reminders"
+        subtitle="Takiuru kia mahara tonu"
+        description="Create an account to manage reminders."
+      />
+    )
   }
 
   return (

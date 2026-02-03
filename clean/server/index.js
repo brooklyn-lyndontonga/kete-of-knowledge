@@ -1,3 +1,4 @@
+import "dotenv/config"
 import express from "express"
 import cors from "cors"
 
@@ -10,6 +11,8 @@ import reflectionTemplateRoutes from "./routes/reflectionTemplates.js"
 import profileSeedRoutes from "./routes/profileSeeds.js"
 import learningResourceRoutes from "./routes/learningResources.js"
 import conditionRoutes from "./routes/conditions.js"
+import adminAuthRoutes from "./routes/adminAuth.js"
+import { requireAdminAuth } from "./middleware/adminAuth.js"
 
 // ─────────────────────────────────────
 // APP ROUTES (read-only)
@@ -37,6 +40,8 @@ await initSchema()
 // ─────────────────────────────────────
 // ADMIN API (content management)
 // ─────────────────────────────────────
+app.use("/api/admin/auth", adminAuthRoutes)
+app.use("/api/admin", requireAdminAuth)
 app.use("/api/admin/snapshots", snapshotRoutes)
 app.use("/api/admin/whakatauki", whakataukiRoutes)
 app.use("/api/admin/reflection-templates", reflectionTemplateRoutes)

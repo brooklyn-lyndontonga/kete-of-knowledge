@@ -27,7 +27,7 @@ export default function HomeStack() {
       <Stack.Screen
         name="HomeMain"
         component={HomeScreen}
-        options={{ title: 'Ngākau Ora' }}
+        options={{ title: 'Home / Kainga' }}
       />
 
       <Stack.Screen

@@ -11,10 +11,13 @@ import ProfileNotes from "../../components/profile/ProfileNotes"
 
 import { getGoals, toggleGoal } from "../../features/goals.db.js"
 import { colors, layout, spacing } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import GuestGate from "../../auth/GuestGate"
 
 export default function ProfileScreen({ navigation }) {
   const [goals, setGoals] = useState([])
   const isFocused = useIsFocused()
+  const { isGuest } = useAuth()
 
   async function load() {
     const data = await getGoals()
@@ -29,6 +32,16 @@ export default function ProfileScreen({ navigation }) {
   useEffect(() => {
     if (isFocused) load()
   }, [isFocused])
+
+  if (isGuest) {
+    return (
+      <GuestGate
+        title="Create your profile"
+        subtitle="Hangaia tō kōtaha"
+        description="Sign in to save goals, notes, and health details."
+      />
+    )
+  }
 
   return (
     <ScrollView

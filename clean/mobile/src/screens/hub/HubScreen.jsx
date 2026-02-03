@@ -8,10 +8,10 @@ import { colors, layout, spacing, typography } from "../../theme"
 
 export default function HubScreen({ navigation }) {
   const sections = [
-    { label: "My Symptoms", subtitle: "Āku tohu", route: "MySymptoms" },
-    { label: "My Medicines", subtitle: "Āku rongoā", route: "MyMedicines" },
+    { label: "My Symptoms", subtitle: "Āku Tohu", route: "MySymptoms" },
+    { label: "My Medicines", subtitle: "Āku Rongoā", route: "MyMedicines" },
     { label: "Reminders", subtitle: "Whakamahara", route: "Reminders" },
-    { label: "Checklists", subtitle: "Rārangi arowhai", route: "Checklists" },
+    { label: "Checklists", subtitle: "Rārangi Arowhai", route: "Checklists" },
     { label: "Notes", subtitle: "Tuhipoka", route: "Notes" },
   ]
 
@@ -22,7 +22,7 @@ export default function HubScreen({ navigation }) {
     >
       <View style={styles.header}>
         <Text style={styles.title}>My Hub</Text>
-        <Text style={styles.subtitle}>Te Puna</Text>
+        <Text style={styles.subtitle}>Taku Manawa</Text>
       </View>
 
       {sections.map((item) => (

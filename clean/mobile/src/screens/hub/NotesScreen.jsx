@@ -6,10 +6,14 @@ import { useIsFocused } from "@react-navigation/native"
 
 import { getNotes } from "../../features/notes.db.js"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import { useAuthGuard } from "../../auth/useAuthGuard"
 
 export default function NotesScreen({ navigation }) {
   const [items, setItems] = useState([])
   const isFocused = useIsFocused()
+  const { isGuest } = useAuth()
+  const guard = useAuthGuard()
 
   useEffect(() => {
     if (isFocused) {
@@ -24,8 +28,11 @@ export default function NotesScreen({ navigation }) {
         <Text style={styles.subtitle}>Tuhipoka</Text>
       </View>
       <Pressable
-        onPress={() => navigation.navigate("AddNote")}
-        style={styles.primaryButton}
+        onPress={() => guard(() => navigation.navigate("AddNote"))}
+        style={({ pressed }) => [
+          styles.primaryButton,
+          (isGuest || pressed) && styles.primaryButtonDisabled,
+        ]}
       >
         <Text style={styles.primaryText}>Add Note</Text>
       </Pressable>
@@ -71,6 +78,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     backgroundColor: colors.olive,
     alignItems: "center",
+  },
+  primaryButtonDisabled: {
+    opacity: 0.6,
   },
   primaryText: {
     ...typography.bodyStrong,

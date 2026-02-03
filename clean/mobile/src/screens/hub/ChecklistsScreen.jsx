@@ -4,9 +4,13 @@
 import { ScrollView, Text, View, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import { useAuthGuard } from "../../auth/useAuthGuard"
 
 export default function ChecklistsScreen({ navigation }) {
   const [checklists, setChecklists] = useState([])
+  const { isGuest } = useAuth()
+  const guard = useAuthGuard()
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -15,8 +19,11 @@ export default function ChecklistsScreen({ navigation }) {
         <Text style={styles.subtitle}>Rārangi arowhai</Text>
       </View>
       <Pressable
-        onPress={() => navigation.navigate("AddChecklist")}
-        style={styles.primaryButton}
+        onPress={() => guard(() => navigation.navigate("AddChecklist"))}
+        style={({ pressed }) => [
+          styles.primaryButton,
+          (isGuest || pressed) && styles.primaryButtonDisabled,
+        ]}
       >
         <Text style={styles.primaryText}>Create Checklist</Text>
       </Pressable>
@@ -60,6 +67,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     backgroundColor: colors.olive,
     alignItems: "center",
+  },
+  primaryButtonDisabled: {
+    opacity: 0.6,
   },
   primaryText: {
     ...typography.bodyStrong,

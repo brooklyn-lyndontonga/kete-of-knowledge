@@ -33,7 +33,7 @@ export default function HubStack() {
       <Stack.Screen
         name="HubMain"
         component={HubScreen}
-        options={{ title: "My Hub / Te Puna" }}
+        options={{ title: "My Hub / Tāku Manawa" }}
       />
 
       <Stack.Screen name="MySymptoms" component={MySymptomsScreen} />

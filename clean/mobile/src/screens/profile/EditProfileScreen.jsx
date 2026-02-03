@@ -5,11 +5,14 @@ import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 import { saveProfile } from "../../features/profile.db.js"
 import { colors, radii, spacing, typography } from "../../theme"
+import { useAuth } from "../../auth/AuthContext"
+import GuestGate from "../../auth/GuestGate"
 
 export default function EditProfileScreen({ navigation }) {
   const [name, setName] = useState("")
   const [dob, setDob] = useState("")
   const [healthInfo, setHealthInfo] = useState("")
+  const { isGuest } = useAuth()
 
   async function save() {
     if (!name) return
@@ -23,6 +26,16 @@ export default function EditProfileScreen({ navigation }) {
     })
 
     navigation.goBack()
+  }
+
+  if (isGuest) {
+    return (
+      <GuestGate
+        title="Sign in to edit your profile"
+        subtitle="Takiuru kia whakatika kōtaha"
+        description="Create an account to save your profile details."
+      />
+    )
   }
 
   return (
