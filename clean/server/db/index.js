@@ -133,6 +133,24 @@ export async function initSchema() {
       password_hash TEXT NOT NULL,
       createdAt TEXT DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- ======================
+    -- App User Auth
+    -- ======================
+
+    CREATE TABLE IF NOT EXISTS app_users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT,
+      name TEXT,
+      createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS magic_link_tokens (
+      token TEXT PRIMARY KEY,
+      email TEXT NOT NULL,
+      expiresAt INTEGER NOT NULL
+    );
   `)
 
   // Seed base library categories (safe to re-run)

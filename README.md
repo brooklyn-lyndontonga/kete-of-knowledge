@@ -138,6 +138,20 @@ npm run dev</code></pre>
     </li>
   </ol>
 
+  <h2>🚀 Deployment</h2>
+  <h3>Using Docker (Recommended)</h3>
+  <ol>
+    <li>Configure environment variables:
+      <pre><code>cp clean/server/.env.example clean/server/.env
+# Edit .env with your secrets and SMTP details</code></pre>
+    </li>
+    <li>Build and Run:
+      <pre><code>cd clean
+docker-compose up -d --build</code></pre>
+    </li>
+    <li>The server will be available at <code>http://localhost:3000</code>. Data is persisted in <code>sqlite_data</code> volume.</li>
+  </ol>
+
   <h2>📂 Folder Structure</h2>
   <pre>
 /kete-of-knowledge

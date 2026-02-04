@@ -2,16 +2,40 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["clean/mobile/src/*"],
-      "@screens/*": ["clean/mobile/src/screens/*"],
-      "@stacks/*": ["clean/mobile/src/stacks/*"],
-      "@components/*": ["clean/mobile/src/components/*"],
-      "@api/*": ["clean/mobile/src/api/*"],
-      "@storage/*": ["clean/mobile/src/storage/*"]
+      "@/*": [
+        "clean/mobile/src/*"
+      ],
+      "@screens/*": [
+        "clean/mobile/src/screens/*"
+      ],
+      "@stacks/*": [
+        "clean/mobile/src/stacks/*"
+      ],
+      "@components/*": [
+        "clean/mobile/src/components/*"
+      ],
+      "@api/*": [
+        "clean/mobile/src/api/*"
+      ],
+      "@storage/*": [
+        "clean/mobile/src/storage/*"
+      ]
     },
-    "typeRoots": ["./node_modules/@types"],
-    "types": []
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
+    "types": [],
+    "lib": [
+      "es6",
+      "dom"
+    ]
   },
-  "include": ["clean/mobile/**/*"],
-  "exclude": ["node_modules", "**/node_modules/*", "dist"]
+  "include": [
+    "clean/mobile/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules/*",
+    "dist"
+  ]
 }

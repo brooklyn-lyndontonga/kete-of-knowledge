@@ -21,6 +21,7 @@ import appWhakataukiRoutes from "./routes/app/whakatauki.js"
 import appLearningResourceRoutes from "./routes/app/learningResources.js"
 import appConditionRoutes from "./routes/app/conditions.js"
 import appProfileSeedRoutes from "./routes/app/profileSeeds.js"
+import appAuthRoutes from "./routes/app/auth.js"
 
 
 // DB
@@ -56,6 +57,7 @@ app.use("/api/app/whakatauki", appWhakataukiRoutes)
 app.use("/api/app/learning-resources", appLearningResourceRoutes)
 app.use("/api/app/conditions", appConditionRoutes)
 app.use("/api/app/profile-seeds", appProfileSeedRoutes)
+app.use("/api/app/auth", appAuthRoutes)
 
 
 // ─────────────────────────────────────

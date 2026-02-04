@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native"
 import { useAuth } from "../auth/AuthContext"
 import { colors, radii, spacing, typography } from "../theme"
 
-export default function AuthScreen() {
+export default function AuthScreen({ navigation }) {
   const {
     login,
     continueAsGuest,
@@ -41,11 +41,10 @@ export default function AuthScreen() {
       ) : null}
 
       <Pressable
-        onPress={login}
-        disabled={!authReady}
+        onPress={() => navigation.navigate("Login")}
         style={({ pressed }) => [
           styles.primaryButton,
-          (!authReady || pressed) && styles.primaryPressed,
+          pressed && styles.primaryPressed,
         ]}
       >
         <Text style={styles.primaryText}>Continue with Email</Text>

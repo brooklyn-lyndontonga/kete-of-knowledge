@@ -1,11 +1,13 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
-import * as AuthSession from "expo-auth-session"
-import * as WebBrowser from "expo-web-browser"
-import Constants from "expo-constants"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { Platform } from "react-native"
+import * as Linking from "expo-linking"
 
-WebBrowser.maybeCompleteAuthSession()
+const API_URL =
+  process.env.EXPO_PUBLIC_API_URL || "http://10.1.1.182:3000/api"
+
+console.log("🔌 AuthContext using API_URL:", API_URL)
 
 const AuthContext = createContext(null)
 const STORAGE_KEY = "auth_session"
@@ -18,38 +20,7 @@ export function AuthProvider({ children }) {
   const [guest, setGuest] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
 
-  const auth0Domain = process.env.EXPO_PUBLIC_AUTH0_DOMAIN
-  const auth0ClientId = process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID
-  const auth0Audience = process.env.EXPO_PUBLIC_AUTH0_AUDIENCE
-  const auth0Connection = process.env.EXPO_PUBLIC_AUTH0_CONNECTION
-
-  const discovery = AuthSession.useAutoDiscovery(
-    auth0Domain ? `https://${auth0Domain}` : null
-  )
-
-  const scheme = Constants.expoConfig?.scheme || "keteofknowledge"
-  const useProxy = Constants.appOwnership === "expo"
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme,
-    path: "auth",
-    useProxy,
-  })
-
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId: auth0ClientId,
-      scopes: ["openid", "profile", "email", "offline_access"],
-      redirectUri,
-      responseType: AuthSession.ResponseType.Code,
-      usePKCE: true,
-      extraParams: {
-        ...(auth0Audience ? { audience: auth0Audience } : {}),
-        ...(auth0Connection ? { connection: auth0Connection } : {}),
-      },
-    },
-    discovery
-  )
-
+  // 1. Load session on mount
   useEffect(() => {
     Promise.all([
       AsyncStorage.getItem(STORAGE_KEY),
@@ -69,62 +40,81 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false))
   }, [])
 
+  // 2. Handle Deep Links
   useEffect(() => {
-    async function exchangeToken() {
-      if (!response || response.type !== "success" || !discovery) return
-
-      const { code } = response.params
-
-      setAuthenticating(true)
-      const tokenResponse = await AuthSession.exchangeCodeAsync(
-        {
-          clientId: auth0ClientId,
-          code,
-          redirectUri,
-          extraParams: {
-            code_verifier: request?.codeVerifier,
-            ...(auth0Audience ? { audience: auth0Audience } : {}),
-          },
-        },
-        discovery
-      )
-
-      const expiresAt = tokenResponse.expiresIn
-        ? Date.now() + tokenResponse.expiresIn * 1000
-        : null
-
-      const nextSession = {
-        ...tokenResponse,
-        expiresAt,
+    const handleDeepLink = (event) => {
+      const { url } = event
+      const parsed = Linking.parse(url)
+      
+      if (parsed.path === "auth" && parsed.queryParams?.token) {
+        verifyMagicLink(parsed.queryParams.token)
       }
-
-      setSession(nextSession)
-      setGuest(false)
-      setShowAuth(false)
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession))
-      await AsyncStorage.removeItem(GUEST_KEY)
-      setAuthenticating(false)
     }
 
-    exchangeToken().catch((err) => {
-      console.warn("Auth token exchange failed", err)
-      setAuthenticating(false)
+    // Check initial URL
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink({ url })
     })
-  }, [response, discovery, auth0ClientId, auth0Audience, redirectUri, request])
 
-  const login = async () => {
-    if (!request) return { ok: false, reason: "not_ready" }
+    // Listen for incoming links
+    const sub = Linking.addEventListener("url", handleDeepLink)
+    return () => sub.remove()
+  }, [])
 
+  const sendMagicLink = async (email) => {
     setAuthenticating(true)
     try {
-      const result = await promptAsync({ useProxy })
-      if (result?.type !== "success") {
-        setAuthenticating(false)
+      const res = await fetch(`${API_URL}/app/auth/magic-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send magic link")
       }
-      return { ok: result?.type === "success" }
+      return { ok: true, message: data.message }
     } catch (err) {
+      console.error("Magic link error:", err)
+      return { ok: false, error: err.message }
+    } finally {
       setAuthenticating(false)
-      throw err
+    }
+  }
+
+  const verifyMagicLink = async (token) => {
+    setAuthenticating(true)
+    try {
+      const res = await fetch(`${API_URL}/app/auth/verify-magic-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Verification failed")
+      }
+
+      const newSession = {
+        token: data.token,
+        user: data.user,
+      }
+
+      setSession(newSession)
+      setGuest(false)
+      setShowAuth(false)
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newSession))
+      await AsyncStorage.removeItem(GUEST_KEY)
+      return { ok: true }
+    } catch (err) {
+      console.error("Verification error:", err)
+      return { ok: false, error: err.message }
+    } finally {
+      setAuthenticating(false)
     }
   }
 
@@ -147,40 +137,19 @@ export function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       session,
-      isAuthenticated: Boolean(session?.accessToken || session?.idToken),
+      isAuthenticated: Boolean(session?.token),
       isGuest: guest,
       isLoading: loading,
       isAuthenticating: authenticating,
       showAuth,
-      login,
+      sendMagicLink,
+      verifyMagicLink,
       logout,
       continueAsGuest,
       openAuth,
       closeAuth,
-      authReady: Boolean(request && discovery && auth0Domain && auth0ClientId),
-      missingConfig: !auth0Domain || !auth0ClientId,
-      redirectUri,
-      auth0Domain,
-      auth0ClientId,
-      auth0Audience,
-      auth0Connection,
-      useProxy,
     }),
-    [
-      session,
-      guest,
-      loading,
-      authenticating,
-      showAuth,
-      request,
-      discovery,
-      auth0Domain,
-      auth0ClientId,
-      auth0Audience,
-      auth0Connection,
-      useProxy,
-      redirectUri,
-    ]
+    [session, guest, loading, authenticating, showAuth]
   )
 
   return (
