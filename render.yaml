@@ -1,0 +1,42 @@
+services:
+  # 1. The Backend API (Node.js + SQLite)
+  - type: web
+    name: kete-server
+    env: docker
+    dockerContext: .
+    dockerfilePath: clean/server/Dockerfile
+    plan: free
+    disk:
+      name: sqlite-data
+      mountPath: /app/db
+      sizeGB: 1
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SMTP_HOST
+        value: smtp.ethereal.email
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        value: user
+      - key: SMTP_PASS
+        value: pass
+
+  # 2. The Admin Panel (React/Vite)
+  - type: static
+    name: kete-admin
+    env: static
+    buildCommand: cd clean/admin && npm install && npm run build
+    staticPublishPath: clean/admin/dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: kete-server
+          property: url
+
+version: "1"

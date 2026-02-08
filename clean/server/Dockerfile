@@ -2,18 +2,20 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files (from server directory)
+# Copy root package files
 COPY package*.json ./
 
-# Install dependencies
-# If package-lock.json exists, npm ci is better, but install is safer if lockfile is missing/out of sync
+# Install dependencies (installs root dependencies including server deps)
 RUN npm install
 
-# Copy source code
-COPY . .
+# Copy server source code
+COPY clean/server ./clean/server
+
+# Set working directory to server for execution
+WORKDIR /app/clean/server
 
 # Expose port
 EXPOSE 3000
 
 # Start command
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

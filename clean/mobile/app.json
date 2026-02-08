@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.keteofknowledge.mobile"
+      "bundleIdentifier": "com.keteofknowledge.mobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -32,6 +35,11 @@
       "expo-sqlite",
       "expo-font",
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "97556b0f-660a-4a9d-a372-d8d345719d17"
+      }
+    }
   }
 }
