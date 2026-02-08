@@ -1,13 +1,10 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import { Platform } from "react-native"
 import * as Linking from "expo-linking"
+import { API_BASE_URL } from "../api/apiConfig"
 
-const API_URL =
-  process.env.EXPO_PUBLIC_API_URL || "http://10.1.1.182:3000/api"
-
-console.log("🔌 AuthContext using API_URL:", API_URL)
+console.log("🔌 AuthContext using API_BASE_URL:", API_BASE_URL)
 
 const AuthContext = createContext(null)
 const STORAGE_KEY = "auth_session"
@@ -64,7 +61,7 @@ export function AuthProvider({ children }) {
   const sendMagicLink = async (email) => {
     setAuthenticating(true)
     try {
-      const res = await fetch(`${API_URL}/app/auth/magic-link`, {
+      const res = await fetch(`${API_BASE_URL}/app/auth/magic-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -87,7 +84,7 @@ export function AuthProvider({ children }) {
   const verifyMagicLink = async (token) => {
     setAuthenticating(true)
     try {
-      const res = await fetch(`${API_URL}/app/auth/verify-magic-link`, {
+      const res = await fetch(`${API_BASE_URL}/app/auth/verify-magic-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),

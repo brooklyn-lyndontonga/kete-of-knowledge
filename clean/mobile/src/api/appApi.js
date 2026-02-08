@@ -1,29 +1,7 @@
-import Constants from "expo-constants"
 import { getCached, setCached } from "../storage/cache"
+import { APP_API_BASE_URL } from "./apiConfig"
 
-const DEFAULT_API_URL = "http://localhost:3000"
-
-function getExpoHostUrl() {
-  const hostUri =
-    Constants.expoConfig?.hostUri ??
-    Constants.manifest?.debuggerHost ??
-    Constants.manifest2?.extra?.expoClient?.hostUri
-
-  if (!hostUri || typeof hostUri !== "string") return null
-
-  const host = hostUri.split(":")[0]
-  if (!host) return null
-
-  return `http://${host}:3000`
-}
-
-const API_ROOT = (
-  process.env.EXPO_PUBLIC_API_URL ||
-  getExpoHostUrl() ||
-  DEFAULT_API_URL
-).replace(/\/$/, "")
-
-const API_BASE_URL = `${API_ROOT}/api/app`
+const API_BASE_URL = APP_API_BASE_URL
 
 // --------------------
 // Generic fetch helper

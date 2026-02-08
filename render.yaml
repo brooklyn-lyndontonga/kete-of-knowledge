@@ -17,6 +17,11 @@ services:
         value: production
       - key: SQLITE_DB_PATH
         value: /app/db/database.db
+      - key: ADMIN_JWT_SECRET
+        generateValue: true
+      - key: APP_JWT_SECRET
+        generateValue: true
+      # Legacy / optional
       - key: JWT_SECRET
         generateValue: true
       # EMAIL SERVICE (Required for Magic Links)
@@ -29,6 +34,10 @@ services:
         value: your_email@example.com
       - key: SMTP_PASS
         value: your_password
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_FROM
+        value: "\"Kete Support\" <your-email@example.com>"
 
   # 2. The Admin Panel (React/Vite)
   - type: static

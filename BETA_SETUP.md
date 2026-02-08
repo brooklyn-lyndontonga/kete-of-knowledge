@@ -13,6 +13,16 @@ Ensure you have the following Environment Variable set to match your Disk mount:
 
 *Note: This ensures your users and content aren't wiped every time the server restarts.*
 
+### Auth Secrets (Required)
+Set strong secrets for both admin and app auth:
+- `ADMIN_JWT_SECRET`
+- `APP_JWT_SECRET`
+
+### Seed Admin User (Required)
+These create your first admin login on boot:
+- `ADMIN_SEED_EMAIL`
+- `ADMIN_SEED_PASSWORD`
+
 ### Email Service (Magic Links)
 You must provide real SMTP credentials for the magic link emails to be sent. Update these variables:
 - `SMTP_HOST`: e.g., `smtp.gmail.com`
@@ -20,6 +30,7 @@ You must provide real SMTP credentials for the magic link emails to be sent. Upd
 - `SMTP_USER`: Your email address
 - `SMTP_PASS`: Your App Password (not your login password)
 - `SMTP_FROM`: `"Kete Support" <your-email@example.com>`
+- `SMTP_SECURE`: `false` for 587, `true` for 465
 
 ## 2. Deploy Admin Panel
 

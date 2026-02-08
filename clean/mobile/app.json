@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "Kete of Knowledge",
     "slug": "kete-of-knowledge",
     "scheme": "keteofknowledge",
     "version": "1.0.0",
@@ -16,6 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.keteofknowledge.mobile",
+      "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -26,6 +27,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.keteofknowledge.mobile",
+      "versionCode": 1,
       "edgeToEdgeEnabled": true
     },
     "web": {
