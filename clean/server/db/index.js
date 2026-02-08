@@ -12,7 +12,7 @@ let db = null
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const DB_PATH = path.join(__dirname, "database.db")
+const DB_PATH = process.env.SQLITE_DB_PATH || path.join(__dirname, "database.db")
 
 // --------------------------------------------------
 // Init DB connection (singleton)
