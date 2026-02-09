@@ -25,7 +25,7 @@ import appAuthRoutes from "./routes/app/auth.js"
 
 
 // DB
-import { initSchema } from "./db/index.js"
+import { getDB, initSchema } from "./db/index.js"
 
 const app = express()
 
@@ -37,6 +37,20 @@ app.use(express.json())
 
 // Init DB + schema
 await initSchema()
+
+// ─────────────────────────────────────
+// HEALTH CHECKS
+// ─────────────────────────────────────
+app.get("/health", async (_req, res) => {
+  try {
+    const db = await getDB()
+    await db.get("SELECT 1 AS ok")
+    return res.json({ ok: true, db: true })
+  } catch (err) {
+    console.error("Health check failed:", err)
+    return res.status(500).json({ ok: false, db: false })
+  }
+})
 
 // ─────────────────────────────────────
 // ADMIN API (content management)

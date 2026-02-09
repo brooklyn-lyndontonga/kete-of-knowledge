@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "expo start",
-    "lint": "eslint . --ext .js,.jsx"
+    "lint": "eslint . --ext .js,.jsx",
+    "seed:content": "node clean/server/scripts/seed-content.js",
+    "smoke": "node clean/server/scripts/smoke-test.js"
   },
   "dependencies": {
     "@expo-google-fonts/playfair-display": "0.4.2",
