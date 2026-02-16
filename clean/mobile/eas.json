@@ -10,6 +10,21 @@
         "EXPO_PUBLIC_API_URL": "https://kete-server-production.up.railway.app"
       }
     },
+    "beta-android": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://kete-server-production.up.railway.app"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "beta-ios": {
+      "distribution": "store",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://kete-server-production.up.railway.app"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "env": {
@@ -25,12 +40,14 @@
       }
     },
     "production": {
+      "distribution": "store",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://kete-server-production.up.railway.app"
       }
     }
   },
   "submit": {
+    "beta-ios": {},
     "production": {}
   }
 }

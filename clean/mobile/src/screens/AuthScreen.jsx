@@ -6,18 +6,9 @@ import { colors, radii, spacing, typography } from "../theme"
 
 export default function AuthScreen({ navigation }) {
   const {
-    login,
     continueAsGuest,
-    authReady,
-    missingConfig,
-    redirectUri,
-    auth0Domain,
-    auth0ClientId,
-    auth0Audience,
-    auth0Connection,
     isGuest,
     closeAuth,
-    useProxy,
   } = useAuth()
 
   return (
@@ -30,15 +21,6 @@ export default function AuthScreen({ navigation }) {
         </Text>
         <Text style={styles.subtitle}>Takiuru kia manaaki i tō oranga ngākau.</Text>
       </View>
-
-      {__DEV__ && missingConfig ? (
-        <View style={styles.notice}>
-          <Text style={styles.noticeText}>
-            Auth0 config is missing. Set
-            `EXPO_PUBLIC_AUTH0_DOMAIN` and `EXPO_PUBLIC_AUTH0_CLIENT_ID`.
-          </Text>
-        </View>
-      ) : null}
 
       <Pressable
         onPress={() => navigation.navigate("Login")}
@@ -72,28 +54,7 @@ export default function AuthScreen({ navigation }) {
         </Pressable>
       ) : null}
 
-      <Text style={styles.helper}>Magic link sign-in via Auth0</Text>
-
-      {__DEV__ ? (
-        <View style={styles.debugPanel}>
-          <Text style={styles.debugTitle}>Auth Debug</Text>
-          <Text style={styles.debugItem}>authReady: {String(authReady)}</Text>
-          <Text style={styles.debugItem}>redirectUri: {redirectUri}</Text>
-          <Text style={styles.debugItem}>domain: {auth0Domain || "missing"}</Text>
-          <Text style={styles.debugItem}>
-            clientId: {auth0ClientId ? "set" : "missing"}
-          </Text>
-          <Text style={styles.debugItem}>
-            audience: {auth0Audience || "none"}
-          </Text>
-          <Text style={styles.debugItem}>
-            connection: {auth0Connection || "default"}
-          </Text>
-          <Text style={styles.debugItem}>
-            useProxy: {String(useProxy)}
-          </Text>
-        </View>
-      ) : null}
+      <Text style={styles.helper}>Magic link sign-in via Email</Text>
     </View>
   )
 }

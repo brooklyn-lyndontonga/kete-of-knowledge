@@ -15,10 +15,10 @@ Please follow the instructions below to install and test the application on your
 3.  If asked, allow installation from **"Unknown Sources"** (this is required for test apps not yet on the Play Store).
 4.  Tap **Install**.
 
-### Option B: iPhone (iOS) - Native App
-*Note: Apple prevents installing test apps directly without a paid account. You must use Expo Go.*
-1.  Download **Expo Go** from the Apple App Store.
-2.  **Scan the QR Code** provided by the developer.
+### Option B: iPhone (iOS) - TestFlight
+1.  Install **TestFlight** from the Apple App Store.
+2.  Open the invite email and tap **View in TestFlight** (or redeem the 12-character code).
+3.  Install **Kete of Knowledge** inside TestFlight.
 
 ### Option C: Web Browser (No App Install)
 *Works on iPhone, Android, and Desktop.*
@@ -32,7 +32,7 @@ Please follow the instructions below to install and test the application on your
 1.  Open the App.
 2.  Enter your **email address** on the login screen.
 3.  Tap **"Send Magic Link"**.
-4.  Go to your email inbox (on your phone).
+4.  Go to your email inbox **on the same device**.
 5.  Open the email from "Kete of Knowledge" and tap the **login link**.
 6.  You will be redirected back to the app, logged in!
 
