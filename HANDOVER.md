@@ -9,7 +9,7 @@ The **Kete of Knowledge** is a health and wellbeing platform designed to provide
 ## 2. Deliverables Checklist
 Ensure the client receives the following items:
 
-- [ ] **GitHub Repository Access**: Full admin access to the [repository URL].
+- [ ] **GitHub Repository Access**: Full admin access to [https://github.com/brooklyn-lyndontonga/kete-of-knowledge](https://github.com/brooklyn-lyndontonga/kete-of-knowledge).
 - [ ] **Documentation**:
     - `README.md` (Technical setup and overview).
     - `CLIENT_INSTRUCTIONS.md` (Testing guide).
@@ -21,14 +21,15 @@ Ensure the client receives the following items:
 *Important: Share actual passwords securely via a password manager (e.g., 1Password, LastPass).*
 
 ### Hosting & Infrastructure
-- **Server Hosting** (e.g., Railway/Render/AWS):
-    - Login URL:
-    - Account Email:
-- **Database**:
-    - Connection String (Production):
+- **Server Hosting** (Railway):
+    - Login URL: https://railway.app
+    - Production URL: https://kete-server-production.up.railway.app
+    - Account Email: [CLIENT_EMAIL]
+- **Database** (SQLite on Railway Volume):
+    - Connection: Managed via Railway Volume (`sqlite-data`)
 - **Expo (Mobile Builds)**:
-    - Account:
-    - Project Link:
+    - Project ID: `97556b0f-660a-4a9d-a372-d8d345719d17`
+    - Project Link: https://expo.dev/accounts/[YOUR_EXPO_USERNAME]/projects/kete-of-knowledge
 
 ### Third-Party Services
 - **Authentication** (e.g., Firebase/Auth0/Supabase):
@@ -65,5 +66,5 @@ Ensure the client receives the following items:
 ## 6. Support & Warranty
 *(Define your post-handover support terms here)*
 - **Warranty Period**: [e.g., 30 days] for bug fixes related to existing features.
-- **Contact**: [Your Email/Contact Info] for critical issues.
+- **Contact**: Brooklyn Lyndon-Tonga at brooklynlt24@gmail.com, 021 66 99 04 for critical issues.
 - **New Features**: Any new work will require a separate agreement/contract.
