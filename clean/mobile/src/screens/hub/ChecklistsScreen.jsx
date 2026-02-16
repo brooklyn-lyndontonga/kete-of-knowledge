@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable react/react-in-jsx-scope */
-/* eslint-disable react/prop-types */
+ 
+ 
 import { ScrollView, Text, View, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 import { colors, radii, shadow, spacing, typography } from "../../theme"

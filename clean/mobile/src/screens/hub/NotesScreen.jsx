@@ -1,5 +1,5 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable react/react-in-jsx-scope */
+ 
+ 
 import { ScrollView, View, Text, Pressable, StyleSheet } from "react-native"
 import { useEffect, useState } from "react"
 import { useIsFocused } from "@react-navigation/native"

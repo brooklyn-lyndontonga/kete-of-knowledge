@@ -1,5 +1,5 @@
-/* eslint-disable react/react-in-jsx-scope */
-/* eslint-disable react/prop-types */
+ 
+ 
 
 import { ScrollView, StyleSheet } from "react-native"
 import { useEffect, useState } from "react"

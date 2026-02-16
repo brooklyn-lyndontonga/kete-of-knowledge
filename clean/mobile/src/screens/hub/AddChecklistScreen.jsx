@@ -1,5 +1,5 @@
-/* eslint-disable react/react-in-jsx-scope */
-/* eslint-disable react/prop-types */
+ 
+ 
 import { View, TextInput, Pressable, Text, StyleSheet } from "react-native"
 import { useState } from "react"
 import { colors, radii, spacing, typography } from "../../theme"

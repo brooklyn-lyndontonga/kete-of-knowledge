@@ -1,4 +1,4 @@
-/* eslint-disable react/react-in-jsx-scope */
+ 
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import AuthScreen from "../screens/AuthScreen"
 import AuthLoadingScreen from "../screens/AuthLoadingScreen"

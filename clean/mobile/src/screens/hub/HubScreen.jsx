@@ -1,6 +1,6 @@
-/* eslint-disable react/prop-types */
  
-/* eslint-disable react/react-in-jsx-scope */
+ 
+ 
 
 import { ScrollView, StyleSheet, Text, View } from "react-native"
 import HubSection from "../../components/hub/HubSection"

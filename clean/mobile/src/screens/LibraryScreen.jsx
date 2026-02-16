@@ -1,4 +1,4 @@
-/* eslint-disable react/react-in-jsx-scope */
+ 
 import { ScrollView, Text, ActivityIndicator, StyleSheet, View } from "react-native"
 import { useEffect, useState } from "react"
 

@@ -1,4 +1,4 @@
-/* eslint-disable react/react-in-jsx-scope */
+ 
 export default function LoadingSpinner() {
   return (
     <div className="flex justify-center py-10">

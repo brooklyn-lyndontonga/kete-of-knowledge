@@ -1,4 +1,4 @@
-/* eslint-disable react/react-in-jsx-scope */
+ 
 import { NavigationContainer } from "@react-navigation/native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useEffect } from "react"

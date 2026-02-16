@@ -1,5 +1,5 @@
-/* eslint-disable react/react-in-jsx-scope */
-/* eslint-disable react/prop-types */
+ 
+ 
 import { View, Text, StyleSheet } from "react-native"
 import { colors, spacing, typography } from "../../theme"
 

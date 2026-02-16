@@ -1,5 +1,5 @@
-/* eslint-disable react/react-in-jsx-scope */
-/* eslint-disable react/prop-types */
+ 
+ 
 
 import { ScrollView, Text, View, StyleSheet } from 'react-native'
 import { useState } from 'react'

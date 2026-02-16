@@ -1,4 +1,4 @@
-/* eslint-disable react/react-in-jsx-scope */
+ 
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import HomeStack from "./HomeStack"
 import Profile from "./ProfileStack"

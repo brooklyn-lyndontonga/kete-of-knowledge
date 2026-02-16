@@ -1,4 +1,4 @@
-/* eslint-disable react/react-in-jsx-scope */
+ 
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import LibraryScreen from "../screens/LibraryScreen"
 import { colors, typography } from "../theme"

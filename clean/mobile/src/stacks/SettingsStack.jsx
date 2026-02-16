@@ -1,4 +1,4 @@
-/* eslint-disable react/react-in-jsx-scope */
+ 
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { View, Text, StyleSheet, Pressable } from "react-native"
 import { colors, spacing, typography, radii } from "../theme"

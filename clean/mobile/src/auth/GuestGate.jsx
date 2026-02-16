@@ -1,4 +1,4 @@
-/* eslint-disable react/react-in-jsx-scope */
+ 
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { useAuth } from "./AuthContext"
 import { colors, radii, spacing, typography } from "../theme"

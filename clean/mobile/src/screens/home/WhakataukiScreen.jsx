@@ -1,4 +1,4 @@
-/* eslint-disable react/react-in-jsx-scope */
+ 
 import { useEffect, useState } from "react"
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native"
 import { fetchWhakatauki } from "../../api/appApi.js"
