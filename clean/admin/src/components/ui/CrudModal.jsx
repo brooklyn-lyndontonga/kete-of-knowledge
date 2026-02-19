@@ -47,29 +47,33 @@ export default function CrudModal({
   }
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal">
-        <h2>{initial ? "Edit" : "Create"}</h2>
+    <div className={`modal ${open ? "modal-open" : ""}`}>
+      <div className="modal-box w-11/12 max-w-2xl">
+        <h3 className="font-bold text-lg mb-4">{initial ? "Edit" : "Create"}</h3>
 
-        <form className="form-grid" onSubmit={handleSubmit}>
+        <form className="grid gap-4" onSubmit={handleSubmit}>
           {/* Standard fields */}
           {fields.map((f) => (
             <div
               key={f.name}
-              className={`form-field ${
-                f.type === "textarea" ? "form-field--full" : ""
+              className={`form-control w-full ${
+                f.type === "textarea" ? "col-span-full" : ""
               }`}
             >
-              <label>{f.label}</label>
+              <label className="label">
+                <span className="label-text">{f.label}</span>
+              </label>
 
               {f.type === "textarea" ? (
                 <textarea
+                  className="textarea textarea-bordered h-24"
                   name={f.name}
                   value={form[f.name] || ""}
                   onChange={handleChange}
                 />
               ) : f.type === "select" ? (
                 <select
+                  className="select select-bordered"
                   name={f.name}
                   value={form[f.name] || ""}
                   onChange={handleChange}
@@ -84,12 +88,14 @@ export default function CrudModal({
               ) : f.type === "file" ? (
                 <input
                   type="file"
+                  className="file-input file-input-bordered w-full"
                   name={f.name}
                   onChange={handleChange}
                 />
               ) : (
                 <input
                   type="text"
+                  className="input input-bordered w-full"
                   name={f.name}
                   value={form[f.name] || ""}
                   onChange={handleChange}
@@ -102,10 +108,10 @@ export default function CrudModal({
           {children}
 
           {/* Actions */}
-          <div className="form-actions">
+          <div className="modal-action">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-ghost"
               onClick={onClose}
             >
               Cancel
@@ -116,6 +122,9 @@ export default function CrudModal({
           </div>
         </form>
       </div>
+      <form method="dialog" className="modal-backdrop">
+        <button onClick={onClose}>close</button>
+      </form>
     </div>
   )
 }

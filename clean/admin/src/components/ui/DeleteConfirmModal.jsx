@@ -8,20 +8,23 @@ export default function DeleteConfirmModal({
   if (!open) return null
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal modal--small">
-        <h2>Confirm Delete</h2>
-        <p>This action cannot be undone.</p>
+    <div className={`modal ${open ? "modal-open" : ""}`}>
+      <div className="modal-box">
+        <h3 className="font-bold text-lg">Confirm Delete</h3>
+        <p className="py-4">This action cannot be undone.</p>
 
-        <div className="form-actions">
-          <button className="btn btn-secondary" onClick={onCancel}>
+        <div className="modal-action">
+          <button className="btn btn-ghost" onClick={onCancel}>
             Cancel
           </button>
-          <button className="btn btn-danger" onClick={onConfirm}>
+          <button className="btn btn-error" onClick={onConfirm}>
             Delete
           </button>
         </div>
       </div>
+      <form method="dialog" className="modal-backdrop">
+        <button onClick={onCancel}>close</button>
+      </form>
     </div>
   )
 }

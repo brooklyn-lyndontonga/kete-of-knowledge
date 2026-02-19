@@ -28,15 +28,17 @@ export default function AdminLayout({ current, onNavigate, onLogout }) {
   }
 
   return (
-    <div className="admin-layout">
+    <div className="flex min-h-screen w-full bg-base-200">
       <Sidebar
         current={current}
         onNavigate={onNavigate}
         onLogout={onLogout}
       />
 
-      <main className="admin-content">
-        {renderPage()}
+      <main className="flex-1 p-8 overflow-y-auto">
+        <div className="container mx-auto">
+          {renderPage()}
+        </div>
       </main>
     </div>
   )

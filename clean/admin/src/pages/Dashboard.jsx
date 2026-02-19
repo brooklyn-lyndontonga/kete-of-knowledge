@@ -5,7 +5,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
-        <p className="text-muted">
+        <p className="text-base-content/60">
           Overview of app content and recent activity.
         </p>
       </header>

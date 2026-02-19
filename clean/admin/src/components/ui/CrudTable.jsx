@@ -8,7 +8,7 @@ export default function CrudTable({
   onDelete,
 }) {
   if (loading) {
-    return <p className="text-muted">Loading…</p>
+    return <p className="text-base-content/60">Loading…</p>
   }
 
   if (error) {
@@ -16,7 +16,7 @@ export default function CrudTable({
   }
 
   if (!rows.length) {
-    return <p className="text-muted">No records found.</p>
+    return <p className="text-base-content/60">No records found.</p>
   }
 
   return (
