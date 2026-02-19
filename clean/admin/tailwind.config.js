@@ -5,12 +5,17 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
+    },
   },
   plugins: [
     require('daisyui'),
   ],
   daisyui: {
-    themes: ["light", "dark", "cupcake"],
+    themes: ["corporate", "business"],
+    darkTheme: "business",
   },
 }

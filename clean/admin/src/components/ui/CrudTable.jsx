@@ -20,9 +20,9 @@ export default function CrudTable({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="table table-zebra w-full">
-        <thead>
+    <div className="overflow-x-auto bg-base-100 rounded-lg shadow">
+      <table className="table table-zebra table-hover w-full">
+        <thead className="bg-base-200">
           <tr>
             {columns.map((col) => (
               <th key={col.key}>{col.label}</th>
