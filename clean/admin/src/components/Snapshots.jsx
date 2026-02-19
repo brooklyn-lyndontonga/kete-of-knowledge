@@ -22,21 +22,30 @@ export default function SnapshotsOverview() {
     load()
   }, [])
 
-  if (loading) return <p>Loading snapshots…</p>
-  if (error) return <p className="text-muted">{error}</p>
+  if (loading) return <p className="text-base-content/60">Loading snapshots…</p>
+  if (error) return <p className="text-error">{error}</p>
 
   if (snapshots.length === 0) {
-    return <p className="text-muted">No activity yet.</p>
+    return <p className="text-base-content/60">No activity yet.</p>
   }
 
   return (
-    <div className="border rounded-md divide-y">
-      {snapshots.slice(0, 5).map((s) => (
-        <div key={s.id} className="p-3 text-sm">
-          <strong>{s.mood}</strong> · {s.energy}
-          <div className="text-muted">{s.createdAt}</div>
-        </div>
-      ))}
+    <div className="card bg-base-100 shadow-sm border border-base-200">
+      <div className="card-body p-0">
+        <ul className="divide-y divide-base-200">
+          {snapshots.slice(0, 5).map((s) => (
+            <li key={s.id} className="p-4 hover:bg-base-200/50 transition-colors">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="font-semibold">{s.mood}</div>
+                  <div className="text-sm opacity-80">{s.energy} energy</div>
+                </div>
+                <div className="text-xs text-base-content/50">{new Date(s.createdAt).toLocaleDateString()}</div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }
