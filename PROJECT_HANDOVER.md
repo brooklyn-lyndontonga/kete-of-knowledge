@@ -68,9 +68,10 @@ This section is primarily for technical/IT staff taking over the ongoing mainten
 
 ### 1. Architecture Overview
 * **Frontend/App:** Built using `[Insert Framework, e.g., React Native/Expo or Next.js]`.
-* **Backend API:** `[Insert Backend Tech]`
-* **Database:** `[Insert Database, e.g., MongoDB / PostgreSQL]`
-* **Authentication:** Handled via Magic Links `[Insert Provider, e.g., Auth0, Firebase, Custom]`.
+* **Backend API:** Node.js / Express
+* **Database:** SQLite with WAL Mode enabled for high-performance reads/writes.
+* **ORM:** The database schema is strongly typed using **Prisma** (`/clean/server/prisma/schema.prisma`). Routes are currently being migrated from raw SQL queries (`getDB()`) to Prisma's ORM syntax (`getPrisma()`).
+* **Authentication:** Handled via Magic Links (`jsonwebtoken` + custom Email SMTP logic).
 
 ### 2. Hosting & Domains
 * **App/Web Hosting:** `[e.g., Vercel - Link to project]`
