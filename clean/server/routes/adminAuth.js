@@ -1,7 +1,7 @@
 import { Router } from "express"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import { getDB } from "../db/index.js"
+import { getPrisma } from "../db/prisma.js"
 import { getAdminJwtSecret } from "../middleware/adminAuth.js"
 
 const router = Router()
@@ -14,11 +14,11 @@ router.post("/login", async (req, res) => {
   }
 
   try {
-    const db = await getDB()
-    const admin = await db.get(
-      "SELECT id, email, password_hash FROM admin_users WHERE email = ?",
-      email
-    )
+    const prisma = getPrisma()
+    const admin = await prisma.admin_users.findUnique({
+      where: { email },
+      select: { id: true, email: true, password_hash: true },
+    })
 
     if (!admin) {
       return res.status(401).json({ error: "Invalid credentials" })

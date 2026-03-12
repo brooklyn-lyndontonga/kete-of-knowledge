@@ -1,22 +1,22 @@
-import { getDB } from "../../db/index.js"
+import { getPrisma } from "../../db/prisma.js"
 
 // =======================
 // APP: GET WHAKATAUKI (READ ONLY)
 // =======================
 export async function getAppWhakatauki(req, res) {
   try {
-    const db = await getDB()
+    const prisma = getPrisma()
 
-    const rows = await db.all(`
-      SELECT
-        id,
-        text,
-        translation,
-        theme,
-        source
-      FROM whakatauki
-      ORDER BY id ASC
-    `)
+    const rows = await prisma.whakatauki.findMany({
+      select: {
+        id: true,
+        text: true,
+        translation: true,
+        theme: true,
+        source: true,
+      },
+      orderBy: { id: "asc" },
+    })
 
     res.json(rows)
   } catch (err) {

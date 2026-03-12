@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model snapshots {
+  id        Int      @id @default(autoincrement())
+  mood      String?
+  energy    String?
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model whakatauki {
+  id          Int     @id @default(autoincrement())
+  text        String
+  translation String?
+  theme       String?
+  source      String?
+}
+
+model reflection_templates {
+  id       Int    @id @default(autoincrement())
+  category String
+  title    String
+  prompt   String
+}
+
+model profile_seeds {
+  id    Int    @id @default(autoincrement())
+  name  String
+  value String
+}
+
+model learning_resources {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  type        String?
+  file_path   String?
+  createdAt   DateTime  @default(now())
+  
+  categories  learning_resource_categories[]
+}
+
+model library_categories {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  title       String
+  description String?
+
+  resources   learning_resource_categories[]
+}
+
+model learning_resource_categories {
+  resource_id Int
+  category_id Int
+
+  resource    learning_resources   @relation(fields: [resource_id], references: [id], onDelete: Cascade)
+  category    library_categories   @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@id([resource_id, category_id])
+  @@index([category_id])
+}
+
+model conditions {
+  id         Int     @id @default(autoincrement())
+  title      String
+  summary    String?
+  triggers   String?
+  treatments String?
+}
+
+model admin_users {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password_hash String
+  createdAt     DateTime @default(now())
+}
+
+model app_users {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password_hash String?
+  name          String?
+  createdAt     DateTime @default(now())
+}
+
+model magic_link_tokens {
+  token     String   @id
+  email     String
+  expiresAt Int
+}

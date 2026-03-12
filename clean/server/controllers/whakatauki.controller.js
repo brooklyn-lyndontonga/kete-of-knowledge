@@ -1,14 +1,14 @@
-import { getDB } from "../db/index.js"
+import { getPrisma } from "../db/prisma.js"
 
 // =======================
 // GET ALL
 // =======================
 export async function getAllWhakatauki(req, res) {
   try {
-    const db = await getDB()
-    const rows = await db.all(
-      "SELECT * FROM whakatauki ORDER BY id ASC"
-    )
+    const prisma = getPrisma()
+    const rows = await prisma.whakatauki.findMany({
+      orderBy: { id: "asc" },
+    })
     res.json(rows)
   } catch (err) {
     console.error("❌ getAllWhakatauki error:", err)
@@ -47,32 +47,22 @@ export async function createWhakatauki(req, res) {
     // 🛡 Validation (prevents DB crash)
     if (!text || text.trim() === "") {
       return res.status(400).json({
-        error: "Whakatauki text is required"
+        error: "Whakatauki text is required",
       })
     }
 
-    const db = await getDB()
+    const prisma = getPrisma()
 
-    const result = await db.run(
-      `
-      INSERT INTO whakatauki (text, translation, theme, source)
-      VALUES (?, ?, ?, ?)
-      `,
-      [
-        text.trim(),
-        translation?.trim() || null,
+    const result = await prisma.whakatauki.create({
+      data: {
+        text: text.trim(),
+        translation: translation?.trim() || null,
         theme,
-        source
-      ]
-    )
-
-    res.status(201).json({
-      id: result.lastID,
-      text,
-      translation,
-      theme,
-      source
+        source,
+      },
     })
+
+    res.status(201).json(result)
   } catch (err) {
     console.error("❌ createWhakatauki error:", err)
     res.status(500).json({ error: err.message })
@@ -107,34 +97,23 @@ export async function updateWhakatauki(req, res) {
 
     if (!text || text.trim() === "") {
       return res.status(400).json({
-        error: "Whakatauki text is required"
+        error: "Whakatauki text is required",
       })
     }
 
-    const db = await getDB()
+    const prisma = getPrisma()
 
-    await db.run(
-      `
-      UPDATE whakatauki
-      SET text = ?, translation = ?, theme = ?, source = ?
-      WHERE id = ?
-      `,
-      [
-        text.trim(),
-        translation?.trim() || null,
+    const result = await prisma.whakatauki.update({
+      where: { id: Number(id) },
+      data: {
+        text: text.trim(),
+        translation: translation?.trim() || null,
         theme,
         source,
-        id
-      ]
-    )
-
-    res.json({
-      id,
-      text,
-      translation,
-      theme,
-      source
+      },
     })
+
+    res.json(result)
   } catch (err) {
     console.error("❌ updateWhakatauki error:", err)
     res.status(500).json({ error: err.message })
@@ -147,12 +126,11 @@ export async function updateWhakatauki(req, res) {
 export async function deleteWhakatauki(req, res) {
   try {
     const { id } = req.params
-    const db = await getDB()
+    const prisma = getPrisma()
 
-    await db.run(
-      `DELETE FROM whakatauki WHERE id = ?`,
-      [id]
-    )
+    await prisma.whakatauki.delete({
+      where: { id: Number(id) },
+    })
 
     res.json({ success: true })
   } catch (err) {

@@ -1,7 +1,7 @@
 import { Router } from "express"
 import jwt from "jsonwebtoken"
 import { randomBytes } from "crypto"
-import { getDB } from "../../db/index.js"
+import { getPrisma } from "../../db/prisma.js"
 import { getAppJwtSecret, requireAppAuth } from "../../middleware/appAuth.js"
 import { sendMagicLink } from "../../services/email.js"
 
@@ -16,26 +16,30 @@ router.post("/magic-link", async (req, res) => {
   }
 
   try {
-    const db = await getDB()
+    const prisma = getPrisma()
     const token = randomBytes(32).toString("hex")
     const expiresAt = Date.now() + 15 * 60 * 1000 // 15 mins
 
     // Clean up old tokens for this email
-    await db.run("DELETE FROM magic_link_tokens WHERE email = ?", email)
+    await prisma.magic_link_tokens.deleteMany({
+      where: { email },
+    })
 
-    await db.run(
-      "INSERT INTO magic_link_tokens (token, email, expiresAt) VALUES (?, ?, ?)",
-      token,
-      email,
-      expiresAt
-    )
+    // Insert new token
+    await prisma.magic_link_tokens.create({
+      data: {
+        token,
+        email,
+        expiresAt,
+      },
+    })
 
     const magicLink = `keteofknowledge://auth?token=${token}`
     
     // Send email using service
     await sendMagicLink(email, magicLink);
 
-    // Development log just in case (optional, maybe remove for prod or keep if ethereal)
+    // Development log
     if (process.env.SMTP_HOST === 'smtp.ethereal.email') {
         console.log("\n✨ ---------------------------------------------------")
         console.log(`🔮 Magic Link for ${email}:`)
@@ -59,36 +63,38 @@ router.post("/verify-magic-link", async (req, res) => {
   }
 
   try {
-    const db = await getDB()
-    const record = await db.get(
-      "SELECT email, expiresAt FROM magic_link_tokens WHERE token = ?",
-      token
-    )
+    const prisma = getPrisma()
+    
+    // Find token record
+    const record = await prisma.magic_link_tokens.findUnique({
+      where: { token },
+    })
 
     if (!record) {
       return res.status(401).json({ error: "Invalid token" })
     }
 
+    // Check expiration
     if (Date.now() > record.expiresAt) {
-      await db.run("DELETE FROM magic_link_tokens WHERE token = ?", token)
+      await prisma.magic_link_tokens.delete({
+        where: { token },
+      })
       return res.status(401).json({ error: "Token expired" })
     }
 
     const { email } = record
 
-    // Find or create user
-    let user = await db.get("SELECT * FROM app_users WHERE email = ?", email)
+    // Find or create user securely
+    const user = await prisma.app_users.upsert({
+      where: { email },
+      update: {}, // No updates needed if they exist
+      create: { email },
+    })
 
-    if (!user) {
-      const result = await db.run(
-        "INSERT INTO app_users (email) VALUES (?)",
-        email
-      )
-      user = { id: result.lastID, email }
-    }
-
-    // Invalidate token
-    await db.run("DELETE FROM magic_link_tokens WHERE token = ?", token)
+    // Invalidate token so it can't be used twice
+    await prisma.magic_link_tokens.delete({
+      where: { token },
+    })
 
     // Create session JWT
     const authToken = jwt.sign(
@@ -110,11 +116,17 @@ router.post("/verify-magic-link", async (req, res) => {
 // GET /me
 router.get("/me", requireAppAuth, async (req, res) => {
   try {
-    const db = await getDB()
-    const user = await db.get(
-      "SELECT id, email, name, createdAt FROM app_users WHERE id = ?",
-      req.user.sub
-    )
+    const prisma = getPrisma()
+    
+    const user = await prisma.app_users.findUnique({
+      where: { id: req.user.sub },
+      select: { 
+        id: true, 
+        email: true, 
+        name: true, 
+        createdAt: true 
+      },
+    })
 
     if (!user) {
       return res.status(404).json({ error: "User not found" })
