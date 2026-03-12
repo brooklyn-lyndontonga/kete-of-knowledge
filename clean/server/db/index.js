@@ -42,6 +42,8 @@ export async function getDB() {
 export async function initSchema() {
   const db = await initDB()
 
+  // Enable Write-Ahead Logging for much better concurrency / performance
+  await db.exec(`PRAGMA journal_mode = WAL;`)
   // Enable foreign key support
   await db.exec(`PRAGMA foreign_keys = ON;`)
 
@@ -110,6 +112,9 @@ export async function initSchema() {
         REFERENCES library_categories(id)
         ON DELETE CASCADE
     );
+
+    -- Create secondary index for faster querying by category
+    CREATE INDEX IF NOT EXISTS idx_lrc_category ON learning_resource_categories(category_id);
 
     -- ======================
     -- Conditions / Education

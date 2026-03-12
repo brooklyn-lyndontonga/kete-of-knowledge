@@ -1,6 +1,8 @@
 import "dotenv/config"
 import express from "express"
 import cors from "cors"
+import compression from "compression"
+import rateLimit from "express-rate-limit"
 
 // ─────────────────────────────────────
 // ADMIN ROUTES (write)
@@ -33,7 +35,17 @@ const app = express()
 // MIDDLEWARE
 // ─────────────────────────────────────
 app.use(cors())
+app.use(compression()) // Greatly reduces response payload sizes
 app.use(express.json())
+
+// Rate limiting for auth routes to prevent brute-force attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // Limit each IP to 20 auth requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many authentication requests, please try again later." }
+})
 
 // Init DB + schema
 await initSchema()
@@ -55,7 +67,7 @@ app.get("/health", async (_req, res) => {
 // ─────────────────────────────────────
 // ADMIN API (content management)
 // ─────────────────────────────────────
-app.use("/api/admin/auth", adminAuthRoutes)
+app.use("/api/admin/auth", authLimiter, adminAuthRoutes)
 app.use("/api/admin", requireAdminAuth)
 app.use("/api/admin/snapshots", snapshotRoutes)
 app.use("/api/admin/whakatauki", whakataukiRoutes)
@@ -71,7 +83,7 @@ app.use("/api/app/whakatauki", appWhakataukiRoutes)
 app.use("/api/app/learning-resources", appLearningResourceRoutes)
 app.use("/api/app/conditions", appConditionRoutes)
 app.use("/api/app/profile-seeds", appProfileSeedRoutes)
-app.use("/api/app/auth", appAuthRoutes)
+app.use("/api/app/auth", authLimiter, appAuthRoutes)
 
 
 // ─────────────────────────────────────
