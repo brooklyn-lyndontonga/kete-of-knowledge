@@ -23,7 +23,7 @@ These tutorials cover the standard tasks you will perform regularly.
 * **Video Tutorial:** `[Video 01: How to Login]`
 * **Text Guide:** 
   1. Navigate to the Admin URL: `[Insert Admin URL]`
-  2. Enter your authorized admin email address.
+  2. Enter your authorized admin email address (`maraea@thecentreforhealth.co.nz`).
   3. Click **"Send Magic Link"**.
   4. Check your email inbox and click the secure link to log in.
 
