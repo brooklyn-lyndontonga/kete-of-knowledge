@@ -13,9 +13,12 @@ let prisma
 
 export function getPrisma() {
   if (!prisma) {
+    process.env.DATABASE_URL = `file:${DB_PATH}`
     prisma = new PrismaClient({
-      adapter: {
-        url: `file:${DB_PATH}`,
+      datasources: {
+        db: {
+          url: `file:${DB_PATH}`,
+        },
       },
     })
     console.log("🔺 Prisma Client Initialized")
