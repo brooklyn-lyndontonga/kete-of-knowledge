@@ -7,12 +7,13 @@ export default function WhakataukiBanner({ text, translation }) {
   return (
     <View style={styles.card}>
       <View style={styles.topRow}>
-        <Text style={styles.kicker}>Whakataukī</Text>
-        <View style={styles.pill}>
-          <Text style={styles.pillText}>Māori · English</Text>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>Whakataukī</Text>
         </View>
+        <Text style={styles.topLabel}>Grounding Reflection</Text>
       </View>
-      <Text style={styles.title}>{text}</Text>
+      <Text style={styles.title}>“{text}”</Text>
+      <View style={styles.divider} />
       <Text style={styles.subtitle}>{translation}</Text>
     </View>
   )
@@ -22,39 +23,55 @@ const styles = StyleSheet.create({
   card: {
     padding: spacing.lg,
     borderRadius: radii.lg,
-    backgroundColor: colors.card,
+    backgroundColor: colors.olive, // Rich deep green background
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: "rgba(255, 255, 255, 0.1)",
     ...shadow.card,
-    gap: spacing.xs,
+    gap: spacing.sm,
+    overflow: "hidden",
   },
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: spacing.xs,
   },
-  kicker: {
-    ...typography.caption,
-    color: colors.russet,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  pill: {
+  badge: {
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
     borderRadius: radii.pill,
-    backgroundColor: colors.meringue,
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
   },
-  pillText: {
+  badgeText: {
     ...typography.caption,
-    color: colors.olive,
+    fontFamily: "Manrope_600SemiBold",
+    color: colors.cornsilk,
+    textTransform: "uppercase",
+    fontSize: 11,
+    letterSpacing: 0.8,
+  },
+  topLabel: {
+    ...typography.caption,
+    color: "rgba(255, 255, 255, 0.6)",
+    fontSize: 12,
   },
   title: {
     ...typography.title,
-    color: colors.text,
+    color: colors.cornsilk, // Warm off-white
+    fontSize: 22,
+    lineHeight: 30,
+    fontStyle: "italic",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.12)",
+    marginVertical: 4,
   },
   subtitle: {
     ...typography.body,
-    color: colors.muted,
+    color: "rgba(246, 245, 240, 0.8)", // Soft readable sub-text
+    fontSize: 15,
+    lineHeight: 22,
   },
 })
+
