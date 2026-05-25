@@ -14,7 +14,7 @@ export default function SymptomsHubScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.headerCardContainer}>
         <ImageBackground 
-          source={images.sandRipples} 
+          source={images.sand_ripples} 
           style={styles.headerImageBg}
           imageStyle={styles.headerImageStyle}
         >

@@ -1,30 +1,30 @@
 // clean/mobile/src/theme/images.js
 
 export const images = {
-  // Key native flora and curated background images
-  kawakawa: require("../../assets/images/kawakawa_enhanced.jpg"),
-  kawakawaBrief: require("../../assets/images/What is Kawakawa__enhanced.jpg"),
-  manuka: require("../../assets/images/manuka_enhanced.jpg"),
-  fern: require("../../assets/images/fern_enhanced.jpg"),
+  // Key native flora assets
+  kawakawa_close: require("../../assets/images/kawakawa_close.jpg"),
+  kawakawa_info: require("../../assets/images/kawakawa_info.jpg"),
+  manuka_blossoms: require("../../assets/images/manuka_blossoms.jpg"),
+  fern_frond: require("../../assets/images/fern_frond.jpg"),
   
-  // Coastal, sand, forest, and bird vistas
-  beach: require("../../assets/images/andre-bernhardt-6X0YveGqAoI-unsplash_enhanced.jpg"),
-  tuiOnKowhai: require("../../assets/images/david-tip-MsWFQ5CzkHk-unsplash_enhanced.jpg"),
-  sandRipples: require("../../assets/images/doug-bagg-ZF4cvDgvuWI-unsplash_enhanced.jpg"),
-  kauriForest: require("../../assets/images/toby-hall-pU71Nk_7rT8-unsplash_enhanced.jpg"),
+  // Landscape and atmospheric vistas
+  beach_horizon: require("../../assets/images/beach_horizon.jpg"),
+  tui_on_kowhai: require("../../assets/images/tui_on_kowhai.jpg"),
+  sand_ripples: require("../../assets/images/sand_ripples.jpg"),
+  kauri_giant_tree: require("../../assets/images/kauri_giant_tree.jpg"),
   
-  // Additional high-resolution natural assets
-  kumarForest: require("../../assets/images/gaurav-kumar-BekYShbvHls-unsplash_enhanced.jpg"),
-  kumarMist: require("../../assets/images/gaurav-kumar-gkcG4NhxL6Y-unsplash_enhanced.jpg"),
-  woodPine: require("../../assets/images/iris-wood-h8EzVO7N7BU-unsplash_enhanced.jpg"),
-  sanfordValley: require("../../assets/images/ivan-sanford-O0fEL5Rf350-unsplash_enhanced.jpg"),
-  sanfordFerns: require("../../assets/images/ivan-sanford-cci3jX_AfRk-unsplash_enhanced.jpg"),
-  lemahijoPlant: require("../../assets/images/lemahijo_-pg-N-l3qioN5TE-unsplash_enhanced.jpg"),
-  hopmanMountains: require("../../assets/images/maxim-hopman-rtsOc4q65B4-unsplash_enhanced.jpg"),
-  gomezJungle: require("../../assets/images/nathalia-gomez-WF5cvqOen_0-unsplash_enhanced.jpg"),
-  nurLeaves: require("../../assets/images/nur-agustiningsih-iy4pVq40z1s-unsplash_enhanced.jpg"),
-  juliaFoliage: require("../../assets/images/pure-julia-B8y6uvTnEvU-unsplash_enhanced.jpg"),
-  thanhMoss: require("../../assets/images/thanh-le-tY8AJdPsI70-unsplash_enhanced.jpg"),
-  lastovichFog: require("../../assets/images/tyler-lastovich-p6FnBHVepRc-unsplash_enhanced.jpg"),
-  yathursanCanopy: require("../../assets/images/yathursan-g-x1GGkMX9sUs-unsplash_enhanced.jpg"),
+  // Forest, mist, foliage, and vegetation
+  forest_canopy_dense: require("../../assets/images/forest_canopy_dense.jpg"),
+  forest_mist: require("../../assets/images/forest_mist.jpg"),
+  pine_needles: require("../../assets/images/pine_needles.jpg"),
+  valley_mist: require("../../assets/images/valley_mist.jpg"),
+  rainforest_ferns: require("../../assets/images/rainforest_ferns.jpg"),
+  tropical_foliage: require("../../assets/images/tropical_foliage.jpg"),
+  alpine_mountains: require("../../assets/images/alpine_mountains.jpg"),
+  jungle_path: require("../../assets/images/jungle_path.jpg"),
+  green_leaves_dense: require("../../assets/images/green_leaves_dense.jpg"),
+  soft_foliage: require("../../assets/images/soft_foliage.jpg"),
+  forest_moss: require("../../assets/images/forest_moss.jpg"),
+  coastal_mist_sea: require("../../assets/images/coastal_mist_sea.jpg"),
+  forest_sun_canopy: require("../../assets/images/forest_sun_canopy.jpg"),
 }

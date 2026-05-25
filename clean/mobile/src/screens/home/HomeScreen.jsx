@@ -34,7 +34,7 @@ export default function HomeScreen({ navigation }) {
       {/* 🌿 Personalized Hero Card with Kauri Forest Backdrop */}
       <View style={styles.heroCardContainer}>
         <ImageBackground 
-          source={images.kauriForest} 
+          source={images.kauri_giant_tree} 
           style={styles.heroImageBg}
           imageStyle={styles.heroImageStyle}
         >

@@ -14,7 +14,7 @@ export default function MedicinesHubScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.headerCardContainer}>
         <ImageBackground 
-          source={images.kawakawa} 
+          source={images.kawakawa_close} 
           style={styles.headerImageBg}
           imageStyle={styles.headerImageStyle}
         >
