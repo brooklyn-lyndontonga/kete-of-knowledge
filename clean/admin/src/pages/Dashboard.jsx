@@ -34,7 +34,7 @@ export default function Dashboard() {
       <header className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
         <p className="text-base-content/60">
-          Welcome back. Here's an overview of your app's content.
+          Welcome back. Here&apos;s an overview of your app&apos;s content.
         </p>
       </header>
 

@@ -14,7 +14,6 @@ export default function CrudModal({
   // Populate form when opening or editing
   useEffect(() => {
     if (open && initial) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm(initial)
     } else if (open) {
       setForm({})

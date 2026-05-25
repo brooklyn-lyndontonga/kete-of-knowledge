@@ -3,6 +3,16 @@ import globals from "globals";
 import pluginReact from "eslint-plugin-react";
 
 export default [
+  {
+    ignores: [
+      "**/node_modules/**",
+      "clean/admin/dist/**",
+      "clean/mobile/.expo/**",
+      "**/.git/**",
+      "clean/server/uploads/**",
+      "clean/server/db/**"
+    ]
+  },
   js.configs.recommended,
   pluginReact.configs.flat.recommended,
   {
