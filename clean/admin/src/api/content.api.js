@@ -7,7 +7,7 @@ const ADMIN_API = `${API_ROOT}/api/admin`
 
 const getAuthToken = () => localStorage.getItem("admin_token")
 
-const adminFetch = (url, options = {}) => {
+const adminFetch = async (url, options = {}) => {
   const headers = { ...(options.headers || {}) }
   const token = getAuthToken()
 
@@ -15,7 +15,20 @@ const adminFetch = (url, options = {}) => {
     headers.Authorization = `Bearer ${token}`
   }
 
-  return fetch(url, { ...options, headers })
+  const res = await fetch(url, { ...options, headers })
+
+  if (res.status === 401) {
+    localStorage.removeItem("admin_token")
+    window.location.reload()
+    throw new Error("Unauthorized")
+  }
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error || `HTTP error! status: ${res.status}`)
+  }
+
+  return res
 }
 
 // ─── Snapshots ───────────────────────

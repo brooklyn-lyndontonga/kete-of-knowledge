@@ -15,7 +15,7 @@ export default function CrudTable({
     return <p className="text-error">{error}</p>
   }
 
-  if (!rows.length) {
+  if (!rows || !Array.isArray(rows) || !rows.length) {
     return <p className="text-base-content/60">No records found.</p>
   }
 

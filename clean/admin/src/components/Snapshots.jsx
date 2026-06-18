@@ -22,10 +22,12 @@ export default function SnapshotsOverview() {
     load()
   }, [])
 
+  const isArray = Array.isArray(snapshots)
+
   if (loading) return <p className="text-base-content/60">Loading snapshots…</p>
   if (error) return <p className="text-error">{error}</p>
 
-  if (snapshots.length === 0) {
+  if (!isArray || snapshots.length === 0) {
     return <p className="text-base-content/60">No activity yet.</p>
   }
 
