@@ -14,6 +14,9 @@ COPY clean/server ./clean/server
 # Set working directory to server for execution
 WORKDIR /app/clean/server
 
+# Generate Prisma Client
+RUN npx prisma generate --schema=prisma/schema.prisma
+
 # Expose port
 EXPOSE 3000
 
