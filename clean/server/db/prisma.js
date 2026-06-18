@@ -13,7 +13,7 @@ let prisma
 
 export function getPrisma() {
   if (!prisma) {
-    process.env.DATABASE_URL = `file:${DB_PATH}`
+    process.env.SQLITE_DATABASE_URL = `file:${DB_PATH}`
     prisma = new PrismaClient({
       datasources: {
         db: {
