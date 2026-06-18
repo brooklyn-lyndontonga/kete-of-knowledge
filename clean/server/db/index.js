@@ -178,20 +178,26 @@ async function seedAdminUser(db) {
 
   if (!email || !password) return
 
+  const passwordHash = await bcrypt.hash(password, 10)
+
   const existing = await db.get(
     "SELECT id FROM admin_users WHERE email = ?",
     email
   )
 
-  if (existing) return
-
-  const passwordHash = await bcrypt.hash(password, 10)
-
-  await db.run(
-    "INSERT INTO admin_users (email, password_hash) VALUES (?, ?)",
-    email,
-    passwordHash
-  )
-
-  console.log("🔐 Seeded admin user:", email)
+  if (existing) {
+    await db.run(
+      "UPDATE admin_users SET password_hash = ? WHERE email = ?",
+      passwordHash,
+      email
+    )
+    console.log("🔐 Updated admin password hash for:", email)
+  } else {
+    await db.run(
+      "INSERT INTO admin_users (email, password_hash) VALUES (?, ?)",
+      email,
+      passwordHash
+    )
+    console.log("🔐 Seeded admin user:", email)
+  }
 }
