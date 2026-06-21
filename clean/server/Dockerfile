@@ -1,5 +1,7 @@
 FROM node:18-alpine
 
+RUN apk add --no-cache openssl1.1-compat libc6-compat
+
 WORKDIR /app
 
 # Copy root package files
