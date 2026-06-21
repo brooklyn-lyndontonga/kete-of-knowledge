@@ -1,4 +1,5 @@
 import { getPrisma } from "../db/prisma.js"
+import { logAudit } from "../services/audit.js"
 
 // =======================
 // GET ALL
@@ -7,7 +8,7 @@ export async function getAllWhakatauki(req, res) {
   try {
     const prisma = getPrisma()
     const rows = await prisma.whakatauki.findMany({
-      orderBy: { id: "asc" },
+      orderBy: [{ sort_order: "asc" }, { id: "asc" }],
     })
     res.json(rows)
   } catch (err) {
@@ -44,6 +45,9 @@ export async function createWhakatauki(req, res) {
       req.body.source ??
       null
 
+    const status = req.body.status ?? "draft"
+    const sort_order = Number(req.body.sort_order) || 0
+
     // 🛡 Validation (prevents DB crash)
     if (!text || text.trim() === "") {
       return res.status(400).json({
@@ -59,8 +63,12 @@ export async function createWhakatauki(req, res) {
         translation: translation?.trim() || null,
         theme,
         source,
+        status,
+        sort_order,
       },
     })
+
+    await logAudit("CREATE", "whakatauki", result.id, `Created whakatauki: "${result.text.slice(0, 30)}..."`, req.admin?.email)
 
     res.status(201).json(result)
   } catch (err) {
@@ -95,6 +103,9 @@ export async function updateWhakatauki(req, res) {
       req.body.source ??
       null
 
+    const status = req.body.status ?? "draft"
+    const sort_order = req.body.sort_order !== undefined ? Number(req.body.sort_order) : undefined
+
     if (!text || text.trim() === "") {
       return res.status(400).json({
         error: "Whakatauki text is required",
@@ -110,8 +121,12 @@ export async function updateWhakatauki(req, res) {
         translation: translation?.trim() || null,
         theme,
         source,
+        status,
+        sort_order,
       },
     })
+
+    await logAudit("UPDATE", "whakatauki", result.id, `Updated whakatauki: "${result.text.slice(0, 30)}..."`, req.admin?.email)
 
     res.json(result)
   } catch (err) {
@@ -128,9 +143,16 @@ export async function deleteWhakatauki(req, res) {
     const { id } = req.params
     const prisma = getPrisma()
 
+    const existing = await prisma.whakatauki.findUnique({
+      where: { id: Number(id) },
+      select: { text: true },
+    })
+
     await prisma.whakatauki.delete({
       where: { id: Number(id) },
     })
+
+    await logAudit("DELETE", "whakatauki", id, `Deleted whakatauki: "${existing?.text?.slice(0, 30) || "Unknown"}..."`, req.admin?.email)
 
     res.json({ success: true })
   } catch (err) {

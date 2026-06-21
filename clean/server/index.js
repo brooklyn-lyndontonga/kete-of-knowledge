@@ -14,6 +14,7 @@ import profileSeedRoutes from "./routes/profileSeeds.js"
 import learningResourceRoutes from "./routes/learningResources.js"
 import conditionRoutes from "./routes/conditions.js"
 import adminAuthRoutes from "./routes/adminAuth.js"
+import auditLogsRoutes from "./routes/auditLogs.js"
 import { requireAdminAuth } from "./middleware/adminAuth.js"
 
 // ─────────────────────────────────────
@@ -75,6 +76,7 @@ app.use("/api/admin/reflection-templates", reflectionTemplateRoutes)
 app.use("/api/admin/profile-seeds", profileSeedRoutes)
 app.use("/api/admin/learning-resources", learningResourceRoutes)
 app.use("/api/admin/conditions", conditionRoutes)
+app.use("/api/admin/audit-logs", auditLogsRoutes)
 
 // ─────────────────────────────────────
 // APP API (read-only, mobile app)

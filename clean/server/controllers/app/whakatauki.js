@@ -8,6 +8,7 @@ export async function getAppWhakatauki(req, res) {
     const prisma = getPrisma()
 
     const rows = await prisma.whakatauki.findMany({
+      where: { status: "published" },
       select: {
         id: true,
         text: true,
@@ -15,7 +16,7 @@ export async function getAppWhakatauki(req, res) {
         theme: true,
         source: true,
       },
-      orderBy: { id: "asc" },
+      orderBy: [{ sort_order: "asc" }, { id: "asc" }],
     })
 
     res.json(rows)

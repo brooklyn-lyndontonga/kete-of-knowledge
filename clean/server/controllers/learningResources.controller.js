@@ -1,4 +1,5 @@
 import { getDB } from "../db/index.js"
+import { logAudit } from "../services/audit.js"
 
 // =======================
 // GET ALL
@@ -11,9 +12,23 @@ export async function getAllLearningResources(req, res) {
       `
       SELECT *
       FROM learning_resources
-      ORDER BY createdAt DESC
+      ORDER BY sort_order ASC, createdAt DESC
       `
     )
+
+    // Load category associations for each resource
+    for (const row of rows) {
+      const catRows = await db.all(
+        `
+        SELECT lc.key
+        FROM library_categories lc
+        JOIN learning_resource_categories lrc ON lrc.category_id = lc.id
+        WHERE lrc.resource_id = ?
+        `,
+        [row.id]
+      )
+      row.categories = catRows.map((c) => c.key)
+    }
 
     res.json(rows)
   } catch (err) {
@@ -52,6 +67,10 @@ export async function createLearningResource(req, res) {
       req.body.url ??
       null
 
+    const status = req.body.status ?? "draft"
+    const sort_order = Number(req.body.sort_order) || 0
+    const categories = req.body.categories || []
+
     // 🛡 Validation (prevents NOT NULL crash)
     if (!title || title.trim() === "") {
       return res.status(400).json({
@@ -63,23 +82,43 @@ export async function createLearningResource(req, res) {
 
     const result = await db.run(
       `
-      INSERT INTO learning_resources (title, description, type, file_path)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO learning_resources (title, description, type, file_path, status, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?)
       `,
       [
         title.trim(),
         description?.trim() || null,
         type,
-        filePath
+        filePath,
+        status,
+        sort_order
       ]
     )
 
+    const id = result.lastID
+
+    // Save category associations
+    for (const catKey of categories) {
+      const catRow = await db.get("SELECT id FROM library_categories WHERE key = ?", [catKey])
+      if (catRow) {
+        await db.run(
+          "INSERT OR IGNORE INTO learning_resource_categories (resource_id, category_id) VALUES (?, ?)",
+          [id, catRow.id]
+        )
+      }
+    }
+
+    await logAudit("CREATE", "learning_resources", id, `Created learning resource: "${title.slice(0, 30)}"`, req.admin?.email)
+
     res.status(201).json({
-      id: result.lastID,
+      id,
       title,
       description,
       type,
-      file_path: filePath
+      file_path: filePath,
+      status,
+      sort_order,
+      categories
     })
   } catch (err) {
     console.error("❌ createLearningResource error:", err)
@@ -114,6 +153,10 @@ export async function updateLearningResource(req, res) {
       req.body.url ??
       null
 
+    const status = req.body.status ?? "draft"
+    const sort_order = Number(req.body.sort_order) || 0
+    const categories = req.body.categories || []
+
     if (!title || title.trim() === "") {
       return res.status(400).json({
         error: "Learning resource title is required"
@@ -125,7 +168,7 @@ export async function updateLearningResource(req, res) {
     await db.run(
       `
       UPDATE learning_resources
-      SET title = ?, description = ?, type = ?, file_path = ?
+      SET title = ?, description = ?, type = ?, file_path = ?, status = ?, sort_order = ?
       WHERE id = ?
       `,
       [
@@ -133,16 +176,35 @@ export async function updateLearningResource(req, res) {
         description?.trim() || null,
         type,
         filePath,
+        status,
+        sort_order,
         id
       ]
     )
+
+    // Clear old categories and write new ones
+    await db.run("DELETE FROM learning_resource_categories WHERE resource_id = ?", [id])
+    for (const catKey of categories) {
+      const catRow = await db.get("SELECT id FROM library_categories WHERE key = ?", [catKey])
+      if (catRow) {
+        await db.run(
+          "INSERT OR IGNORE INTO learning_resource_categories (resource_id, category_id) VALUES (?, ?)",
+          [id, catRow.id]
+        )
+      }
+    }
+
+    await logAudit("UPDATE", "learning_resources", id, `Updated learning resource: "${title.slice(0, 30)}"`, req.admin?.email)
 
     res.json({
       id,
       title,
       description,
       type,
-      file_path: filePath
+      file_path: filePath,
+      status,
+      sort_order,
+      categories
     })
   } catch (err) {
     console.error("❌ updateLearningResource error:", err)
@@ -158,10 +220,14 @@ export async function deleteLearningResource(req, res) {
     const { id } = req.params
     const db = await getDB()
 
+    const existing = await db.get("SELECT title FROM learning_resources WHERE id = ?", [id])
+
     await db.run(
       `DELETE FROM learning_resources WHERE id = ?`,
       [id]
     )
+
+    await logAudit("DELETE", "learning_resources", id, `Deleted learning resource: "${existing?.title || "Unknown"}"`, req.admin?.email)
 
     res.json({ success: true })
   } catch (err) {

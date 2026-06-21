@@ -1,10 +1,11 @@
 import { getDB } from "../db/index.js"
+import { logAudit } from "../services/audit.js"
 
 export async function getAllTemplates(req, res) {
   try {
     const db = await getDB()
     const rows = await db.all(
-      "SELECT * FROM reflection_templates ORDER BY id DESC"
+      "SELECT * FROM reflection_templates ORDER BY sort_order ASC, id DESC"
     )
     res.json(rows)
   } catch (err) {
@@ -15,18 +16,21 @@ export async function getAllTemplates(req, res) {
 
 export async function createTemplate(req, res) {
   try {
-    const { category, title, prompt } = req.body
+    const { category, title, prompt, status, sort_order } = req.body
     const db = await getDB()
 
     const result = await db.run(
       `
-      INSERT INTO reflection_templates (category, title, prompt)
-      VALUES (?, ?, ?)
+      INSERT INTO reflection_templates (category, title, prompt, status, sort_order)
+      VALUES (?, ?, ?, ?, ?)
       `,
-      [category, title, prompt]
+      [category, title, prompt, status || "draft", Number(sort_order) || 0]
     )
 
-    res.json({ id: result.lastID, category, title, prompt })
+    const id = result.lastID
+    await logAudit("CREATE", "reflection_templates", id, `Created reflection template: "${title.slice(0, 30)}"`, req.admin?.email)
+
+    res.json({ id, category, title, prompt, status, sort_order: Number(sort_order) || 0 })
   } catch (err) {
     console.error("❌ createTemplate error:", err)
     res.status(500).json({ error: "Failed to create template" })
@@ -36,19 +40,21 @@ export async function createTemplate(req, res) {
 export async function updateTemplate(req, res) {
   try {
     const { id } = req.params
-    const { category, title, prompt } = req.body
+    const { category, title, prompt, status, sort_order } = req.body
     const db = await getDB()
 
     await db.run(
       `
       UPDATE reflection_templates
-      SET category = ?, title = ?, prompt = ?
+      SET category = ?, title = ?, prompt = ?, status = ?, sort_order = ?
       WHERE id = ?
       `,
-      [category, title, prompt, id]
+      [category, title, prompt, status || "draft", Number(sort_order) || 0, id]
     )
 
-    res.json({ id, category, title, prompt })
+    await logAudit("UPDATE", "reflection_templates", id, `Updated reflection template: "${title.slice(0, 30)}"`, req.admin?.email)
+
+    res.json({ id, category, title, prompt, status, sort_order: Number(sort_order) || 0 })
   } catch (err) {
     console.error("❌ updateTemplate error:", err)
     res.status(500).json({ error: "Failed to update template" })
@@ -60,10 +66,14 @@ export async function deleteTemplate(req, res) {
     const { id } = req.params
     const db = await getDB()
 
+    const existing = await db.get("SELECT title FROM reflection_templates WHERE id = ?", [id])
+
     await db.run(
       "DELETE FROM reflection_templates WHERE id = ?",
       [id]
     )
+
+    await logAudit("DELETE", "reflection_templates", id, `Deleted reflection template: "${existing?.title || "Unknown"}"`, req.admin?.email)
 
     res.json({ success: true })
   } catch (err) {

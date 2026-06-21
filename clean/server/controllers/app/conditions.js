@@ -15,7 +15,8 @@ export async function getAppConditions(req, res) {
         triggers,
         treatments
       FROM conditions
-      ORDER BY title ASC
+      WHERE status = 'published'
+      ORDER BY sort_order ASC, title ASC
     `)
 
     res.json(rows)

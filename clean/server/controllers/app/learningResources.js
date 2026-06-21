@@ -16,7 +16,8 @@ export async function getAppLearningResources(req, res) {
         file_path,
         createdAt
       FROM learning_resources
-      ORDER BY createdAt DESC
+      WHERE status = 'published'
+      ORDER BY sort_order ASC, createdAt DESC
     `)
 
     res.json(rows)

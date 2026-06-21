@@ -65,20 +65,26 @@ export async function initSchema() {
       text TEXT NOT NULL,
       translation TEXT,
       theme TEXT,
-      source TEXT
+      source TEXT,
+      status TEXT DEFAULT 'draft',
+      sort_order INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS reflection_templates (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       category TEXT NOT NULL,
       title TEXT NOT NULL,
-      prompt TEXT NOT NULL
+      prompt TEXT NOT NULL,
+      status TEXT DEFAULT 'draft',
+      sort_order INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS profile_seeds (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      value TEXT NOT NULL
+      value TEXT NOT NULL,
+      status TEXT DEFAULT 'draft',
+      sort_order INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS learning_resources (
@@ -87,6 +93,8 @@ export async function initSchema() {
       description TEXT,
       type TEXT,
       file_path TEXT,
+      status TEXT DEFAULT 'draft',
+      sort_order INTEGER DEFAULT 0,
       createdAt TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -125,7 +133,9 @@ export async function initSchema() {
       title TEXT NOT NULL,
       summary TEXT,
       triggers TEXT,
-      treatments TEXT
+      treatments TEXT,
+      status TEXT DEFAULT 'draft',
+      sort_order INTEGER DEFAULT 0
     );
 
     -- ======================
@@ -162,7 +172,32 @@ export async function initSchema() {
       email TEXT NOT NULL,
       expiresAt INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      action TEXT NOT NULL,
+      tableName TEXT NOT NULL,
+      recordId INTEGER NOT NULL,
+      details TEXT,
+      performedBy TEXT DEFAULT 'Admin',
+      createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+    );
   `)
+
+  // Migration logic: add columns if they don't exist in existing tables
+  const tablesToMigrate = ["whakatauki", "reflection_templates", "profile_seeds", "learning_resources", "conditions"];
+  for (const table of tablesToMigrate) {
+    try {
+      await db.exec(`ALTER TABLE ${table} ADD COLUMN status TEXT DEFAULT 'draft';`)
+    } catch (_err) {
+      // Column already exists
+    }
+    try {
+      await db.exec(`ALTER TABLE ${table} ADD COLUMN sort_order INTEGER DEFAULT 0;`)
+    } catch (_err) {
+      // Column already exists
+    }
+  }
 
   // Seed base library categories (safe to re-run)
   await db.exec(`

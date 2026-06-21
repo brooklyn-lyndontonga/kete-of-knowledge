@@ -25,19 +25,25 @@ model whakatauki {
   translation String?
   theme       String?
   source      String?
+  status      String  @default("draft")
+  sort_order  Int     @default(0)
 }
 
 model reflection_templates {
-  id       Int    @id @default(autoincrement())
-  category String
-  title    String
-  prompt   String
+  id         Int    @id @default(autoincrement())
+  category   String
+  title      String
+  prompt     String
+  status     String @default("draft")
+  sort_order Int    @default(0)
 }
 
 model profile_seeds {
-  id    Int    @id @default(autoincrement())
-  name  String
-  value String
+  id         Int    @id @default(autoincrement())
+  name       String
+  value      String
+  status     String @default("draft")
+  sort_order Int    @default(0)
 }
 
 model learning_resources {
@@ -47,6 +53,8 @@ model learning_resources {
   type        String?
   file_path   String?
   createdAt   DateTime  @default(now())
+  status      String    @default("draft")
+  sort_order  Int       @default(0)
   
   categories  learning_resource_categories[]
 }
@@ -77,6 +85,8 @@ model conditions {
   summary    String?
   triggers   String?
   treatments String?
+  status     String  @default("draft")
+  sort_order Int     @default(0)
 }
 
 model admin_users {
@@ -104,4 +114,14 @@ model admin_password_resets {
   token     String   @id
   email     String
   expiresAt Int
+}
+
+model audit_logs {
+  id          Int      @id @default(autoincrement())
+  action      String
+  tableName   String
+  recordId    Int
+  details     String
+  performedBy String   @default("Admin")
+  createdAt   DateTime @default(now())
 }

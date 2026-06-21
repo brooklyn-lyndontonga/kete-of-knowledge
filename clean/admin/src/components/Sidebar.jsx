@@ -1,4 +1,6 @@
 /* eslint-disable no-unused-vars */
+import GlobalSearch from "./GlobalSearch"
+
 export default function Sidebar({ current, onNavigate, onLogout }) {
   const menuItems = [
     { 
@@ -44,6 +46,8 @@ export default function Sidebar({ current, onNavigate, onLogout }) {
              <h2 className="text-xl font-bold tracking-tight">Kete Admin</h2>
           </div>
         </div>
+
+        <GlobalSearch onNavigate={onNavigate} />
 
         <ul className="menu w-full px-4 gap-1">
           {menuItems.map((item) => (

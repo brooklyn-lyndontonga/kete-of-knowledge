@@ -160,3 +160,7 @@ export const updateCondition = (id, data) =>
 
 export const deleteCondition = (id) =>
   adminFetch(`${ADMIN_API}/conditions/${id}`, { method: "DELETE" })
+
+// ─── Audit Logs ──────────────────────
+export const fetchAuditLogs = (opts) =>
+  adminFetch(`${ADMIN_API}/audit-logs`, opts).then(r => r.json())
