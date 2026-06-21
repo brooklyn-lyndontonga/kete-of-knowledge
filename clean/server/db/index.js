@@ -173,31 +173,42 @@ export async function initSchema() {
 }
 
 async function seedAdminUser(db) {
-  const email = process.env.ADMIN_SEED_EMAIL
-  const password = process.env.ADMIN_SEED_PASSWORD
+  const emailStr = process.env.ADMIN_SEED_EMAIL
+  const passwordStr = process.env.ADMIN_SEED_PASSWORD
 
-  if (!email || !password) return
+  if (!emailStr || !passwordStr) return
 
-  const passwordHash = await bcrypt.hash(password, 10)
+  const emails = emailStr.split(",").map((e) => e.trim())
+  const passwords = passwordStr.split(",").map((p) => p.trim())
 
-  const existing = await db.get(
-    "SELECT id FROM admin_users WHERE email = ?",
-    email
-  )
+  for (let i = 0; i < emails.length; i++) {
+    const email = emails[i]
+    // Fallback to the first password if not enough passwords are provided
+    const password = passwords[i] || passwords[0]
 
-  if (existing) {
-    await db.run(
-      "UPDATE admin_users SET password_hash = ? WHERE email = ?",
-      passwordHash,
+    if (!email || !password) continue
+
+    const passwordHash = await bcrypt.hash(password, 10)
+
+    const existing = await db.get(
+      "SELECT id FROM admin_users WHERE email = ?",
       email
     )
-    console.log("🔐 Updated admin password hash for:", email)
-  } else {
-    await db.run(
-      "INSERT INTO admin_users (email, password_hash) VALUES (?, ?)",
-      email,
-      passwordHash
-    )
-    console.log("🔐 Seeded admin user:", email)
+
+    if (existing) {
+      await db.run(
+        "UPDATE admin_users SET password_hash = ? WHERE email = ?",
+        passwordHash,
+        email
+      )
+      console.log("🔐 Updated admin password hash for:", email)
+    } else {
+      await db.run(
+        "INSERT INTO admin_users (email, password_hash) VALUES (?, ?)",
+        email,
+        passwordHash
+      )
+      console.log("🔐 Seeded admin user:", email)
+    }
   }
 }
