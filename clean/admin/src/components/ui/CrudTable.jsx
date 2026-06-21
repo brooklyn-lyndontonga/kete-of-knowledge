@@ -54,9 +54,15 @@ export default function CrudTable({
 
   if (!rows || !Array.isArray(rows) || !rows.length) {
     return (
-      <p className="text-base-content/60 py-8 text-center bg-base-100 rounded-lg shadow-sm border border-base-200">
-        {emptyMessage || "No records found."}
-      </p>
+      <div className="flex flex-col items-center justify-center text-center p-12 bg-base-100 rounded-2xl shadow-sm border border-base-200 max-w-md mx-auto my-8 animate-fade-in">
+        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-[#6B4EFF] text-2xl mb-4 shadow-inner">
+          📁
+        </div>
+        <h3 className="text-lg font-bold text-base-content mb-1">Nothing here yet</h3>
+        <p className="text-sm text-base-content/60 max-w-sm">
+          {emptyMessage || "No records or templates are currently configured in this section."}
+        </p>
+      </div>
     )
   }
 
@@ -197,10 +203,10 @@ export default function CrudTable({
 
                 {(onEdit || (onDelete && role === "admin") || (onRestore && role === "admin")) && (
                   <td>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2.5">
                       {onRestore && role === "admin" && (
                         <button
-                          className="btn btn-xs btn-success btn-outline"
+                          className="btn btn-xs btn-outline btn-success text-success border-success/30 hover:border-success hover:bg-success/10"
                           onClick={() => onRestore(row)}
                         >
                           Restore
@@ -209,7 +215,7 @@ export default function CrudTable({
 
                       {onEdit && (
                         <button
-                          className="btn btn-xs btn-outline btn-neutral"
+                          className="btn btn-xs btn-outline btn-neutral border-base-300 hover:bg-base-200"
                           onClick={() => onEdit(row)}
                         >
                           Edit
@@ -218,7 +224,7 @@ export default function CrudTable({
 
                       {onDelete && role === "admin" && (
                         <button
-                          className="btn btn-xs btn-error btn-outline"
+                          className="btn btn-xs btn-outline btn-error text-error border-error/30 hover:border-error hover:bg-error/10"
                           onClick={() => onDelete(row)}
                         >
                           Delete

@@ -26,7 +26,7 @@ export default function AdminLayout({ current, onNavigate, onLogout }) {
       case "conditions":
         return <ConditionsPage />
       default:
-        return <Dashboard />
+        return <Dashboard onNavigate={onNavigate} />
     }
   }
 

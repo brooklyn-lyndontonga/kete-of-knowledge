@@ -10,7 +10,7 @@ import {
 } from "../api/content.api"
 import SnapshotsOverview from "../components/Snapshots"
 
-export default function Dashboard() {
+export default function Dashboard({ onNavigate }) {
   const [stats, setStats] = useState({
     conditions: 0,
     resources: 0,
@@ -247,38 +247,59 @@ export default function Dashboard() {
       </section>
 
       {/* Stats Grid */}
-      <div className="stats shadow-sm w-full bg-base-100 border border-base-200 rounded-2xl">
-        <div className="stat">
-          <div className="stat-figure text-primary">
-            <span className="text-2xl">🏥</span>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div 
+          className="bg-base-100 p-6 rounded-2xl border border-base-200 shadow-sm hover:scale-[1.02] hover:shadow-md hover:border-primary/30 cursor-pointer transition-all duration-200 flex items-center justify-between group"
+          onClick={() => onNavigate && onNavigate("conditions")}
+        >
+          <div>
+            <span className="text-xs uppercase font-bold text-base-content/40 tracking-wider">
+              {stats.conditions === 1 ? "1 condition" : `${stats.conditions} conditions`}
+            </span>
+            <h3 className="text-3xl font-extrabold text-base-content mt-1">
+              {loading ? <span className="loading loading-xs"></span> : stats.conditions}
+            </h3>
+            <p className="text-sm text-base-content/60 mt-1 font-medium group-hover:text-primary transition-colors">Conditions Info →</p>
           </div>
-          <div className="stat-title text-base-content/60">Total Conditions</div>
-          <div className="stat-value text-primary">
-            {loading ? <span className="loading loading-xs"></span> : stats.conditions}
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-3xl shadow-inner text-[#6B4EFF]">
+            🏥
           </div>
-          <div className="stat-desc">Primary diagnostic categories</div>
         </div>
 
-        <div className="stat">
-          <div className="stat-figure text-secondary">
-            <span className="text-2xl">📚</span>
+        <div 
+          className="bg-base-100 p-6 rounded-2xl border border-base-200 shadow-sm hover:scale-[1.02] hover:shadow-md hover:border-primary/30 cursor-pointer transition-all duration-200 flex items-center justify-between group"
+          onClick={() => onNavigate && onNavigate("learningResources")}
+        >
+          <div>
+            <span className="text-xs uppercase font-bold text-base-content/40 tracking-wider">
+              {stats.resources === 1 ? "1 resource" : `${stats.resources} resources`}
+            </span>
+            <h3 className="text-3xl font-extrabold text-base-content mt-1">
+              {loading ? <span className="loading loading-xs"></span> : stats.resources}
+            </h3>
+            <p className="text-sm text-base-content/60 mt-1 font-medium group-hover:text-primary transition-colors">Learning Resources →</p>
           </div>
-          <div className="stat-title text-base-content/60">Resources</div>
-          <div className="stat-value text-secondary">
-            {loading ? <span className="loading loading-xs"></span> : stats.resources}
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-3xl shadow-inner text-[#6B4EFF]">
+            📚
           </div>
-          <div className="stat-desc">Articles, PDFs, and website links</div>
         </div>
 
-        <div className="stat">
-          <div className="stat-figure text-accent">
-            <span className="text-2xl">💬</span>
+        <div 
+          className="bg-base-100 p-6 rounded-2xl border border-base-200 shadow-sm hover:scale-[1.02] hover:shadow-md hover:border-primary/30 cursor-pointer transition-all duration-200 flex items-center justify-between group"
+          onClick={() => onNavigate && onNavigate("whakatauki")}
+        >
+          <div>
+            <span className="text-xs uppercase font-bold text-base-content/40 tracking-wider">
+              {stats.whakatauki === 1 ? "1 whakataukī" : `${stats.whakatauki} whakataukī`}
+            </span>
+            <h3 className="text-3xl font-extrabold text-base-content mt-1">
+              {loading ? <span className="loading loading-xs"></span> : stats.whakatauki}
+            </h3>
+            <p className="text-sm text-base-content/60 mt-1 font-medium group-hover:text-primary transition-colors">Whakataukī concepts →</p>
           </div>
-          <div className="stat-title text-base-content/60">Whakatauākī</div>
-          <div className="stat-value text-accent">
-            {loading ? <span className="loading loading-xs"></span> : stats.whakatauki}
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-3xl shadow-inner text-[#6B4EFF]">
+            💬
           </div>
-          <div className="stat-desc">Proverbs and theme concepts</div>
         </div>
       </div>
 

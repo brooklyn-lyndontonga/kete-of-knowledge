@@ -38,12 +38,12 @@ export default function Sidebar({ current, onNavigate, onLogout, onHelpClick }) 
   return (
     <aside className="w-64 bg-base-100 border-r border-base-200 flex flex-col justify-between h-screen sticky top-0">
       <div>
-        <div className="p-6">
+        <div className="p-6 sidebar-brand-container">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-content font-bold text-xl shadow-lg">
                K
              </div>
-             <h2 className="text-xl font-bold tracking-tight">Kete Admin</h2>
+             <h2 className="text-xl font-semibold tracking-tight text-base-content">Kete Admin</h2>
           </div>
         </div>
 
