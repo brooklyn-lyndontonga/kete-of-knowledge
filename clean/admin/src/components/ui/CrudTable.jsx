@@ -10,9 +10,27 @@ export default function CrudTable({
   onSelectionChange,
   onStatusToggle,
   selectedIds = [],
+  emptyMessage = "",
+  onRestore,
 }) {
   const [sortField, setSortField] = useState(null)
   const [sortAsc, setSortAsc] = useState(true)
+  const [role, setRole] = useState("editor")
+
+  // Decode role from JWT token
+  useEffect(() => {
+    const token = localStorage.getItem("admin_token")
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]))
+        if (payload && payload.role) {
+          setRole(payload.role)
+        }
+      } catch (err) {
+        console.error("Failed to decode token role", err)
+      }
+    }
+  }, [])
 
   // Clear selections when rows change or are reloaded
   useEffect(() => {
@@ -35,7 +53,11 @@ export default function CrudTable({
   }
 
   if (!rows || !Array.isArray(rows) || !rows.length) {
-    return <p className="text-base-content/60 py-8 text-center bg-base-100 rounded-lg shadow-sm border border-base-200">No records found.</p>
+    return (
+      <p className="text-base-content/60 py-8 text-center bg-base-100 rounded-lg shadow-sm border border-base-200">
+        {emptyMessage || "No records found."}
+      </p>
+    )
   }
 
   // Handle header click for sorting
@@ -94,7 +116,7 @@ export default function CrudTable({
       <table className="table table-zebra table-hover w-full">
         <thead className="bg-base-200">
           <tr>
-            {onSelectionChange && (
+            {role === "admin" && onSelectionChange && (
               <th className="w-12 text-center">
                 <input
                   type="checkbox"
@@ -121,7 +143,7 @@ export default function CrudTable({
                 </div>
               </th>
             ))}
-            {(onEdit || onDelete) && <th>Actions</th>}
+            {(onEdit || (onDelete && role === "admin") || (onRestore && role === "admin")) && <th>Actions</th>}
           </tr>
         </thead>
 
@@ -130,7 +152,7 @@ export default function CrudTable({
             const isSelected = selectedIds.includes(row.id)
             return (
               <tr key={row.id} className={isSelected ? "bg-primary/5" : ""}>
-                {onSelectionChange && (
+                {role === "admin" && onSelectionChange && (
                   <td className="text-center">
                     <input
                       type="checkbox"
@@ -173,9 +195,18 @@ export default function CrudTable({
                   </td>
                 ))}
 
-                {(onEdit || onDelete) && (
+                {(onEdit || (onDelete && role === "admin") || (onRestore && role === "admin")) && (
                   <td>
                     <div className="flex gap-2">
+                      {onRestore && role === "admin" && (
+                        <button
+                          className="btn btn-xs btn-success btn-outline"
+                          onClick={() => onRestore(row)}
+                        >
+                          Restore
+                        </button>
+                      )}
+
                       {onEdit && (
                         <button
                           className="btn btn-xs btn-outline btn-neutral"
@@ -185,7 +216,7 @@ export default function CrudTable({
                         </button>
                       )}
 
-                      {onDelete && (
+                      {onDelete && role === "admin" && (
                         <button
                           className="btn btn-xs btn-error btn-outline"
                           onClick={() => onDelete(row)}

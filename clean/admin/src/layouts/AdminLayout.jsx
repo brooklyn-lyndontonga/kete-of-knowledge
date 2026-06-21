@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useState } from "react"
 import Sidebar from "../components/Sidebar"
+import HelpDrawer from "../components/HelpDrawer"
 
 import Dashboard from "../pages/Dashboard"
 import WhakataukiPage from "../pages/WhakataukiPage"
@@ -10,6 +11,8 @@ import LearningResourcesPage from "../pages/LearningResourcesPage"
 import ConditionsPage from "../pages/ConditionsPage"
 
 export default function AdminLayout({ current, onNavigate, onLogout }) {
+  const [helpOpen, setHelpOpen] = useState(false)
+
   function renderPage() {
     switch (current) {
       case "whakatauki":
@@ -33,6 +36,7 @@ export default function AdminLayout({ current, onNavigate, onLogout }) {
         current={current}
         onNavigate={onNavigate}
         onLogout={onLogout}
+        onHelpClick={() => setHelpOpen(true)}
       />
 
       <main className="flex-1 p-8 overflow-y-auto">
@@ -40,6 +44,11 @@ export default function AdminLayout({ current, onNavigate, onLogout }) {
           {renderPage()}
         </div>
       </main>
+
+      <HelpDrawer
+        isOpen={helpOpen}
+        onClose={() => setHelpOpen(false)}
+      />
     </div>
   )
 }

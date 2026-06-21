@@ -9,6 +9,7 @@ import {
   updateCondition,
   deleteCondition,
   fetchLearningResources,
+  restoreCondition,
 } from "../api/content.api"
 
 export default function ConditionsPage() {
@@ -16,6 +17,7 @@ export default function ConditionsPage() {
   const [resources, setResources] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showArchived, setShowArchived] = useState(false)
 
   const [editing, setEditing] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
@@ -33,8 +35,8 @@ export default function ConditionsPage() {
     setError(null)
     try {
       const [conditionsData, resourcesData] = await Promise.all([
-        fetchConditions().catch(() => []),
-        fetchLearningResources().catch(() => []),
+        fetchConditions(showArchived).catch(() => []),
+        fetchLearningResources(showArchived).catch(() => []),
       ])
       setRows(conditionsData || [])
       setResources(resourcesData || [])
@@ -47,10 +49,10 @@ export default function ConditionsPage() {
 
   useEffect(() => {
     load()
-  }, [])
+  }, [showArchived])
 
   async function reload() {
-    const data = await fetchConditions()
+    const data = await fetchConditions(showArchived)
     setRows(data || [])
   }
 
@@ -82,6 +84,15 @@ export default function ConditionsPage() {
       reload()
     } catch (err) {
       alert("Failed to delete condition: " + err.message)
+    }
+  }
+
+  async function handleRestore(row) {
+    try {
+      await restoreCondition(row.id)
+      reload()
+    } catch (err) {
+      alert("Failed to restore condition: " + err.message)
     }
   }
 
@@ -182,6 +193,22 @@ export default function ConditionsPage() {
         </button>
       </div>
 
+      {/* Tabs for Active vs Archived */}
+      <div className="tabs tabs-boxed mb-4 max-w-xs">
+        <button
+          className={`tab ${!showArchived ? "tab-active" : ""}`}
+          onClick={() => setShowArchived(false)}
+        >
+          Active Content
+        </button>
+        <button
+          className={`tab ${showArchived ? "tab-active" : ""}`}
+          onClick={() => setShowArchived(true)}
+        >
+          Archived Content ({rows.length})
+        </button>
+      </div>
+
       {/* Search Input */}
       <div className="flex flex-col md:flex-row gap-4 bg-base-100 p-4 rounded-xl shadow-sm border border-base-200">
         <div className="form-control flex-grow">
@@ -196,7 +223,7 @@ export default function ConditionsPage() {
       </div>
 
       {/* Bulk Actions Toolbar */}
-      {selectedIds.length > 0 && (
+      {selectedIds.length > 0 && !showArchived && (
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-primary/10 border border-primary/20 p-4 rounded-xl animate-fade-in">
           <div className="text-sm font-semibold text-primary">
             {selectedIds.length} item{selectedIds.length > 1 ? "s" : ""} selected
@@ -234,8 +261,13 @@ export default function ConditionsPage() {
         rows={mappedRows}
         loading={loading}
         selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-        onStatusToggle={handleStatusToggle}
+        onSelectionChange={showArchived ? null : setSelectedIds}
+        onStatusToggle={showArchived ? null : handleStatusToggle}
+        emptyMessage={
+          showArchived 
+            ? "No archived conditions found."
+            : "No active conditions yet. Click + Add Condition to create one."
+        }
         columns={[
           { key: "title", label: "Title" },
           { key: "summary", label: "Summary" },
@@ -245,11 +277,16 @@ export default function ConditionsPage() {
           { key: "status", label: "Status" },
           { key: "sort_order", label: "Sort Order" },
         ]}
-        onEdit={(row) => {
-          setEditing(row)
-          setModalOpen(true)
-        }}
-        onDelete={(row) => setDeleteId(row.id)}
+        onEdit={
+          showArchived
+            ? null
+            : (row) => {
+                setEditing(row)
+                setModalOpen(true)
+              }
+        }
+        onDelete={showArchived ? null : (row) => setDeleteId(row.id)}
+        onRestore={showArchived ? handleRestore : null}
       />
 
       {/* Edit/Create Modal */}
@@ -257,20 +294,49 @@ export default function ConditionsPage() {
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "title", label: "Title" },
-          { name: "summary", label: "Summary", type: "textarea" },
-          { name: "triggers", label: "Triggers", type: "textarea" },
-          { name: "treatments", label: "Treatments", type: "textarea" },
+          { 
+            name: "title", 
+            label: "Title",
+            required: true,
+            helpText: "Enter the condition name clearly (e.g. Asthma, Eczema).",
+            validationMessage: "Please enter a title for the condition."
+          },
+          { 
+            name: "summary", 
+            label: "Summary", 
+            type: "textarea",
+            required: true,
+            helpText: "Provide a simple plain-English summary of what this condition is.",
+            validationMessage: "Please enter a summary of the condition."
+          },
+          { 
+            name: "triggers", 
+            label: "Triggers", 
+            type: "textarea",
+            helpText: "Detail common triggers that cause flare-ups of this condition (comma-separated)."
+          },
+          { 
+            name: "treatments", 
+            label: "Treatments", 
+            type: "textarea",
+            helpText: "Detail common medical or therapeutic treatments or lifestyle care."
+          },
           {
             name: "status",
             label: "Status",
             type: "select",
+            required: true,
             options: [
               { value: "draft", label: "Draft" },
               { value: "published", label: "Published" },
             ],
+            helpText: "Published conditions are live in the app. Drafts are only visible here.",
           },
-          { name: "sort_order", label: "Sort Order Priority" },
+          { 
+            name: "sort_order", 
+            label: "Sort Order Priority",
+            helpText: "Lower numbers appear first in list sorting."
+          },
         ]}
         onSave={handleSave}
         onClose={() => {

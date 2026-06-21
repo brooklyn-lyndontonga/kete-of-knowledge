@@ -8,12 +8,14 @@ import {
   createReflectionTemplate,
   updateReflectionTemplate,
   deleteReflectionTemplate,
+  restoreReflectionTemplate,
 } from "../api/content.api"
 
 export default function ReflectionTemplatesPage() {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showArchived, setShowArchived] = useState(false)
 
   const [editing, setEditing] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
@@ -29,7 +31,7 @@ export default function ReflectionTemplatesPage() {
   async function load() {
     try {
       setLoading(true)
-      const data = await fetchReflectionTemplates()
+      const data = await fetchReflectionTemplates(showArchived)
       setRows(data || [])
     } catch (err) {
       setError("Failed to load reflection templates")
@@ -40,10 +42,10 @@ export default function ReflectionTemplatesPage() {
 
   useEffect(() => {
     load()
-  }, [])
+  }, [showArchived])
 
   async function reload() {
-    const data = await fetchReflectionTemplates()
+    const data = await fetchReflectionTemplates(showArchived)
     setRows(data || [])
   }
 
@@ -75,6 +77,15 @@ export default function ReflectionTemplatesPage() {
       load()
     } catch (err) {
       alert("Failed to delete reflection template: " + err.message)
+    }
+  }
+
+  async function handleRestore(row) {
+    try {
+      await restoreReflectionTemplate(row.id)
+      load()
+    } catch (err) {
+      alert("Failed to restore reflection template: " + err.message)
     }
   }
 
@@ -154,6 +165,22 @@ export default function ReflectionTemplatesPage() {
         </button>
       </div>
 
+      {/* Tabs for Active vs Archived */}
+      <div className="tabs tabs-boxed mb-4 max-w-xs">
+        <button
+          className={`tab ${!showArchived ? "tab-active" : ""}`}
+          onClick={() => setShowArchived(false)}
+        >
+          Active Content
+        </button>
+        <button
+          className={`tab ${showArchived ? "tab-active" : ""}`}
+          onClick={() => setShowArchived(true)}
+        >
+          Archived Content ({rows.length})
+        </button>
+      </div>
+
       {/* Filter and Search Bar */}
       <div className="flex flex-col md:flex-row gap-4 bg-base-100 p-4 rounded-xl shadow-sm border border-base-200">
         <div className="form-control flex-grow">
@@ -168,7 +195,7 @@ export default function ReflectionTemplatesPage() {
       </div>
 
       {/* Bulk Actions Toolbar */}
-      {selectedIds.length > 0 && (
+      {selectedIds.length > 0 && !showArchived && (
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-primary/10 border border-primary/20 p-4 rounded-xl animate-fade-in">
           <div className="text-sm font-semibold text-primary">
             {selectedIds.length} item{selectedIds.length > 1 ? "s" : ""} selected
@@ -205,8 +232,13 @@ export default function ReflectionTemplatesPage() {
         rows={filteredRows}
         loading={loading}
         selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-        onStatusToggle={handleStatusToggle}
+        onSelectionChange={showArchived ? null : setSelectedIds}
+        onStatusToggle={showArchived ? null : handleStatusToggle}
+        emptyMessage={
+          showArchived 
+            ? "No archived reflection templates found."
+            : "No active reflection templates yet. Click + Add Template to create one."
+        }
         columns={[
           { key: "category", label: "Category" },
           { key: "title", label: "Title" },
@@ -214,34 +246,60 @@ export default function ReflectionTemplatesPage() {
           { key: "status", label: "Status" },
           { key: "sort_order", label: "Sort Order" },
         ]}
-        onEdit={(row) => {
-          setEditing(row)
-          setModalOpen(true)
-        }}
-        onDelete={(row) => setDeleteId(row.id)}
+        onEdit={
+          showArchived
+            ? null
+            : (row) => {
+                setEditing(row)
+                setModalOpen(true)
+              }
+        }
+        onDelete={showArchived ? null : (row) => setDeleteId(row.id)}
+        onRestore={showArchived ? handleRestore : null}
       />
 
       <CrudModal
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "category", label: "Category" },
-          { name: "title", label: "Title" },
+          { 
+            name: "category", 
+            label: "Category",
+            required: true,
+            helpText: "Define a category to group this reflection (e.g. Health, Mood, Whānau).",
+            validationMessage: "Please enter a category."
+          },
+          { 
+            name: "title", 
+            label: "Title",
+            required: true,
+            helpText: "A short, descriptive title for this daily prompt.",
+            validationMessage: "Please enter a title."
+          },
           {
             name: "prompt",
             label: "Prompt",
             type: "textarea",
+            required: true,
+            helpText: "The actual guiding question or sentence starter shown to the user.",
+            validationMessage: "Please enter the reflection prompt text."
           },
           {
             name: "status",
             label: "Status",
             type: "select",
+            required: true,
             options: [
               { value: "draft", label: "Draft" },
               { value: "published", label: "Published" },
             ],
+            helpText: "Draft templates won't appear as prompts in the app.",
           },
-          { name: "sort_order", label: "Sort Order Priority" },
+          { 
+            name: "sort_order", 
+            label: "Sort Order Priority",
+            helpText: "Used to determine display sequence if multiple templates are active."
+          },
         ]}
         onSave={handleSave}
         onClose={() => {

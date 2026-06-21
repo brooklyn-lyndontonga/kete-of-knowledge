@@ -8,6 +8,7 @@ import {
   createLearningResource,
   updateLearningResource,
   deleteLearningResource,
+  restoreLearningResource,
 } from "../api/content.api"
 
 const CATEGORY_OPTIONS = [
@@ -23,6 +24,7 @@ export default function LearningResourcesPage() {
   const [open, setOpen] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
   const [selectedCategories, setSelectedCategories] = useState([])
+  const [showArchived, setShowArchived] = useState(false)
 
   // Selection & Bulk actions
   const [selectedIds, setSelectedIds] = useState([])
@@ -36,12 +38,12 @@ export default function LearningResourcesPage() {
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [showArchived])
 
   async function loadData() {
     setLoading(true)
     try {
-      const data = await fetchLearningResources()
+      const data = await fetchLearningResources(showArchived)
       setRows(data || [])
     } catch (err) {
       console.error(err)
@@ -51,7 +53,7 @@ export default function LearningResourcesPage() {
   }
 
   async function reload() {
-    const data = await fetchLearningResources()
+    const data = await fetchLearningResources(showArchived)
     setRows(data || [])
   }
 
@@ -93,6 +95,15 @@ export default function LearningResourcesPage() {
       reload()
     } catch (err) {
       alert("Error deleting resource: " + err.message)
+    }
+  }
+
+  async function handleRestore(row) {
+    try {
+      await restoreLearningResource(row.id)
+      reload()
+    } catch (err) {
+      alert("Error restoring resource: " + err.message)
     }
   }
 
@@ -221,6 +232,22 @@ export default function LearningResourcesPage() {
         </button>
       </div>
 
+      {/* Tabs for Active vs Archived */}
+      <div className="tabs tabs-boxed mb-4 max-w-xs">
+        <button
+          className={`tab ${!showArchived ? "tab-active" : ""}`}
+          onClick={() => setShowArchived(false)}
+        >
+          Active Content
+        </button>
+        <button
+          className={`tab ${showArchived ? "tab-active" : ""}`}
+          onClick={() => setShowArchived(true)}
+        >
+          Archived Content ({rows.length})
+        </button>
+      </div>
+
       {/* Filters bar */}
       <div className="flex flex-col md:flex-row gap-4 bg-base-100 p-4 rounded-xl shadow-sm border border-base-200">
         <div className="form-control flex-grow">
@@ -264,7 +291,7 @@ export default function LearningResourcesPage() {
       </div>
 
       {/* Bulk Actions Toolbar */}
-      {selectedIds.length > 0 && (
+      {selectedIds.length > 0 && !showArchived && (
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-primary/10 border border-primary/20 p-4 rounded-xl animate-fade-in">
           <div className="text-sm font-semibold text-primary">
             {selectedIds.length} item{selectedIds.length > 1 ? "s" : ""} selected
@@ -324,8 +351,13 @@ export default function LearningResourcesPage() {
         rows={mappedRows}
         loading={loading}
         selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-        onStatusToggle={handleStatusToggle}
+        onSelectionChange={showArchived ? null : setSelectedIds}
+        onStatusToggle={showArchived ? null : handleStatusToggle}
+        emptyMessage={
+          showArchived 
+            ? "No archived resources found."
+            : "No active resources yet. Click + Add Resource to create one."
+        }
         columns={[
           { key: "title", label: "Title" },
           { key: "categoriesText", label: "Categories" },
@@ -334,12 +366,17 @@ export default function LearningResourcesPage() {
           { key: "status", label: "Status" },
           { key: "sort_order", label: "Sort Order" },
         ]}
-        onEdit={(r) => {
-          setEditing(r)
-          setSelectedCategories(r.categories || [])
-          setOpen(true)
-        }}
-        onDelete={(r) => setDeleteId(r.id)}
+        onEdit={
+          showArchived
+            ? null
+            : (r) => {
+                setEditing(r)
+                setSelectedCategories(r.categories || [])
+                setOpen(true)
+              }
+        }
+        onDelete={showArchived ? null : (r) => setDeleteId(r.id)}
+        onRestore={showArchived ? handleRestore : null}
       />
 
       {/* Edit/Create Modal */}
@@ -353,12 +390,26 @@ export default function LearningResourcesPage() {
           setOpen(false)
         }}
         fields={[
-          { name: "title", label: "Title" },
-          { name: "description", label: "Description", type: "textarea" },
+          { 
+            name: "title", 
+            label: "Title",
+            required: true,
+            helpText: "Enter the name of the learning resource. Keep it clear.",
+            validationMessage: "Please enter a title for the resource."
+          },
+          { 
+            name: "description", 
+            label: "Description", 
+            type: "textarea",
+            required: true,
+            helpText: "Provide a brief description of what the resource contains.",
+            validationMessage: "Please enter a description of the resource."
+          },
           {
             name: "type",
             label: "Type",
             type: "select",
+            required: true,
             options: [
               { label: "Link / URL", value: "link" },
               { label: "PDF File", value: "pdf" },
@@ -367,18 +418,32 @@ export default function LearningResourcesPage() {
               { label: "Audio", value: "audio" },
               { label: "Other", value: "other" },
             ],
+            helpText: "Categorize the resource format (e.g. video link, PDF file).",
+            validationMessage: "Please select a resource type."
           },
-          { name: "file_path", label: "File Path / URL Link" },
+          { 
+            name: "file_path", 
+            label: "File Path / URL Link",
+            required: true,
+            helpText: "Paste the web link or file path of the resource.",
+            validationMessage: "Please specify the file path or URL link."
+          },
           {
             name: "status",
             label: "Status",
             type: "select",
+            required: true,
             options: [
               { label: "Draft", value: "draft" },
               { label: "Published", value: "published" },
             ],
+            helpText: "Draft resources are only shown here. Published resources are visible in the app.",
           },
-          { name: "sort_order", label: "Sort Order Priority" },
+          { 
+            name: "sort_order", 
+            label: "Sort Order Priority",
+            helpText: "Set lower numbers (like 1 or 2) to display this resource first in the list."
+          },
         ]}
       >
         {/* Categories Checklist */}

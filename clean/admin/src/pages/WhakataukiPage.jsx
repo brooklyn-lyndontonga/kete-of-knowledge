@@ -8,6 +8,7 @@ import {
   createWhakatauki,
   updateWhakatauki,
   deleteWhakatauki,
+  restoreWhakatauki,
 } from "../api/content.api"
 
 export default function WhakataukiPage() {
@@ -16,6 +17,7 @@ export default function WhakataukiPage() {
   const [editing, setEditing] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
+  const [showArchived, setShowArchived] = useState(false)
 
   // Selection & Bulk actions
   const [selectedIds, setSelectedIds] = useState([])
@@ -33,12 +35,12 @@ export default function WhakataukiPage() {
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [showArchived])
 
   async function loadData() {
     setLoading(true)
     try {
-      const data = await fetchWhakatauki()
+      const data = await fetchWhakatauki(showArchived)
       setRows(data || [])
     } catch (err) {
       console.error(err)
@@ -48,8 +50,17 @@ export default function WhakataukiPage() {
   }
 
   async function reload() {
-    const data = await fetchWhakatauki()
+    const data = await fetchWhakatauki(showArchived)
     setRows(data || [])
+  }
+
+  async function handleRestore(row) {
+    try {
+      await restoreWhakatauki(row.id)
+      reload()
+    } catch (err) {
+      alert("Error restoring: " + err.message)
+    }
   }
 
   // Save new/edited whakataukī
@@ -272,6 +283,22 @@ export default function WhakataukiPage() {
         </div>
       </div>
 
+      {/* Tabs for Active vs Archived */}
+      <div className="tabs tabs-boxed mb-4 max-w-xs">
+        <button
+          className={`tab ${!showArchived ? "tab-active" : ""}`}
+          onClick={() => setShowArchived(false)}
+        >
+          Active Content
+        </button>
+        <button
+          className={`tab ${showArchived ? "tab-active" : ""}`}
+          onClick={() => setShowArchived(true)}
+        >
+          Archived Content ({rows.length})
+        </button>
+      </div>
+
       {/* Filter and Search Bar */}
       <div className="flex flex-col md:flex-row gap-4 bg-base-100 p-4 rounded-xl shadow-sm border border-base-200">
         <div className="form-control flex-1">
@@ -300,7 +327,7 @@ export default function WhakataukiPage() {
       </div>
 
       {/* Bulk Actions Toolbar */}
-      {selectedIds.length > 0 && (
+      {selectedIds.length > 0 && !showArchived && (
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-primary/10 border border-primary/20 p-4 rounded-xl animate-fade-in">
           <div className="text-sm font-semibold text-primary">
             {selectedIds.length} item{selectedIds.length > 1 ? "s" : ""} selected
@@ -355,8 +382,13 @@ export default function WhakataukiPage() {
         rows={filteredRows}
         loading={loading}
         selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-        onStatusToggle={handleStatusToggle}
+        onSelectionChange={showArchived ? null : setSelectedIds}
+        onStatusToggle={showArchived ? null : handleStatusToggle}
+        emptyMessage={
+          showArchived 
+            ? "No archived Whakataukī found."
+            : "No active Whakataukī yet. Click + Add Whakataukī to create one or use Bulk CSV Import."
+        }
         columns={[
           { key: "text", label: "Whakataukī" },
           { key: "translation", label: "Translation" },
@@ -364,11 +396,16 @@ export default function WhakataukiPage() {
           { key: "status", label: "Status" },
           { key: "sort_order", label: "Sort Order" },
         ]}
-        onEdit={(row) => {
-          setEditing(row)
-          setModalOpen(true)
-        }}
-        onDelete={(row) => setDeleteId(row.id)}
+        onEdit={
+          showArchived
+            ? null
+            : (row) => {
+                setEditing(row)
+                setModalOpen(true)
+              }
+        }
+        onDelete={showArchived ? null : (row) => setDeleteId(row.id)}
+        onRestore={showArchived ? handleRestore : null}
       />
 
       {/* Edit/Create Modal */}
@@ -376,20 +413,50 @@ export default function WhakataukiPage() {
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "text", label: "Whakataukī", type: "textarea" },
-          { name: "translation", label: "Translation", type: "textarea" },
-          { name: "theme", label: "Theme" },
-          { name: "source", label: "Source" },
+          { 
+            name: "text", 
+            label: "Whakataukī", 
+            type: "textarea", 
+            required: true,
+            helpText: "The Māori proverb text. e.g. 'He kete kōrero'.",
+            validationMessage: "Please enter the Māori proverb text."
+          },
+          { 
+            name: "translation", 
+            label: "Translation", 
+            type: "textarea", 
+            required: true,
+            helpText: "The English translation of the proverb.",
+            validationMessage: "Please enter the English translation."
+          },
+          { 
+            name: "theme", 
+            label: "Theme",
+            required: true,
+            helpText: "Used to group proverbs — e.g. 'Resilience' or 'Whānau'. Keep naming consistent.",
+            validationMessage: "Please enter a theme for this proverb."
+          },
+          { 
+            name: "source", 
+            label: "Source",
+            helpText: "Optional credit for where this quote/translation was sourced from."
+          },
           {
             name: "status",
             label: "Status",
             type: "select",
+            required: true,
             options: [
               { value: "draft", label: "Draft" },
               { value: "published", label: "Published" },
             ],
+            helpText: "Draft content is only visible in the admin panel; Published content goes live immediately.",
           },
-          { name: "sort_order", label: "Sort Order Priority" },
+          { 
+            name: "sort_order", 
+            label: "Sort Order Priority",
+            helpText: "Lower numbers appear first in the app list (e.g. 1, 2, 3)."
+          },
         ]}
         onSave={handleSave}
         onClose={() => setModalOpen(false)}

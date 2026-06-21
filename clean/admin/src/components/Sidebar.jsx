@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import GlobalSearch from "./GlobalSearch"
 
-export default function Sidebar({ current, onNavigate, onLogout }) {
+export default function Sidebar({ current, onNavigate, onLogout, onHelpClick }) {
   const menuItems = [
     { 
       id: "dashboard", 
@@ -64,7 +64,16 @@ export default function Sidebar({ current, onNavigate, onLogout }) {
         </ul>
       </div>
 
-      <div className="p-4 border-t border-base-200">
+      <div className="p-4 border-t border-base-200 flex flex-col gap-2">
+        <button
+          className="btn btn-neutral btn-outline w-full gap-2"
+          onClick={onHelpClick}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Help & FAQs
+        </button>
         <button 
           className="btn btn-error btn-outline w-full gap-2" 
           onClick={onLogout}

@@ -8,12 +8,14 @@ import {
   createProfileSeed,
   updateProfileSeed,
   deleteProfileSeed,
+  restoreProfileSeed,
 } from "../api/content.api"
 
 export default function ProfileSeedsPage() {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showArchived, setShowArchived] = useState(false)
   const [editing, setEditing] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
@@ -27,12 +29,12 @@ export default function ProfileSeedsPage() {
 
   useEffect(() => {
     load()
-  }, [])
+  }, [showArchived])
 
   async function load() {
     try {
       setLoading(true)
-      const data = await fetchProfileSeeds()
+      const data = await fetchProfileSeeds(showArchived)
       setRows(data || [])
     } catch (err) {
       setError(err.message)
@@ -42,7 +44,7 @@ export default function ProfileSeedsPage() {
   }
 
   async function reload() {
-    const data = await fetchProfileSeeds()
+    const data = await fetchProfileSeeds(showArchived)
     setRows(data || [])
   }
 
@@ -73,6 +75,15 @@ export default function ProfileSeedsPage() {
       load()
     } catch (err) {
       alert("Failed to delete profile seed: " + err.message)
+    }
+  }
+
+  async function handleRestore(row) {
+    try {
+      await restoreProfileSeed(row.id)
+      load()
+    } catch (err) {
+      alert("Failed to restore profile seed: " + err.message)
     }
   }
 
@@ -152,6 +163,22 @@ export default function ProfileSeedsPage() {
         </button>
       </div>
 
+      {/* Tabs for Active vs Archived */}
+      <div className="tabs tabs-boxed mb-4 max-w-xs">
+        <button
+          className={`tab ${!showArchived ? "tab-active" : ""}`}
+          onClick={() => setShowArchived(false)}
+        >
+          Active Content
+        </button>
+        <button
+          className={`tab ${showArchived ? "tab-active" : ""}`}
+          onClick={() => setShowArchived(true)}
+        >
+          Archived Content ({rows.length})
+        </button>
+      </div>
+
       {/* Filter and Search Bar */}
       <div className="flex flex-col md:flex-row gap-4 bg-base-100 p-4 rounded-xl shadow-sm border border-base-200">
         <div className="form-control flex-grow">
@@ -166,7 +193,7 @@ export default function ProfileSeedsPage() {
       </div>
 
       {/* Bulk Actions Toolbar */}
-      {selectedIds.length > 0 && (
+      {selectedIds.length > 0 && !showArchived && (
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-primary/10 border border-primary/20 p-4 rounded-xl animate-fade-in">
           <div className="text-sm font-semibold text-primary">
             {selectedIds.length} item{selectedIds.length > 1 ? "s" : ""} selected
@@ -203,37 +230,66 @@ export default function ProfileSeedsPage() {
         rows={filteredRows}
         loading={loading}
         selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-        onStatusToggle={handleStatusToggle}
+        onSelectionChange={showArchived ? null : setSelectedIds}
+        onStatusToggle={showArchived ? null : handleStatusToggle}
+        emptyMessage={
+          showArchived 
+            ? "No archived profile seeds found."
+            : "No active profile seeds yet. Click + Add Seed to create one."
+        }
         columns={[
           { key: "name", label: "Name" },
           { key: "value", label: "Value" },
           { key: "status", label: "Status" },
           { key: "sort_order", label: "Sort Order" },
         ]}
-        onEdit={(row) => {
-          setEditing(row)
-          setModalOpen(true)
-        }}
-        onDelete={(row) => setDeleteId(row.id)}
+        onEdit={
+          showArchived
+            ? null
+            : (row) => {
+                setEditing(row)
+                setModalOpen(true)
+              }
+        }
+        onDelete={showArchived ? null : (row) => setDeleteId(row.id)}
+        onRestore={showArchived ? handleRestore : null}
       />
 
       <CrudModal
         open={modalOpen}
         initial={editing}
         fields={[
-          { name: "name", label: "Name" },
-          { name: "value", label: "Value", type: "textarea" },
+          { 
+            name: "name", 
+            label: "Name",
+            required: true,
+            helpText: "Set a unique name for this profile configuration seed.",
+            validationMessage: "Please enter a name."
+          },
+          { 
+            name: "value", 
+            label: "Value", 
+            type: "textarea",
+            required: true,
+            helpText: "Enter the value configuration or option details.",
+            validationMessage: "Please enter a value."
+          },
           {
             name: "status",
             label: "Status",
             type: "select",
+            required: true,
             options: [
               { value: "draft", label: "Draft" },
               { value: "published", label: "Published" },
             ],
+            helpText: "Published seeds are accessible to clients. Draft seeds are hidden.",
           },
-          { name: "sort_order", label: "Sort Order Priority" },
+          { 
+            name: "sort_order", 
+            label: "Sort Order Priority",
+            helpText: "Specify sorting priority index."
+          },
         ]}
         onSave={handleSave}
         onClose={() => {
