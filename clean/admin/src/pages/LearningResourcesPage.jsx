@@ -9,6 +9,7 @@ import {
   updateLearningResource,
   deleteLearningResource,
   restoreLearningResource,
+  uploadMediaFile,
 } from "../api/content.api"
 
 const CATEGORY_OPTIONS = [
@@ -66,9 +67,30 @@ export default function LearningResourcesPage() {
   }
 
   async function handleSave(form) {
+    if (!form.file_path && !form.file_upload) {
+      alert("Please either paste a URL link or select a local file to upload.")
+      return
+    }
+
+    setLoading(true)
     try {
+      let finalFilePath = form.file_path || ""
+
+      if (form.file_upload) {
+        const uploadRes = await uploadMediaFile(form.file_upload)
+        if (uploadRes && uploadRes.fileUrl) {
+          finalFilePath = uploadRes.fileUrl
+        } else {
+          throw new Error("Failed to upload local file.")
+        }
+      }
+
       const payload = {
-        ...form,
+        title: form.title,
+        description: form.description,
+        type: form.type,
+        file_path: finalFilePath,
+        status: form.status || "draft",
         sort_order: Number(form.sort_order) || 0,
         categories: selectedCategories,
       }
@@ -85,6 +107,8 @@ export default function LearningResourcesPage() {
       reload()
     } catch (err) {
       alert("Error saving resource: " + err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -424,9 +448,15 @@ export default function LearningResourcesPage() {
           { 
             name: "file_path", 
             label: "File Path / URL Link",
-            required: true,
-            helpText: "Paste the web link or file path of the resource.",
-            validationMessage: "Please specify the file path or URL link."
+            required: false,
+            helpText: "Paste the web link or file path of the resource (or upload a local file below)."
+          },
+          {
+            name: "file_upload",
+            label: "Or Upload a Local File",
+            type: "file",
+            required: false,
+            helpText: "Choose a PDF, image, audio, or video file to upload directly."
           },
           {
             name: "status",

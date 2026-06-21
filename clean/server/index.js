@@ -15,6 +15,7 @@ import learningResourceRoutes from "./routes/learningResources.js"
 import conditionRoutes from "./routes/conditions.js"
 import adminAuthRoutes from "./routes/adminAuth.js"
 import auditLogsRoutes from "./routes/auditLogs.js"
+import mediaRoutes from "./routes/media.js"
 import { requireAdminAuth } from "./middleware/adminAuth.js"
 
 // ─────────────────────────────────────
@@ -38,6 +39,7 @@ const app = express()
 app.use(cors())
 app.use(compression()) // Greatly reduces response payload sizes
 app.use(express.json())
+app.use("/uploads", express.static("clean/server/uploads"))
 
 // Rate limiting for auth routes to prevent brute-force attacks
 const authLimiter = rateLimit({
@@ -77,6 +79,7 @@ app.use("/api/admin/profile-seeds", profileSeedRoutes)
 app.use("/api/admin/learning-resources", learningResourceRoutes)
 app.use("/api/admin/conditions", conditionRoutes)
 app.use("/api/admin/audit-logs", auditLogsRoutes)
+app.use("/api/admin/media", mediaRoutes)
 
 // ─────────────────────────────────────
 // APP API (read-only, mobile app)

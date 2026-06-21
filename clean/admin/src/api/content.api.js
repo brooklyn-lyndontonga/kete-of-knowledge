@@ -179,3 +179,14 @@ export const restoreCondition = (id) =>
 // ─── Audit Logs ──────────────────────
 export const fetchAuditLogs = (opts) =>
   adminFetch(`${ADMIN_API}/audit-logs`, opts).then(r => r.json())
+
+// ─── Media Upload ────────────────────
+export const uploadMediaFile = (file) => {
+  const formData = new FormData()
+  formData.append("file", file)
+
+  return adminFetch(`${ADMIN_API}/media/upload`, {
+    method: "POST",
+    body: formData,
+  }).then(r => r.json())
+}
