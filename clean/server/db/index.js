@@ -156,6 +156,12 @@ export async function initSchema() {
       email TEXT NOT NULL,
       expiresAt INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS admin_password_resets (
+      token TEXT PRIMARY KEY,
+      email TEXT NOT NULL,
+      expiresAt INTEGER NOT NULL
+    );
   `)
 
   // Seed base library categories (safe to re-run)

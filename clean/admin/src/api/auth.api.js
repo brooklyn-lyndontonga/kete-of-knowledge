@@ -19,3 +19,33 @@ export async function loginAdmin(email, password) {
 
   return res.json()
 }
+
+export async function forgotPassword(email) {
+  const res = await fetch(`${AUTH_API}/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error || "Request failed")
+  }
+
+  return res.json()
+}
+
+export async function resetPassword(token, password) {
+  const res = await fetch(`${AUTH_API}/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, password }),
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error || "Reset failed")
+  }
+
+  return res.json()
+}

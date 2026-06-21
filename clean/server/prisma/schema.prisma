@@ -99,3 +99,9 @@ model magic_link_tokens {
   email     String
   expiresAt Int
 }
+
+model admin_password_resets {
+  token     String   @id
+  email     String
+  expiresAt Int
+}
