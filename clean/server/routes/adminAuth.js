@@ -39,11 +39,7 @@ router.post("/login", async (req, res) => {
     return res.json({ token, expiresIn: 60 * 60 * 12 })
   } catch (err) {
     console.error("Admin login failed", err)
-    return res.status(500).json({ 
-      error: "Server error", 
-      message: err.message, 
-      stack: err.stack 
-    })
+    return res.status(500).json({ error: "Server error" })
   }
 })
 
