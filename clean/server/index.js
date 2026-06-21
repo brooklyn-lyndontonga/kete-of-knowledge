@@ -57,10 +57,21 @@ app.get("/health", async (_req, res) => {
   try {
     const db = await getDB()
     await db.get("SELECT 1 AS ok")
-    return res.json({ ok: true, db: true })
+    const adminCount = await db.get("SELECT COUNT(*) as count FROM admin_users")
+    const emails = await db.all("SELECT email FROM admin_users")
+    return res.json({ 
+      ok: true, 
+      db: true,
+      hasSeedVars: {
+        email: Boolean(process.env.ADMIN_SEED_EMAIL),
+        pass: Boolean(process.env.ADMIN_SEED_PASSWORD),
+      },
+      adminCount: adminCount?.count || 0,
+      adminEmails: emails.map(e => e.email)
+    })
   } catch (err) {
     console.error("Health check failed:", err)
-    return res.status(500).json({ ok: false, db: false })
+    return res.status(500).json({ ok: false, db: false, error: err.message })
   }
 })
 
