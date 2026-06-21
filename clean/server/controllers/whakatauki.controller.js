@@ -7,7 +7,9 @@ import { logAudit } from "../services/audit.js"
 export async function getAllWhakatauki(req, res) {
   try {
     const prisma = getPrisma()
+    const showArchived = req.query.showArchived === "true"
     const rows = await prisma.whakatauki.findMany({
+      where: { archived: showArchived },
       orderBy: [{ sort_order: "asc" }, { id: "asc" }],
     })
     res.json(rows)
@@ -136,7 +138,7 @@ export async function updateWhakatauki(req, res) {
 }
 
 // =======================
-// DELETE
+// DELETE (SOFT DELETE)
 // =======================
 export async function deleteWhakatauki(req, res) {
   try {
@@ -148,15 +150,51 @@ export async function deleteWhakatauki(req, res) {
       select: { text: true },
     })
 
-    await prisma.whakatauki.delete({
+    if (!existing) {
+      return res.status(404).json({ error: "Whakatauki not found" })
+    }
+
+    await prisma.whakatauki.update({
       where: { id: Number(id) },
+      data: { archived: true },
     })
 
-    await logAudit("DELETE", "whakatauki", id, `Deleted whakatauki: "${existing?.text?.slice(0, 30) || "Unknown"}..."`, req.admin?.email)
+    await logAudit("DELETE", "whakatauki", id, `Archived whakatauki: "${existing.text.slice(0, 30)}..."`, req.admin?.email)
 
     res.json({ success: true })
   } catch (err) {
     console.error("❌ deleteWhakatauki error:", err)
+    res.status(500).json({ error: err.message })
+  }
+}
+
+// =======================
+// RESTORE
+// =======================
+export async function restoreWhakatauki(req, res) {
+  try {
+    const { id } = req.params
+    const prisma = getPrisma()
+
+    const existing = await prisma.whakatauki.findUnique({
+      where: { id: Number(id) },
+      select: { text: true },
+    })
+
+    if (!existing) {
+      return res.status(404).json({ error: "Whakatauki not found" })
+    }
+
+    await prisma.whakatauki.update({
+      where: { id: Number(id) },
+      data: { archived: false },
+    })
+
+    await logAudit("RESTORE", "whakatauki", id, `Restored whakatauki: "${existing.text.slice(0, 30)}..."`, req.admin?.email)
+
+    res.json({ success: true })
+  } catch (err) {
+    console.error("❌ restoreWhakatauki error:", err)
     res.status(500).json({ error: err.message })
   }
 }

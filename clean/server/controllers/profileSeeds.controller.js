@@ -4,8 +4,10 @@ import { logAudit } from "../services/audit.js"
 export async function getAllSeeds(req, res) {
   try {
     const db = await getDB()
+    const showArchived = req.query.showArchived === "true" ? 1 : 0
     const rows = await db.all(
-      "SELECT * FROM profile_seeds ORDER BY sort_order ASC, id ASC"
+      "SELECT * FROM profile_seeds WHERE archived = ? ORDER BY sort_order ASC, id ASC",
+      [showArchived]
     )
     res.json(rows)
   } catch (err) {
@@ -61,16 +63,45 @@ export async function deleteSeed(req, res) {
 
     const existing = await db.get("SELECT name FROM profile_seeds WHERE id = ?", [id])
 
+    if (!existing) {
+      return res.status(404).json({ error: "Profile seed not found" })
+    }
+
     await db.run(
-      "DELETE FROM profile_seeds WHERE id = ?",
+      "UPDATE profile_seeds SET archived = 1 WHERE id = ?",
       [id]
     )
 
-    await logAudit("DELETE", "profile_seeds", id, `Deleted profile seed: "${existing?.name || "Unknown"}"`, req.admin?.email)
+    await logAudit("DELETE", "profile_seeds", id, `Archived profile seed: "${existing?.name || "Unknown"}"`, req.admin?.email)
 
     res.json({ success: true })
   } catch (err) {
     console.error("❌ deleteSeed error:", err)
     res.status(500).json({ error: "Failed to delete seed" })
+  }
+}
+
+export async function restoreSeed(req, res) {
+  try {
+    const { id } = req.params
+    const db = await getDB()
+
+    const existing = await db.get("SELECT name FROM profile_seeds WHERE id = ?", [id])
+
+    if (!existing) {
+      return res.status(404).json({ error: "Profile seed not found" })
+    }
+
+    await db.run(
+      "UPDATE profile_seeds SET archived = 0 WHERE id = ?",
+      [id]
+    )
+
+    await logAudit("RESTORE", "profile_seeds", id, `Restored profile seed: "${existing?.name || "Unknown"}"`, req.admin?.email)
+
+    res.json({ success: true })
+  } catch (err) {
+    console.error("❌ restoreSeed error:", err)
+    res.status(500).json({ error: "Failed to restore seed" })
   }
 }

@@ -55,8 +55,8 @@ export const deleteSnapshot = (id) =>
   })
 
 // ─── Whakatauki ──────────────────────
-export const fetchWhakatauki = (opts) =>
-  adminFetch(`${ADMIN_API}/whakatauki`, opts).then(r => r.json())
+export const fetchWhakatauki = (showArchived = false) =>
+  adminFetch(`${ADMIN_API}/whakatauki${showArchived ? "?showArchived=true" : ""}`).then(r => r.json())
 
 export const createWhakatauki = (data) =>
   adminFetch(`${ADMIN_API}/whakatauki`, {
@@ -75,9 +75,12 @@ export const updateWhakatauki = (id, data) =>
 export const deleteWhakatauki = (id) =>
   adminFetch(`${ADMIN_API}/whakatauki/${id}`, { method: "DELETE" })
 
+export const restoreWhakatauki = (id) =>
+  adminFetch(`${ADMIN_API}/whakatauki/${id}/restore`, { method: "POST" })
+
 // ─── Reflection Templates ────────────
-export const fetchReflectionTemplates = (opts) =>
-  adminFetch(`${ADMIN_API}/reflection-templates`, opts).then(r => r.json())
+export const fetchReflectionTemplates = (showArchived = false) =>
+  adminFetch(`${ADMIN_API}/reflection-templates${showArchived ? "?showArchived=true" : ""}`).then(r => r.json())
 
 export const createReflectionTemplate = (data) =>
   adminFetch(`${ADMIN_API}/reflection-templates`, {
@@ -96,9 +99,12 @@ export const updateReflectionTemplate = (id, data) =>
 export const deleteReflectionTemplate = (id) =>
   adminFetch(`${ADMIN_API}/reflection-templates/${id}`, { method: "DELETE" })
 
+export const restoreReflectionTemplate = (id) =>
+  adminFetch(`${ADMIN_API}/reflection-templates/${id}/restore`, { method: "POST" })
+
 // ─── Profile Seeds ───────────────────
-export const fetchProfileSeeds = (opts) =>
-  adminFetch(`${ADMIN_API}/profile-seeds`, opts).then(r => r.json())
+export const fetchProfileSeeds = (showArchived = false) =>
+  adminFetch(`${ADMIN_API}/profile-seeds${showArchived ? "?showArchived=true" : ""}`).then(r => r.json())
 
 export const createProfileSeed = (data) =>
   adminFetch(`${ADMIN_API}/profile-seeds`, {
@@ -119,9 +125,12 @@ export const deleteProfileSeed = (id) =>
     method: "DELETE",
   })
 
+export const restoreProfileSeed = (id) =>
+  adminFetch(`${ADMIN_API}/profile-seeds/${id}/restore`, { method: "POST" })
+
 // ─── Learning Resources ──────────────
-export const fetchLearningResources = (opts) =>
-  adminFetch(`${ADMIN_API}/learning-resources`, opts).then(r => r.json())
+export const fetchLearningResources = (showArchived = false) =>
+  adminFetch(`${ADMIN_API}/learning-resources${showArchived ? "?showArchived=true" : ""}`).then(r => r.json())
 
 export const createLearningResource = (data) =>
   adminFetch(`${ADMIN_API}/learning-resources`, {
@@ -140,9 +149,12 @@ export const updateLearningResource = (id, data) =>
 export const deleteLearningResource = (id) =>
   adminFetch(`${ADMIN_API}/learning-resources/${id}`, { method: "DELETE" })
 
+export const restoreLearningResource = (id) =>
+  adminFetch(`${ADMIN_API}/learning-resources/${id}/restore`, { method: "POST" })
+
 // ─── Conditions ──────────────────────
-export const fetchConditions = (opts) =>
-  adminFetch(`${ADMIN_API}/conditions`, opts).then(r => r.json())
+export const fetchConditions = (showArchived = false) =>
+  adminFetch(`${ADMIN_API}/conditions${showArchived ? "?showArchived=true" : ""}`).then(r => r.json())
 
 export const createCondition = (data) =>
   adminFetch(`${ADMIN_API}/conditions`, {
@@ -160,6 +172,9 @@ export const updateCondition = (id, data) =>
 
 export const deleteCondition = (id) =>
   adminFetch(`${ADMIN_API}/conditions/${id}`, { method: "DELETE" })
+
+export const restoreCondition = (id) =>
+  adminFetch(`${ADMIN_API}/conditions/${id}/restore`, { method: "POST" })
 
 // ─── Audit Logs ──────────────────────
 export const fetchAuditLogs = (opts) =>

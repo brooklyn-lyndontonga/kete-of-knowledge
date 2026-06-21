@@ -7,13 +7,16 @@ import { logAudit } from "../services/audit.js"
 export async function getAllLearningResources(req, res) {
   try {
     const db = await getDB()
+    const showArchived = req.query.showArchived === "true" ? 1 : 0
 
     const rows = await db.all(
       `
       SELECT *
       FROM learning_resources
+      WHERE archived = ?
       ORDER BY sort_order ASC, createdAt DESC
-      `
+      `,
+      [showArchived]
     )
 
     // Load category associations for each resource
@@ -222,16 +225,45 @@ export async function deleteLearningResource(req, res) {
 
     const existing = await db.get("SELECT title FROM learning_resources WHERE id = ?", [id])
 
+    if (!existing) {
+      return res.status(404).json({ error: "Learning resource not found" })
+    }
+
     await db.run(
-      `DELETE FROM learning_resources WHERE id = ?`,
+      `UPDATE learning_resources SET archived = 1 WHERE id = ?`,
       [id]
     )
 
-    await logAudit("DELETE", "learning_resources", id, `Deleted learning resource: "${existing?.title || "Unknown"}"`, req.admin?.email)
+    await logAudit("DELETE", "learning_resources", id, `Archived learning resource: "${existing?.title || "Unknown"}"`, req.admin?.email)
 
     res.json({ success: true })
   } catch (err) {
     console.error("❌ deleteLearningResource error:", err)
+    res.status(500).json({ error: err.message })
+  }
+}
+
+export async function restoreLearningResource(req, res) {
+  try {
+    const { id } = req.params
+    const db = await getDB()
+
+    const existing = await db.get("SELECT title FROM learning_resources WHERE id = ?", [id])
+
+    if (!existing) {
+      return res.status(404).json({ error: "Learning resource not found" })
+    }
+
+    await db.run(
+      `UPDATE learning_resources SET archived = 0 WHERE id = ?`,
+      [id]
+    )
+
+    await logAudit("RESTORE", "learning_resources", id, `Restored learning resource: "${existing?.title || "Unknown"}"`, req.admin?.email)
+
+    res.json({ success: true })
+  } catch (err) {
+    console.error("❌ restoreLearningResource error:", err)
     res.status(500).json({ error: err.message })
   }
 }

@@ -19,7 +19,7 @@ router.post("/login", async (req, res) => {
     const prisma = getPrisma()
     const admin = await prisma.admin_users.findUnique({
       where: { email },
-      select: { id: true, email: true, password_hash: true },
+      select: { id: true, email: true, password_hash: true, role: true },
     })
 
     if (!admin) {
@@ -33,7 +33,7 @@ router.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { sub: admin.id, email: admin.email, role: "admin" },
+      { sub: admin.id, email: admin.email, role: admin.role || "editor" },
       getAdminJwtSecret(),
       { expiresIn: "12h" }
     )

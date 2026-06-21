@@ -8,7 +8,7 @@ export async function getAppWhakatauki(req, res) {
     const prisma = getPrisma()
 
     const rows = await prisma.whakatauki.findMany({
-      where: { status: "published" },
+      where: { status: "published", archived: false },
       select: {
         id: true,
         text: true,

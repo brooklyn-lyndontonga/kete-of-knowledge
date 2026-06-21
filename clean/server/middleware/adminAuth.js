@@ -27,3 +27,10 @@ export function requireAdminAuth(req, res, next) {
 export function getAdminJwtSecret() {
   return ADMIN_JWT_SECRET
 }
+
+export function requireAdminRole(req, res, next) {
+  if (req.admin?.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden: Admin role required for this action" })
+  }
+  return next()
+}

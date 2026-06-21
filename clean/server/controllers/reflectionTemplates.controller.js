@@ -4,8 +4,10 @@ import { logAudit } from "../services/audit.js"
 export async function getAllTemplates(req, res) {
   try {
     const db = await getDB()
+    const showArchived = req.query.showArchived === "true" ? 1 : 0
     const rows = await db.all(
-      "SELECT * FROM reflection_templates ORDER BY sort_order ASC, id DESC"
+      "SELECT * FROM reflection_templates WHERE archived = ? ORDER BY sort_order ASC, id DESC",
+      [showArchived]
     )
     res.json(rows)
   } catch (err) {
@@ -68,16 +70,45 @@ export async function deleteTemplate(req, res) {
 
     const existing = await db.get("SELECT title FROM reflection_templates WHERE id = ?", [id])
 
+    if (!existing) {
+      return res.status(404).json({ error: "Reflection template not found" })
+    }
+
     await db.run(
-      "DELETE FROM reflection_templates WHERE id = ?",
+      "UPDATE reflection_templates SET archived = 1 WHERE id = ?",
       [id]
     )
 
-    await logAudit("DELETE", "reflection_templates", id, `Deleted reflection template: "${existing?.title || "Unknown"}"`, req.admin?.email)
+    await logAudit("DELETE", "reflection_templates", id, `Archived reflection template: "${existing?.title || "Unknown"}"`, req.admin?.email)
 
     res.json({ success: true })
   } catch (err) {
     console.error("❌ deleteTemplate error:", err)
     res.status(500).json({ error: "Failed to delete template" })
+  }
+}
+
+export async function restoreTemplate(req, res) {
+  try {
+    const { id } = req.params
+    const db = await getDB()
+
+    const existing = await db.get("SELECT title FROM reflection_templates WHERE id = ?", [id])
+
+    if (!existing) {
+      return res.status(404).json({ error: "Reflection template not found" })
+    }
+
+    await db.run(
+      "UPDATE reflection_templates SET archived = 0 WHERE id = ?",
+      [id]
+    )
+
+    await logAudit("RESTORE", "reflection_templates", id, `Restored reflection template: "${existing?.title || "Unknown"}"`, req.admin?.email)
+
+    res.json({ success: true })
+  } catch (err) {
+    console.error("❌ restoreTemplate error:", err)
+    res.status(500).json({ error: "Failed to restore template" })
   }
 }

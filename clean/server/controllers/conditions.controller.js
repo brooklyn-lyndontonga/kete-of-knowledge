@@ -4,8 +4,10 @@ import { logAudit } from "../services/audit.js"
 export async function getAllConditions(req, res) {
   try {
     const db = await getDB()
+    const showArchived = req.query.showArchived === "true" ? 1 : 0
     const rows = await db.all(
-      "SELECT * FROM conditions ORDER BY sort_order ASC, title ASC"
+      "SELECT * FROM conditions WHERE archived = ? ORDER BY sort_order ASC, title ASC",
+      [showArchived]
     )
     res.json(rows)
   } catch (err) {
@@ -76,13 +78,39 @@ export async function deleteCondition(req, res) {
 
     const existing = await db.get("SELECT title FROM conditions WHERE id = ?", [id])
 
-    await db.run("DELETE FROM conditions WHERE id = ?", [id])
+    if (!existing) {
+      return res.status(404).json({ error: "Condition not found" })
+    }
 
-    await logAudit("DELETE", "conditions", id, `Deleted condition: "${existing?.title || "Unknown"}"`, req.admin?.email)
+    await db.run("UPDATE conditions SET archived = 1 WHERE id = ?", [id])
+
+    await logAudit("DELETE", "conditions", id, `Archived condition: "${existing?.title || "Unknown"}"`, req.admin?.email)
 
     res.json({ success: true })
   } catch (err) {
     console.error("❌ deleteCondition error:", err)
     res.status(500).json({ error: "Failed to delete condition" })
+  }
+}
+
+export async function restoreCondition(req, res) {
+  try {
+    const { id } = req.params
+    const db = await getDB()
+
+    const existing = await db.get("SELECT title FROM conditions WHERE id = ?", [id])
+
+    if (!existing) {
+      return res.status(404).json({ error: "Condition not found" })
+    }
+
+    await db.run("UPDATE conditions SET archived = 0 WHERE id = ?", [id])
+
+    await logAudit("RESTORE", "conditions", id, `Restored condition: "${existing?.title || "Unknown"}"`, req.admin?.email)
+
+    res.json({ success: true })
+  } catch (err) {
+    console.error("❌ restoreCondition error:", err)
+    res.status(500).json({ error: "Failed to restore condition" })
   }
 }

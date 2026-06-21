@@ -15,7 +15,7 @@ export async function getAppConditions(req, res) {
         triggers,
         treatments
       FROM conditions
-      WHERE status = 'published'
+      WHERE status = 'published' AND archived = 0
       ORDER BY sort_order ASC, title ASC
     `)
 

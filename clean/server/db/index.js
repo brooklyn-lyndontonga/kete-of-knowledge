@@ -67,7 +67,8 @@ export async function initSchema() {
       theme TEXT,
       source TEXT,
       status TEXT DEFAULT 'draft',
-      sort_order INTEGER DEFAULT 0
+      sort_order INTEGER DEFAULT 0,
+      archived INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS reflection_templates (
@@ -76,7 +77,8 @@ export async function initSchema() {
       title TEXT NOT NULL,
       prompt TEXT NOT NULL,
       status TEXT DEFAULT 'draft',
-      sort_order INTEGER DEFAULT 0
+      sort_order INTEGER DEFAULT 0,
+      archived INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS profile_seeds (
@@ -84,7 +86,8 @@ export async function initSchema() {
       name TEXT NOT NULL,
       value TEXT NOT NULL,
       status TEXT DEFAULT 'draft',
-      sort_order INTEGER DEFAULT 0
+      sort_order INTEGER DEFAULT 0,
+      archived INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS learning_resources (
@@ -95,6 +98,7 @@ export async function initSchema() {
       file_path TEXT,
       status TEXT DEFAULT 'draft',
       sort_order INTEGER DEFAULT 0,
+      archived INTEGER DEFAULT 0,
       createdAt TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -135,7 +139,8 @@ export async function initSchema() {
       triggers TEXT,
       treatments TEXT,
       status TEXT DEFAULT 'draft',
-      sort_order INTEGER DEFAULT 0
+      sort_order INTEGER DEFAULT 0,
+      archived INTEGER DEFAULT 0
     );
 
     -- ======================
@@ -146,6 +151,7 @@ export async function initSchema() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
+      role TEXT DEFAULT 'editor',
       createdAt TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -197,6 +203,18 @@ export async function initSchema() {
     } catch (_err) {
       // Column already exists
     }
+    try {
+      await db.exec(`ALTER TABLE ${table} ADD COLUMN archived INTEGER DEFAULT 0;`)
+    } catch (_err) {
+      // Column already exists
+    }
+  }
+
+  // Admin users migration: add role column
+  try {
+    await db.exec(`ALTER TABLE admin_users ADD COLUMN role TEXT DEFAULT 'editor';`)
+  } catch (_err) {
+    // Column already exists
   }
 
   // Seed base library categories (safe to re-run)
@@ -216,16 +234,19 @@ export async function initSchema() {
 async function seedAdminUser(db) {
   const emailStr = process.env.ADMIN_SEED_EMAIL
   const passwordStr = process.env.ADMIN_SEED_PASSWORD
+  const roleStr = process.env.ADMIN_SEED_ROLE || "admin"
 
   if (!emailStr || !passwordStr) return
 
   const emails = emailStr.split(",").map((e) => e.trim())
   const passwords = passwordStr.split(",").map((p) => p.trim())
+  const roles = roleStr.split(",").map((r) => r.trim())
 
   for (let i = 0; i < emails.length; i++) {
     const email = emails[i]
-    // Fallback to the first password if not enough passwords are provided
+    // Fallback to the first password/role if not enough are provided
     const password = passwords[i] || passwords[0]
+    const role = roles[i] || roles[0] || "admin"
 
     if (!email || !password) continue
 
@@ -238,18 +259,20 @@ async function seedAdminUser(db) {
 
     if (existing) {
       await db.run(
-        "UPDATE admin_users SET password_hash = ? WHERE email = ?",
+        "UPDATE admin_users SET password_hash = ?, role = ? WHERE email = ?",
         passwordHash,
+        role,
         email
       )
-      console.log("🔐 Updated admin password hash for:", email)
+      console.log("🔐 Updated admin password hash and role for:", email)
     } else {
       await db.run(
-        "INSERT INTO admin_users (email, password_hash) VALUES (?, ?)",
+        "INSERT INTO admin_users (email, password_hash, role) VALUES (?, ?, ?)",
         email,
-        passwordHash
+        passwordHash,
+        role
       )
-      console.log("🔐 Seeded admin user:", email)
+      console.log("🔐 Seeded admin user:", email, `(${role})`)
     }
   }
 }

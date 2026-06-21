@@ -27,6 +27,7 @@ model whakatauki {
   source      String?
   status      String  @default("draft")
   sort_order  Int     @default(0)
+  archived    Boolean @default(false)
 }
 
 model reflection_templates {
@@ -36,6 +37,7 @@ model reflection_templates {
   prompt     String
   status     String @default("draft")
   sort_order Int    @default(0)
+  archived   Boolean @default(false)
 }
 
 model profile_seeds {
@@ -44,6 +46,7 @@ model profile_seeds {
   value      String
   status     String @default("draft")
   sort_order Int    @default(0)
+  archived   Boolean @default(false)
 }
 
 model learning_resources {
@@ -55,6 +58,7 @@ model learning_resources {
   createdAt   DateTime  @default(now())
   status      String    @default("draft")
   sort_order  Int       @default(0)
+  archived    Boolean   @default(false)
   
   categories  learning_resource_categories[]
 }
@@ -87,12 +91,14 @@ model conditions {
   treatments String?
   status     String  @default("draft")
   sort_order Int     @default(0)
+  archived   Boolean @default(false)
 }
 
 model admin_users {
   id            Int      @id @default(autoincrement())
   email         String   @unique
   password_hash String
+  role          String   @default("editor")
   createdAt     DateTime @default(now())
 }
 

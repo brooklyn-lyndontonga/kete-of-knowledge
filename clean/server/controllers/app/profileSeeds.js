@@ -13,7 +13,7 @@ export async function getAppProfileSeeds(req, res) {
         name,
         value
       FROM profile_seeds
-      WHERE status = 'published'
+      WHERE status = 'published' AND archived = 0
       ORDER BY sort_order ASC, id ASC
     `)
 
