@@ -18,39 +18,90 @@ This document serves as your "Start Here" guide. It contains all the essential i
 
 ## 🖥️ Module A: Day-to-Day Administration & Content Management
 
-These tutorials cover the standard tasks you will perform regularly to keep the app populated with fresh content.
+Welcome to the **Kete of Knowledge Admin Panel** content guide!
 
-### 1. Logging into the Admin Panel
-* **Production Admin URL:** https://kete-of-knowledge-production.up.railway.app
-* **Text Guide:** 
-  1. Navigate to the Admin URL above.
-  2. Enter your authorized admin email address (e.g., `maraea@thecentreforhealth.co.nz`).
-  3. Enter your password.
-  4. Click **"Sign in"** to log in to the dashboard.
-  
-  > [!NOTE]
-  > For security, the system has a **30-minute inactivity session timeout**. If you are idle for 30 minutes, you will be automatically logged out and must sign in again.
+* **Production Login Link:** https://kete-of-knowledge-production.up.railway.app
+* **Password Recovery:** If you ever forget your password, click **"Forgot Password?"** on the login screen and follow the email link to set a new one.
 
-### 2. Dashboard & Content Health
-* The dashboard features quick-add buttons for adding entries rapidly.
-* Use the **Content Health Checker** on the dashboard to review advisory warnings (such as missing translations or empty summaries). Use this as a checklist to keep the data clean.
+### 🌟 The Golden Rules
+There are two rules that apply across every section of the panel:
+1. **Draft vs. Published**: Every piece of content has a Status. `"Draft"` means only you can see it in the panel — it will not appear in the app. `"Published"` means it is live in the mobile app. Always check the Status dropdown before saving!
+2. **Deleting is Safe**: Deleting items is a non-destructive soft delete. Deleted items are marked as archived and hidden from the active list. They are moved to **"Archived Content"** (accessible via the tab at the top of each section), where you can restore them at any time.
 
-### 3. Adding and Managing Content
-Navigate to the corresponding tabs on the sidebar:
-* **Whakataukī**: View, search, filter, and prioritize quotes, translations, and themes.
-* **Reflections**: Manage daily reflection templates and prompts.
-* **Profile Seeds**: Configure base user goal suggestions.
-* **Learning Resources**: Manage media attachments, links, and documents.
-* **Conditions**: Update details about medical conditions, triggers, and treatments.
+---
 
-#### Direct Media Uploads (Learning Resources)
-* When creating or editing Learning Resources, you can choose to either paste an external URL link or upload a local file directly (PDF, images, video, or audio) using the **"Or Upload a Local File"** input.
-* Uploaded files are securely stored on the server and served statically.
-* Remember to select the corresponding **Type** (e.g., PDF File, Image, Video) and assign one or more **Categories** (Learn, Practice, Support) using the checklist.
+### 📊 The Dashboard
+The dashboard is your at-a-glance control center:
+* **Quick Add Buttons**: Shortcuts to add Whakataukī, Learning Resources, or Condition Info on the fly without navigating to individual tabs.
+* **Content Counts**: Displays total active conditions, resources, and whakataukī in the database.
+* **Content Health Checker**: A real-time audit tool flagging entries that need attention (e.g. missing translations, missing URLs, or short summaries). These are advisory warnings, not errors.
+* **System Activity Feed**: A scrollable log of recent actions (create, edit, delete) performed by team members with timestamps.
 
-#### Publishing Drafts
-* New items default to `Draft` status. 
-* **Crucial Step:** You must toggle the status selector to **Published** for the content to show up in the public-facing mobile app.
+---
+
+### 💬 Section-by-Section Guide
+
+#### 💬 Whakataukī
+* **Purpose**: Māori proverbs with English translations, organised by theme.
+* **To Add**: Click **+ Add Whakataukī** and complete:
+  * *Whakataukī*: The proverb in te reo Māori.
+  * *Translation*: The English meaning.
+  * *Theme*: A category label (e.g. `"resilience"`, `"whānau"`). Keep naming consistent.
+  * *Source*: Optional origin.
+  * *Status*: Set to `Published` to make it live, or `Draft` to save it privately.
+  * *Sort Order*: Lower numbers appear first in the list (e.g. `1` shows before `10`).
+* **Pro Tip**: Use the search bar to query entries and filter by theme. You can also import bulk proverbs using the **📥 Bulk CSV Import** button.
+
+#### ✏️ Reflections
+* **Purpose**: Journaling templates shown as daily prompts to users in the app.
+* **To Add**: Click **+ Add Template** and complete:
+  * *Category*: Grouping label (e.g. `"mood"`, `"energy"`).
+  * *Title*: Short name for the template.
+  * *Prompt*: The guiding sentence starter displayed to users.
+  * *Status* & *Sort Order Priority*.
+
+#### 👤 Profile Seeds
+* **Purpose**: Preset goal options or system fields that pre-populate user profiles.
+* **To Add**: Click **+ Add Seed** and complete:
+  * *Name*: The field name (e.g. `"age_range"`, `"goal_type"`).
+  * *Value*: The option text shown to the user.
+  * *Status* & *Sort Order Priority*.
+
+#### 📚 Learning Resources
+* **Purpose**: Links, PDFs, videos, images, or audio files for learning and support.
+* **To Add**: Click **+ Add Resource** and complete:
+  * *Title* & *Description*.
+  * *Type*: Choose from Link/URL, PDF File, Video, Image, Audio, or Other.
+  * *File Path / URL Link*: Paste a web link, **OR** upload a file directly using the file selector. Uploaded files are served statically from the backend.
+  * *Status* & *Sort Order Priority*.
+  * *Assign Categories*: Tick any that apply: `Learn`, `Practice`, or `Support`. You can select multiple.
+
+#### 🏥 Conditions
+* **Purpose**: Information cards about medical conditions, triggers, and treatments.
+* **To Add**: Click **+ Add Condition** and complete:
+  * *Title* & *Summary* (Aim for at least 1–2 sentences to avoid dashboard health warnings).
+  * *Triggers* & *Treatments*.
+  * *Status* & *Sort Order Priority*.
+* **Note**: Displays a linked "Resources" count showing how many Learning Resources reference this condition.
+
+---
+
+### 💡 Things Good to Know
+* **Automatic Logout**: The session automatically terminates after **30 minutes of inactivity** for security. Logging back in is normal behaviour; content is safe if saved.
+* **Global Search**: The search bar in the left sidebar queries across all database tables at once. Click any result to see a detailed preview card or navigate directly to its editor.
+* **In-App Help FAQ Panel**: Click **Help & FAQs** at the bottom-left of the sidebar to access text FAQs and video tutorials built directly into the panel interface.
+* **Sort Order**: Works identically in all sections. Lower numbers = shown first. If order does not matter, leave as `0`.
+
+---
+
+### 🔄 At a Glance — The Content Workflow
+1. Navigate to the desired section in the sidebar.
+2. Click the **+ Add** button.
+3. Fill in the fields (fields marked with `*` are required).
+4. Set **Status** to `Published` if you want it live immediately.
+5. Click **Save Changes**.
+6. Verify the status column in the table matches.
+* *To edit*: Click **Edit** next to any item, apply modifications, and click **Save Changes**.
 
 ---
 
