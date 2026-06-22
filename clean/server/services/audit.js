@@ -1,4 +1,4 @@
-import { getPrisma } from "../db/prisma.js"
+import { getDB } from "../db/index.js"
 
 /**
  * Log an audit action to the database.
@@ -10,16 +10,18 @@ import { getPrisma } from "../db/prisma.js"
  */
 export async function logAudit(action, tableName, recordId, details, performedBy = "Admin") {
   try {
-    const prisma = getPrisma()
-    await prisma.audit_logs.create({
-      data: {
+    const db = await getDB()
+    await db.run(
+      `INSERT INTO audit_logs (action, tableName, recordId, details, performedBy)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
         action,
         tableName,
-        recordId: Number(recordId) || 0,
+        Number(recordId) || 0,
         details,
-        performedBy: performedBy || "Admin",
-      },
-    })
+        performedBy || "Admin"
+      ]
+    )
     console.log(`📝 [Audit Log] ${action} on ${tableName} (ID: ${recordId}): ${details} by ${performedBy}`)
   } catch (err) {
     console.error("❌ Failed to log audit activity:", err)
