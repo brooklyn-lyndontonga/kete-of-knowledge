@@ -9,15 +9,18 @@ export async function getAppLearningResources(req, res) {
 
     const rows = await db.all(`
       SELECT
-        id,
-        title,
-        description,
-        type,
-        file_path,
-        createdAt
-      FROM learning_resources
-      WHERE status = 'published' AND archived = 0
-      ORDER BY sort_order ASC, createdAt DESC
+        r.id,
+        r.title,
+        r.description,
+        r.type,
+        r.file_path,
+        r.createdAt,
+        lc.key AS category
+      FROM learning_resources r
+      LEFT JOIN learning_resource_categories lrc ON lrc.resource_id = r.id
+      LEFT JOIN library_categories lc ON lc.id = lrc.category_id
+      WHERE r.status = 'published' AND r.archived = 0
+      ORDER BY r.sort_order ASC, r.createdAt DESC
     `)
 
     res.json(rows)
