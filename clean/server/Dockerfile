@@ -1,26 +1,25 @@
 FROM node:18-slim
 
-RUN apt-get update -y && apt-get install -y openssl
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy root package files
-COPY package*.json ./
-
-# Install dependencies (installs root dependencies including server deps)
-RUN npm install
+# Server now has its own package.json (clean/server/package.json),
+# so we install only what the API needs.
+COPY clean/server/package*.json ./
+RUN npm install --omit=dev
 
 # Copy server source code
-COPY clean/server ./clean/server
-
-# Set working directory to server for execution
-WORKDIR /app/clean/server
+COPY clean/server ./
 
 # Generate Prisma Client
 RUN npx prisma generate --schema=prisma/schema.prisma
 
-# Expose port
+# Persistent data lives on the mounted volume at /app/data:
+#   /app/data/db      → SQLite database
+#   /app/data/uploads → admin-uploaded media
+# Set SQLITE_DB_PATH and UPLOADS_DIR env vars accordingly in your host
+# (see render.yaml / Railway variables).
 EXPOSE 3000
 
-# Start command
 CMD ["node", "index.js"]

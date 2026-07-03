@@ -7,12 +7,13 @@ import {
   restoreLearningResource,
 } from "../controllers/learningResources.controller.js"
 import { requireAdminRole } from "../middleware/adminAuth.js"
+import { requireFields } from "../middleware/validate.js"
 
 const router = express.Router()
 
 router.get("/", getAllLearningResources)
-router.post("/", createLearningResource)
-router.put("/:id", updateLearningResource)
+router.post("/", requireFields("title"), createLearningResource)
+router.put("/:id", requireFields("title"), updateLearningResource)
 router.delete("/:id", requireAdminRole, deleteLearningResource)
 router.post("/:id/restore", restoreLearningResource)
 

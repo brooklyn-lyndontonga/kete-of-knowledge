@@ -2,7 +2,6 @@
   "name": "kete-of-knowledge",
   "version": "1.0.0",
   "description": "Kete of Knowledge – Mobile App: a React Native (Expo) app providing accessible health and wellbeing information to whānau.",
-  "main": "index.expo.js",
   "type": "module",
   "scripts": {
     "start": "node clean/server/index.js",

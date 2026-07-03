@@ -6,9 +6,12 @@ services:
     dockerContext: .
     dockerfilePath: clean/server/Dockerfile
     plan: free
+    # One persistent disk holds BOTH the database and uploaded media.
+    # Previously only /app/db was on the disk, so every redeploy wiped
+    # all admin-uploaded PDFs/images/videos.
     disk:
-      name: sqlite-data
-      mountPath: /app/db
+      name: kete-data
+      mountPath: /app/data
       sizeGB: 1
     envVars:
       - key: PORT
@@ -16,28 +19,38 @@ services:
       - key: NODE_ENV
         value: production
       - key: SQLITE_DB_PATH
-        value: /app/db/database.db
+        value: /app/data/db/database.db
+      - key: UPLOADS_DIR
+        value: /app/data/uploads
       - key: ADMIN_JWT_SECRET
         generateValue: true
       - key: APP_JWT_SECRET
         generateValue: true
-      # Legacy / optional
-      - key: JWT_SECRET
-        generateValue: true
-      # EMAIL SERVICE (Required for Magic Links)
-      # Replace these with your actual SMTP credentials (e.g. Gmail App Password, Brevo, SendGrid)
+      # Lock CORS to the deployed admin panel URL after first deploy,
+      # e.g. https://kete-admin.onrender.com
+      - key: ALLOWED_ORIGINS
+        sync: false
+      # EMAIL SERVICE (Required for Magic Links + password resets)
+      # Set real SMTP credentials in the Render dashboard (marked sync: false
+      # so they are never stored in this file).
       - key: SMTP_HOST
-        value: smtp.example.com
+        sync: false
       - key: SMTP_PORT
         value: 587
       - key: SMTP_USER
-        value: your_email@example.com
+        sync: false
       - key: SMTP_PASS
-        value: your_password
+        sync: false
       - key: SMTP_SECURE
         value: "false"
       - key: SMTP_FROM
-        value: "\"Kete Support\" <your-email@example.com>"
+        sync: false
+      # Admin seed account — set in dashboard, then change the password
+      # via the panel and remove these vars.
+      - key: ADMIN_SEED_EMAIL
+        sync: false
+      - key: ADMIN_SEED_PASSWORD
+        sync: false
 
   # 2. The Admin Panel (React/Vite)
   - type: static

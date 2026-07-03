@@ -1,48 +1,64 @@
-import { getDB } from "../db/index.js";
+import { getDB } from "../db/index.js"
 
-export function getProfile() {
-  const db = getDB();
+// Uses the modern expo-sqlite (SDK 51+) API.
+//
+// Behaviour change from the original: saveProfile now UPDATES the existing
+// profile row if one exists, instead of inserting a brand-new row on every
+// save. (Previously, every edit or photo change created another row and
+// the app just read the most recent one, silently accumulating orphans.)
 
-  return new Promise((resolve) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "SELECT * FROM profiles ORDER BY id DESC LIMIT 1",
-        [],
-        (_, { rows }) => resolve(rows._array[0] || null)
-      );
-    });
-  });
+// -------------------------
+// Get the current profile
+// -------------------------
+export async function getProfile() {
+  const db = getDB()
+
+  const row = await db.getFirstAsync(
+    `SELECT * FROM profiles ORDER BY id DESC LIMIT 1`
+  )
+
+  return row || null
 }
 
-export function saveProfile(profile) {
-  const db = getDB();
+// -------------------------
+// Create or update the profile
+// -------------------------
+export async function saveProfile(profile) {
+  const db = getDB()
+
   const {
-    name,
-    dob,
-    photo_uri,
-    health_info,
+    name = null,
+    dob = null,
+    photo_uri = null,
+    health_info = null,
     health_providers,
     emergency_contacts,
-  } = profile;
+  } = profile || {}
 
-  return new Promise((resolve) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `
-        INSERT INTO profiles
-        (name, dob, photo_uri, health_info, health_providers, emergency_contacts)
-        VALUES (?, ?, ?, ?, ?, ?)
-        `,
-        [
-          name,
-          dob,
-          photo_uri || null,
-          health_info,
-          JSON.stringify(health_providers || []),
-          JSON.stringify(emergency_contacts || []),
-        ],
-        () => resolve()
-      );
-    });
-  });
+  const providersJson = JSON.stringify(health_providers || [])
+  const contactsJson = JSON.stringify(emergency_contacts || [])
+
+  const existing = await db.getFirstAsync(
+    `SELECT id FROM profiles ORDER BY id DESC LIMIT 1`
+  )
+
+  if (existing) {
+    await db.runAsync(
+      `UPDATE profiles
+       SET name = ?, dob = ?, photo_uri = ?, health_info = ?,
+           health_providers = ?, emergency_contacts = ?
+       WHERE id = ?`,
+      [name, dob, photo_uri, health_info, providersJson, contactsJson, existing.id]
+    )
+    return { id: existing.id }
+  }
+
+  const result = await db.runAsync(
+    `INSERT INTO profiles
+     (name, dob, photo_uri, health_info, health_providers, emergency_contacts)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [name, dob, photo_uri, health_info, providersJson, contactsJson]
+  )
+
+  return { id: result.lastInsertRowId }
 }

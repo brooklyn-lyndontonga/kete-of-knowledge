@@ -3,6 +3,9 @@ import express from "express"
 import cors from "cors"
 import compression from "compression"
 import rateLimit from "express-rate-limit"
+import path from "path"
+import fs from "fs"
+import { fileURLToPath } from "url"
 
 // ─────────────────────────────────────
 // ADMIN ROUTES (write)
@@ -27,19 +30,62 @@ import appConditionRoutes from "./routes/app/conditions.js"
 import appProfileSeedRoutes from "./routes/app/profileSeeds.js"
 import appAuthRoutes from "./routes/app/auth.js"
 
-
 // DB
 import { getDB, initSchema } from "./db/index.js"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// ─────────────────────────────────────
+// PRODUCTION SAFETY GUARD
+// Refuse to boot in production with missing secrets — a silent fallback
+// to "dev-admin-secret" would let anyone forge admin tokens.
+// ─────────────────────────────────────
+if (process.env.NODE_ENV === "production") {
+  const missing = ["ADMIN_JWT_SECRET", "APP_JWT_SECRET"].filter(
+    (key) => !process.env[key]
+  )
+  if (missing.length) {
+    console.error(
+      `❌ FATAL: missing required env vars in production: ${missing.join(", ")}`
+    )
+    process.exit(1)
+  }
+}
 
 const app = express()
 
 // ─────────────────────────────────────
 // MIDDLEWARE
 // ─────────────────────────────────────
-app.use(cors())
+
+// CORS: wide open in development; restricted via ALLOWED_ORIGINS in
+// production (comma-separated list, e.g. the deployed admin panel URL).
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean)
+
+app.use(
+  cors(
+    allowedOrigins.length
+      ? { origin: allowedOrigins }
+      : {} // no ALLOWED_ORIGINS set → allow all (local dev)
+  )
+)
+
 app.use(compression()) // Greatly reduces response payload sizes
 app.use(express.json())
-app.use("/uploads", express.static("clean/server/uploads"))
+
+// Uploads: resolved to an ABSOLUTE path so it works regardless of the
+// process working directory (the old relative "clean/server/uploads"
+// broke inside Docker, where WORKDIR is /app/clean/server).
+// UPLOADS_DIR lets production point this at a persistent volume.
+export const UPLOADS_DIR =
+  process.env.UPLOADS_DIR || path.join(__dirname, "uploads")
+
+fs.mkdirSync(UPLOADS_DIR, { recursive: true })
+app.use("/uploads", express.static(UPLOADS_DIR))
 
 // Rate limiting for auth routes to prevent brute-force attacks
 const authLimiter = rateLimit({
@@ -47,7 +93,7 @@ const authLimiter = rateLimit({
   max: 20, // Limit each IP to 20 auth requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Too many authentication requests, please try again later." }
+  message: { error: "Too many authentication requests, please try again later." },
 })
 
 // Init DB + schema
@@ -90,11 +136,11 @@ app.use("/api/app/conditions", appConditionRoutes)
 app.use("/api/app/profile-seeds", appProfileSeedRoutes)
 app.use("/api/app/auth", authLimiter, appAuthRoutes)
 
-
 // ─────────────────────────────────────
 // SERVER
 // ─────────────────────────────────────
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`)
+  console.log(`📁 Serving uploads from ${UPLOADS_DIR}`)
 })

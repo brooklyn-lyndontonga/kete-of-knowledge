@@ -1,13 +1,20 @@
 import { Router } from "express"
 import multer from "multer"
 import path from "path"
+import fs from "fs"
 import { fileURLToPath } from "url"
 
 const router = Router()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const UPLOADS_DIR = path.join(__dirname, "../uploads")
+
+// Must match index.js: UPLOADS_DIR env var wins (production persistent
+// volume), otherwise <server>/uploads. Absolute either way.
+const UPLOADS_DIR =
+  process.env.UPLOADS_DIR || path.join(__dirname, "../uploads")
+
+fs.mkdirSync(UPLOADS_DIR, { recursive: true })
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -42,13 +49,19 @@ router.post("/upload", upload.single("file"), (req, res) => {
   }
 
   try {
-    const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
-    return res.json({ 
-      ok: true, 
+    // Store a RELATIVE path in the DB rather than an absolute URL, so
+    // resources survive domain changes (dev → staging → production).
+    // The mobile app prefixes this with its configured API root.
+    const relativePath = `/uploads/${req.file.filename}`
+    const fileUrl = `${req.protocol}://${req.get("host")}${relativePath}`
+
+    return res.json({
+      ok: true,
       filename: req.file.filename,
       originalName: req.file.originalname,
       size: req.file.size,
-      fileUrl 
+      filePath: relativePath,
+      fileUrl,
     })
   } catch (err) {
     console.error("Media upload failed", err)

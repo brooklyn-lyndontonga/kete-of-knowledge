@@ -63,7 +63,7 @@ export default function HelpDrawer({ isOpen, onClose }) {
                   How do I publish content to the app?
                 </div>
                 <div className="collapse-content text-sm text-base-content/70">
-                  <p>Use the "Status" toggle in the table. Toggle it green to publish immediately, or off to keep it as a draft.</p>
+                  <p>Use the &quot;Status&quot; toggle in the table. Toggle it green to publish immediately, or off to keep it as a draft.</p>
                 </div>
               </div>
               
@@ -73,7 +73,7 @@ export default function HelpDrawer({ isOpen, onClose }) {
                   How does sorting/ordering work?
                 </div>
                 <div className="collapse-content text-sm text-base-content/70">
-                  <p>In sections like Whakataukī, edit an entry and set the "Sort Order" number. Lower numbers display first in the app.</p>
+                  <p>In sections like Whakataukī, edit an entry and set the &quot;Sort Order&quot; number. Lower numbers display first in the app.</p>
                 </div>
               </div>
 
@@ -83,7 +83,7 @@ export default function HelpDrawer({ isOpen, onClose }) {
                   What happens when an item is deleted?
                 </div>
                 <div className="collapse-content text-sm text-base-content/70">
-                  <p>It is soft-deleted. The item is hidden from the public API but remains in the database. Only users with the <strong>Admin</strong> role can view the "Archived" list and restore items.</p>
+                  <p>It is soft-deleted. The item is hidden from the public API but remains in the database. Only users with the <strong>Admin</strong> role can view the &quot;Archived&quot; list and restore items.</p>
                 </div>
               </div>
 

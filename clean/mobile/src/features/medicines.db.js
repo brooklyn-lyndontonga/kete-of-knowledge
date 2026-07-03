@@ -1,67 +1,51 @@
 import { getDB } from "../db"
 
+// Uses the modern expo-sqlite (SDK 51+) API.
+
 // -------------------------
 // Add medicine
 // -------------------------
-export function addMedicine({
-  name,
-  type = "",
-  dosage = "",
-  notes = "",
-}) {
+export async function addMedicine({ name, type = "", dosage = "", notes = "" }) {
   const db = getDB()
 
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `
-        INSERT INTO medicines (name, type, dosage, notes, active)
-        VALUES (?, ?, ?, ?, 1)
-        `,
-        [name, type, dosage, notes],
-        (_, result) => resolve(result),
-        (_, error) => reject(error)
-      )
-    })
-  })
+  const result = await db.runAsync(
+    `INSERT INTO medicines (name, type, dosage, notes, active)
+     VALUES (?, ?, ?, ?, 1)`,
+    [name, type, dosage, notes]
+  )
+
+  return { id: result.lastInsertRowId }
 }
 
 // -------------------------
 // Get medicines
 // -------------------------
-export function getMedicines() {
+export async function getMedicines() {
   const db = getDB()
 
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `
-        SELECT *
-        FROM medicines
-        ORDER BY active DESC, name ASC
-        `,
-        [],
-        (_, { rows }) => resolve(rows._array),
-        (_, error) => reject(error)
-      )
-    })
-  })
+  return db.getAllAsync(
+    `SELECT *
+     FROM medicines
+     ORDER BY active DESC, name ASC`
+  )
 }
 
 // -------------------------
 // Toggle active
 // -------------------------
-export function toggleMedicine(id, active) {
+export async function toggleMedicine(id, active) {
   const db = getDB()
 
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `UPDATE medicines SET active = ? WHERE id = ?`,
-        [active ? 1 : 0, id],
-        (_, result) => resolve(result),
-        (_, error) => reject(error)
-      )
-    })
-  })
+  await db.runAsync(
+    `UPDATE medicines SET active = ? WHERE id = ?`,
+    [active ? 1 : 0, id]
+  )
+}
+
+// -------------------------
+// Delete a medicine
+// -------------------------
+export async function deleteMedicine(id) {
+  const db = getDB()
+  await db.runAsync(`DELETE FROM medicines WHERE id = ?`, [id])
 }
