@@ -10,13 +10,12 @@ RUN apt-get update -y && apt-get install -y \
 
 WORKDIR /app
 
-# Server now has its own package.json (clean/server/package.json),
-# so we install only what the API needs.
-COPY clean/server/package*.json ./
+# Server package.json
+COPY package*.json ./
 RUN npm install --omit=dev
 
 # Copy server source code
-COPY clean/server ./
+COPY . ./
 
 # Generate Prisma Client
 RUN npx prisma generate --schema=prisma/schema.prisma
