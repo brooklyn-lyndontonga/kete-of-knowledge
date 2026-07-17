@@ -30,15 +30,21 @@ export default function ConditionsPage() {
   // Search Filter
   const [searchQuery, setSearchQuery] = useState("")
 
+  const [activeCount, setActiveCount] = useState(0)
+  const [archivedCount, setArchivedCount] = useState(0)
+
   async function load() {
     setLoading(true)
     setError(null)
     try {
-      const [conditionsData, resourcesData] = await Promise.all([
-        fetchConditions(showArchived).catch(() => []),
-        fetchLearningResources(showArchived).catch(() => []),
+      const [activeConds, archivedConds, resourcesData] = await Promise.all([
+        fetchConditions(false).catch(() => []),
+        fetchConditions(true).catch(() => []),
+        fetchLearningResources(false).catch(() => []),
       ])
-      setRows(conditionsData || [])
+      setActiveCount(activeConds?.length || 0)
+      setArchivedCount(archivedConds?.length || 0)
+      setRows(showArchived ? (archivedConds || []) : (activeConds || []))
       setResources(resourcesData || [])
     } catch (err) {
       setError("Failed to load conditions or learning resources.")
@@ -52,8 +58,13 @@ export default function ConditionsPage() {
   }, [showArchived])
 
   async function reload() {
-    const data = await fetchConditions(showArchived)
-    setRows(data || [])
+    const [activeConds, archivedConds] = await Promise.all([
+      fetchConditions(false).catch(() => []),
+      fetchConditions(true).catch(() => []),
+    ])
+    setActiveCount(activeConds?.length || 0)
+    setArchivedCount(archivedConds?.length || 0)
+    setRows(showArchived ? (archivedConds || []) : (activeConds || []))
   }
 
   async function handleSave(formData) {
@@ -199,13 +210,13 @@ export default function ConditionsPage() {
           className={`tab ${!showArchived ? "tab-active" : ""}`}
           onClick={() => setShowArchived(false)}
         >
-          Active Content
+          Active Content ({activeCount})
         </button>
         <button
           className={`tab ${showArchived ? "tab-active" : ""}`}
           onClick={() => setShowArchived(true)}
         >
-          Archived Content ({rows.length})
+          Archived Content ({archivedCount})
         </button>
       </div>
 

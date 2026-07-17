@@ -37,6 +37,9 @@ export default function LearningResourcesPage() {
   const [typeFilter, setTypeFilter] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("")
 
+  const [activeCount, setActiveCount] = useState(0)
+  const [archivedCount, setArchivedCount] = useState(0)
+
   useEffect(() => {
     loadData()
   }, [showArchived])
@@ -44,8 +47,13 @@ export default function LearningResourcesPage() {
   async function loadData() {
     setLoading(true)
     try {
-      const data = await fetchLearningResources(showArchived)
-      setRows(data || [])
+      const [activeData, archivedData] = await Promise.all([
+        fetchLearningResources(false),
+        fetchLearningResources(true),
+      ])
+      setActiveCount(activeData?.length || 0)
+      setArchivedCount(archivedData?.length || 0)
+      setRows(showArchived ? (archivedData || []) : (activeData || []))
     } catch (err) {
       console.error(err)
     } finally {
@@ -54,8 +62,13 @@ export default function LearningResourcesPage() {
   }
 
   async function reload() {
-    const data = await fetchLearningResources(showArchived)
-    setRows(data || [])
+    const [activeData, archivedData] = await Promise.all([
+      fetchLearningResources(false),
+      fetchLearningResources(true),
+    ])
+    setActiveCount(activeData?.length || 0)
+    setArchivedCount(archivedData?.length || 0)
+    setRows(showArchived ? (archivedData || []) : (activeData || []))
   }
 
   function toggleCategory(key) {
@@ -67,11 +80,6 @@ export default function LearningResourcesPage() {
   }
 
   async function handleSave(form) {
-    if (!form.file_path && !form.file_upload) {
-      alert("Please either paste a URL link or select a local file to upload.")
-      return
-    }
-
     setLoading(true)
     try {
       let finalFilePath = form.file_path || ""
@@ -262,13 +270,13 @@ export default function LearningResourcesPage() {
           className={`tab ${!showArchived ? "tab-active" : ""}`}
           onClick={() => setShowArchived(false)}
         >
-          Active Content
+          Active Content ({activeCount})
         </button>
         <button
           className={`tab ${showArchived ? "tab-active" : ""}`}
           onClick={() => setShowArchived(true)}
         >
-          Archived Content ({rows.length})
+          Archived Content ({archivedCount})
         </button>
       </div>
 
@@ -412,6 +420,15 @@ export default function LearningResourcesPage() {
           setEditing(null)
           setSelectedCategories([])
           setOpen(false)
+        }}
+        customValidate={(form) => {
+          if (!form.file_path && !form.file_upload) {
+            return {
+              file_path: "Please either paste a URL link or select a local file to upload below.",
+              file_upload: "Please either paste a URL link above or select a local file to upload.",
+            }
+          }
+          return null
         }}
         fields={[
           { 

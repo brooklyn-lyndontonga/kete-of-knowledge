@@ -27,6 +27,9 @@ export default function ProfileSeedsPage() {
   // Search Filter
   const [searchQuery, setSearchQuery] = useState("")
 
+  const [activeCount, setActiveCount] = useState(0)
+  const [archivedCount, setArchivedCount] = useState(0)
+
   useEffect(() => {
     load()
   }, [showArchived])
@@ -34,8 +37,13 @@ export default function ProfileSeedsPage() {
   async function load() {
     try {
       setLoading(true)
-      const data = await fetchProfileSeeds(showArchived)
-      setRows(data || [])
+      const [activeData, archivedData] = await Promise.all([
+        fetchProfileSeeds(false),
+        fetchProfileSeeds(true),
+      ])
+      setActiveCount(activeData?.length || 0)
+      setArchivedCount(archivedData?.length || 0)
+      setRows(showArchived ? (archivedData || []) : (activeData || []))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -44,8 +52,13 @@ export default function ProfileSeedsPage() {
   }
 
   async function reload() {
-    const data = await fetchProfileSeeds(showArchived)
-    setRows(data || [])
+    const [activeData, archivedData] = await Promise.all([
+      fetchProfileSeeds(false),
+      fetchProfileSeeds(true),
+    ])
+    setActiveCount(activeData?.length || 0)
+    setArchivedCount(archivedData?.length || 0)
+    setRows(showArchived ? (archivedData || []) : (activeData || []))
   }
 
   async function handleSave(formData) {
@@ -169,13 +182,13 @@ export default function ProfileSeedsPage() {
           className={`tab ${!showArchived ? "tab-active" : ""}`}
           onClick={() => setShowArchived(false)}
         >
-          Active Content
+          Active Content ({activeCount})
         </button>
         <button
           className={`tab ${showArchived ? "tab-active" : ""}`}
           onClick={() => setShowArchived(true)}
         >
-          Archived Content ({rows.length})
+          Archived Content ({archivedCount})
         </button>
       </div>
 

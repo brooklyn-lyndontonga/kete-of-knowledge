@@ -18,12 +18,6 @@ export default function CrudTable({
   const [sortAsc, setSortAsc] = useState(true)
   const { role } = useAuthContext()
 
-  // Clear selections when rows change or are reloaded
-  useEffect(() => {
-    if (onSelectionChange) {
-      onSelectionChange([])
-    }
-  }, [rows])
 
   if (loading) {
     return (

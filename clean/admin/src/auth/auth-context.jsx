@@ -44,8 +44,13 @@ export function AuthProvider({ children }) {
     auth0Logout({ logoutParams: { returnTo: window.location.origin } })
   }, [auth0Logout])
 
+  const value = useMemo(
+    () => ({ getToken, role, user, logout }),
+    [getToken, role, user, logout]
+  )
+
   return (
-    <AuthContext.Provider value={{ getToken, role, user, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )

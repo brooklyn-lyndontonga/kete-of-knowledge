@@ -28,11 +28,19 @@ export default function ReflectionTemplatesPage() {
   // Search Filter
   const [searchQuery, setSearchQuery] = useState("")
 
+  const [activeCount, setActiveCount] = useState(0)
+  const [archivedCount, setArchivedCount] = useState(0)
+
   async function load() {
     try {
       setLoading(true)
-      const data = await fetchReflectionTemplates(showArchived)
-      setRows(data || [])
+      const [activeData, archivedData] = await Promise.all([
+        fetchReflectionTemplates(false),
+        fetchReflectionTemplates(true),
+      ])
+      setActiveCount(activeData?.length || 0)
+      setArchivedCount(archivedData?.length || 0)
+      setRows(showArchived ? (archivedData || []) : (activeData || []))
     } catch (err) {
       setError("Failed to load reflection templates")
     } finally {
@@ -45,8 +53,13 @@ export default function ReflectionTemplatesPage() {
   }, [showArchived])
 
   async function reload() {
-    const data = await fetchReflectionTemplates(showArchived)
-    setRows(data || [])
+    const [activeData, archivedData] = await Promise.all([
+      fetchReflectionTemplates(false),
+      fetchReflectionTemplates(true),
+    ])
+    setActiveCount(activeData?.length || 0)
+    setArchivedCount(archivedData?.length || 0)
+    setRows(showArchived ? (archivedData || []) : (activeData || []))
   }
 
   async function handleSave(formData) {
@@ -171,13 +184,13 @@ export default function ReflectionTemplatesPage() {
           className={`tab ${!showArchived ? "tab-active" : ""}`}
           onClick={() => setShowArchived(false)}
         >
-          Active Content
+          Active Content ({activeCount})
         </button>
         <button
           className={`tab ${showArchived ? "tab-active" : ""}`}
           onClick={() => setShowArchived(true)}
         >
-          Archived Content ({rows.length})
+          Archived Content ({archivedCount})
         </button>
       </div>
 

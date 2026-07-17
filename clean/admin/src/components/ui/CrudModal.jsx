@@ -6,6 +6,7 @@ export default function CrudModal({
   fields,
   onSave,
   onClose,
+  customValidate,
   children,
 }) {
   const [form, setForm] = useState({})
@@ -63,6 +64,11 @@ export default function CrudModal({
         }
       }
     })
+
+    if (customValidate) {
+      const customErrors = customValidate(form) || {}
+      Object.assign(validationErrors, customErrors)
+    }
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)

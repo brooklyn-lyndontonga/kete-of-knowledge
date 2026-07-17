@@ -12,14 +12,15 @@ export async function logAudit(action, tableName, recordId, details, performedBy
   try {
     const db = await getDB()
     await db.run(
-      `INSERT INTO audit_logs (action, tableName, recordId, details, performedBy)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO audit_logs (action, tableName, recordId, details, performedBy, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [
         action,
         tableName,
         Number(recordId) || 0,
         details,
-        performedBy || "Admin"
+        performedBy || "Admin",
+        new Date().toISOString()
       ]
     )
     console.log(`📝 [Audit Log] ${action} on ${tableName} (ID: ${recordId}): ${details} by ${performedBy}`)
