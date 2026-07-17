@@ -44,10 +44,7 @@ const adminFetch = async (url, options = {}) => {
   const res = await fetch(url, { ...options, headers })
 
   if (res.status === 401) {
-    // Session expired or invalid — Auth0 SDK will handle re-auth on next
-    // interaction, but force a page reload to trigger the redirect flow.
-    window.location.reload()
-    throw new Error("Unauthorized")
+    throw new Error("Unauthorized: Please log in again.")
   }
 
   if (!res.ok) {
