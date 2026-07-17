@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo } from "react"
 import { useAuth0 } from "@auth0/auth0-react"
 import { initContentApi } from "../api/content.api"
 
