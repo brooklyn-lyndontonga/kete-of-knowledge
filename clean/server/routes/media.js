@@ -12,7 +12,10 @@ const __dirname = path.dirname(__filename)
 // Must match index.js: UPLOADS_DIR env var wins (production persistent
 // volume), otherwise <server>/uploads. Absolute either way.
 const UPLOADS_DIR =
-  process.env.UPLOADS_DIR || path.join(__dirname, "../uploads")
+  process.env.UPLOADS_DIR ||
+  (process.env.NODE_ENV === "production"
+    ? path.join(__dirname, "../data/uploads")
+    : path.join(__dirname, "../uploads"))
 
 fs.mkdirSync(UPLOADS_DIR, { recursive: true })
 

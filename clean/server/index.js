@@ -80,7 +80,10 @@ app.use(express.json())
 // broke inside Docker, where WORKDIR is /app/clean/server).
 // UPLOADS_DIR lets production point this at a persistent volume.
 export const UPLOADS_DIR =
-  process.env.UPLOADS_DIR || path.join(__dirname, "uploads")
+  process.env.UPLOADS_DIR ||
+  (process.env.NODE_ENV === "production"
+    ? path.join(__dirname, "data/uploads")
+    : path.join(__dirname, "uploads"))
 
 fs.mkdirSync(UPLOADS_DIR, { recursive: true })
 app.use("/uploads", express.static(UPLOADS_DIR))

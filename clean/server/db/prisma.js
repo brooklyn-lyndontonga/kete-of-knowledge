@@ -6,7 +6,14 @@ import { fileURLToPath } from "url"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const DB_PATH = process.env.SQLITE_DB_PATH || path.join(__dirname, "database.db")
+const defaultDbPath =
+  process.env.NODE_ENV === "production"
+    ? path.join(__dirname, "../data/database.db")
+    : fs.existsSync(path.join(__dirname, "database.db"))
+    ? path.join(__dirname, "database.db")
+    : path.join(__dirname, "../data/database.db")
+
+const DB_PATH = process.env.SQLITE_DB_PATH || defaultDbPath
 
 let prisma
 
