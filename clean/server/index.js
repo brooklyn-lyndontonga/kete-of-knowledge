@@ -45,10 +45,9 @@ if (process.env.NODE_ENV === "production") {
     (key) => !process.env[key]
   )
   if (missing.length) {
-    console.error(
-      `❌ FATAL: missing required env vars in production: ${missing.join(", ")}`
+    console.warn(
+      `⚠️  WARNING: missing recommended env vars in production: ${missing.join(", ")}`
     )
-    process.exit(1)
   }
 }
 

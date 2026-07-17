@@ -8,6 +8,8 @@ import bcrypt from "bcryptjs"
 // SQLite singleton connection
 // --------------------------------------------------
 
+import fs from "fs"
+
 let db = null
 
 const __filename = fileURLToPath(import.meta.url)
@@ -19,6 +21,11 @@ const DB_PATH = process.env.SQLITE_DB_PATH || path.join(__dirname, "database.db"
 // --------------------------------------------------
 export async function initDB() {
   if (db) return db
+
+  const dir = path.dirname(DB_PATH)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
 
   db = await open({
     filename: DB_PATH,

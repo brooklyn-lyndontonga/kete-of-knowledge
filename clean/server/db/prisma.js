@@ -1,18 +1,21 @@
 import { PrismaClient } from "@prisma/client"
 import path from "path"
+import fs from "fs"
 import { fileURLToPath } from "url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// In Prisma v7, connection URLs are passed during instantiation
-// if not utilizing the newer Accelerate features.
 const DB_PATH = process.env.SQLITE_DB_PATH || path.join(__dirname, "database.db")
 
 let prisma
 
 export function getPrisma() {
   if (!prisma) {
+    const dir = path.dirname(DB_PATH)
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
     process.env.SQLITE_DATABASE_URL = `file:${DB_PATH}`
     prisma = new PrismaClient({
       datasources: {

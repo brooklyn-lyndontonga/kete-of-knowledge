@@ -6,8 +6,15 @@ import { auth } from "express-oauth2-jwt-bearer"
 // Validates the access token in the Authorization header against Auth0's
 // JWKS endpoint. Populates req.auth with the decoded payload on success.
 
-const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN || ""
-const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE || ""
+let AUTH0_DOMAIN = (process.env.AUTH0_DOMAIN || "").trim()
+if (AUTH0_DOMAIN.startsWith("http://") || AUTH0_DOMAIN.startsWith("https://")) {
+  AUTH0_DOMAIN = AUTH0_DOMAIN.replace(/^https?:\/\//, "")
+}
+if (AUTH0_DOMAIN.endsWith("/")) {
+  AUTH0_DOMAIN = AUTH0_DOMAIN.slice(0, -1)
+}
+
+const AUTH0_AUDIENCE = (process.env.AUTH0_AUDIENCE || "").trim()
 
 if (!AUTH0_DOMAIN) {
   console.warn("⚠️  AUTH0_DOMAIN not set. Admin auth will fail.")
