@@ -38,11 +38,10 @@ const __dirname = path.dirname(__filename)
 
 // ─────────────────────────────────────
 // PRODUCTION SAFETY GUARD
-// Refuse to boot in production with missing secrets — a silent fallback
-// to "dev-admin-secret" would let anyone forge admin tokens.
+// Refuse to boot in production with missing Auth0 / app secrets.
 // ─────────────────────────────────────
 if (process.env.NODE_ENV === "production") {
-  const missing = ["ADMIN_JWT_SECRET", "APP_JWT_SECRET"].filter(
+  const missing = ["AUTH0_DOMAIN", "AUTH0_AUDIENCE", "APP_JWT_SECRET"].filter(
     (key) => !process.env[key]
   )
   if (missing.length) {
@@ -116,7 +115,7 @@ app.get("/health", async (_req, res) => {
 // ─────────────────────────────────────
 // ADMIN API (content management)
 // ─────────────────────────────────────
-app.use("/api/admin/auth", authLimiter, adminAuthRoutes)
+app.use("/api/admin/auth", adminAuthRoutes)
 app.use("/api/admin", requireAdminAuth)
 app.use("/api/admin/snapshots", snapshotRoutes)
 app.use("/api/admin/whakatauki", whakataukiRoutes)

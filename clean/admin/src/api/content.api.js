@@ -1,3 +1,14 @@
+/**
+ * Admin content API layer.
+ *
+ * Instead of reading a JWT from localStorage, this module accepts a
+ * `getToken` function (supplied by the Auth0 auth-context) that returns
+ * a fresh access token on every request.
+ *
+ * Call `initContentApi(getToken)` once during app bootstrap (from App.jsx
+ * or AuthProvider) before any fetches fire.
+ */
+
 const DEFAULT_API_URL = "http://localhost:3000"
 const API_ROOT = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(
   /\/$/,
@@ -5,20 +16,36 @@ const API_ROOT = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(
 )
 const ADMIN_API = `${API_ROOT}/api/admin`
 
-const getAuthToken = () => localStorage.getItem("admin_token")
+// ─── Token getter (set once from AuthProvider) ───────────
+let _getToken = null
 
+/**
+ * Bind the Auth0 token getter so all subsequent adminFetch calls
+ * include a valid Bearer token.
+ */
+export function initContentApi(getTokenFn) {
+  _getToken = getTokenFn
+}
+
+// ─── Core fetch wrapper ──────────────────────────────────
 const adminFetch = async (url, options = {}) => {
   const headers = { ...(options.headers || {}) }
-  const token = getAuthToken()
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`
+  if (_getToken) {
+    try {
+      const token = await _getToken()
+      headers.Authorization = `Bearer ${token}`
+    } catch (err) {
+      console.error("Failed to get access token for API request", err)
+      // If we can't get a token, proceed without one — the server will 401
+    }
   }
 
   const res = await fetch(url, { ...options, headers })
 
   if (res.status === 401) {
-    localStorage.removeItem("admin_token")
+    // Session expired or invalid — Auth0 SDK will handle re-auth on next
+    // interaction, but force a page reload to trigger the redirect flow.
     window.location.reload()
     throw new Error("Unauthorized")
   }

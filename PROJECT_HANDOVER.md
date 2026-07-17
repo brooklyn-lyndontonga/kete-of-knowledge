@@ -108,27 +108,37 @@ The dashboard is your at-a-glance control center:
 ## 👥 Module B: User & Role Management
 
 ### How the System Works
-The Kete Admin panel uses a custom JWT-based authentication system backed by a separate server ([kete-server-production.up.railway.app](https://kete-server-production.up.railway.app)). 
-* There is **no built-in "Invite User" button** visible in the admin UI.
-* User creation and role assignment must be performed directly at the database level (e.g., via the Railway database console or a database-connected script).
+The Kete Admin panel uses **Auth0** as its identity provider. When you visit the admin panel, you are redirected to Auth0's hosted login page (Universal Login). After signing in, you are redirected back to the admin dashboard with a valid session.
+
+* User accounts, passwords, and roles are all managed in the **Auth0 Dashboard** ([manage.auth0.com](https://manage.auth0.com)).
+* There is no password database on the Kete server — Auth0 handles all credential storage securely.
+* For full Auth0 setup and configuration details, see [AUTH0_SETUP.md](file:///Users/brooklynlyndon-tonga/kete-of-knowledge-1/AUTH0_SETUP.md).
 
 ### Admin Roles
-The system has two roles defined in [schema.prisma](file:///Users/brooklynlyndon-tonga/kete-of-knowledge-1/clean/server/prisma/schema.prisma):
+The system has two roles, configured in Auth0:
 1. **Admin** — Full capabilities: view, create, edit, delete, and restore archived content.
 2. **Editor** — Read/write access: can view, create, and edit, but **cannot delete or restore** content. The Delete and Bulk Delete controls are automatically hidden from Editors in the UI.
 
-### Best Way to Add a New Client/Staff Member
-#### Step 1: Create the Account on the Backend
-Use the database console or Railway CLI shell to insert a new user record in the `admin_users` table:
-* Specify the user's `email`.
-* Set a temporary `password_hash` (or seed value) and assign their `role` (`"admin"` or `"editor"`).
-* If you need to change a user's role later, this must also be updated directly in the database.
+### How to Add a New Client/Staff Member
+#### Step 1: Create the User in Auth0
+1. Log in to the [Auth0 Dashboard](https://manage.auth0.com).
+2. Navigate to **User Management → Users → Create User**.
+3. Enter the user's email and set a temporary password.
+4. Connection: **Username-Password-Authentication** (default).
+5. Click **Create**.
 
-#### Step 2: Let Them Set Their Own Password
-1. Direct the new user to the login page: https://kete-of-knowledge-production.up.railway.app
-2. Have them click **"Forgot Password?"** on the login screen.
-3. They enter their email and receive a secure password reset link.
-4. Clicking the link takes them to a **Set New Password** screen to choose their own credentials securely.
+#### Step 2: Assign Their Role
+1. In the Auth0 Dashboard, go to the user's profile.
+2. Click the **Roles** tab → **Assign Roles**.
+3. Select either `admin` or `editor` and confirm.
+4. To change a user's role later, repeat this step — remove the old role and assign the new one.
+
+#### Step 3: Let Them Set Their Own Password
+1. Direct the new user to the admin panel URL: https://kete-of-knowledge-production.up.railway.app
+2. They will see the Auth0 login page.
+3. Have them click **"Don't remember your password?"** (or similar link on the Auth0 login page).
+4. They enter their email and receive a password reset link from Auth0.
+5. After setting their password, they can log in normally.
 
 ---
 

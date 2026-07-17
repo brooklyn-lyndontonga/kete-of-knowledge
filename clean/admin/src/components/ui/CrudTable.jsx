@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useAuthContext } from "../../auth/auth-context"
 
 export default function CrudTable({
   rows = [],
@@ -15,22 +16,7 @@ export default function CrudTable({
 }) {
   const [sortField, setSortField] = useState(null)
   const [sortAsc, setSortAsc] = useState(true)
-  const [role, setRole] = useState("editor")
-
-  // Decode role from JWT token
-  useEffect(() => {
-    const token = localStorage.getItem("admin_token")
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]))
-        if (payload && payload.role) {
-          setRole(payload.role)
-        }
-      } catch (err) {
-        console.error("Failed to decode token role", err)
-      }
-    }
-  }, [])
+  const { role } = useAuthContext()
 
   // Clear selections when rows change or are reloaded
   useEffect(() => {

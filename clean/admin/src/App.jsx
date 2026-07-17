@@ -1,66 +1,74 @@
-import { useEffect, useMemo, useState } from "react"
+import { useState, useEffect, useRef } from "react"
+import { useAuth0 } from "@auth0/auth0-react"
+import { AuthProvider } from "./auth/auth-context"
 import AdminLayout from "./layouts/AdminLayout"
-import LoginPage from "./pages/LoginPage"
-import { loginAdmin } from "./api/auth.api"
 
 export default function App() {
-  const [token, setToken] = useState(
-    () => localStorage.getItem("admin_token") || ""
-  )
+  const { isAuthenticated, isLoading, loginWithRedirect, error } = useAuth0()
   const [page, setPage] = useState("dashboard")
+  const redirectAttempted = useRef(false)
 
-  const loggedIn = useMemo(() => Boolean(token), [token])
-
-  async function handleLogin(email, password) {
-    const data = await loginAdmin(email, password)
-    localStorage.setItem("admin_token", data.token)
-    setToken(data.token)
+  // Auth0 SDK is initialising — show a loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base-200">
+        <div className="text-center">
+          <span className="loading loading-spinner loading-lg text-primary" />
+          <p className="mt-4 text-base-content/60">Loading…</p>
+        </div>
+      </div>
+    )
   }
 
-  function handleLogout() {
-    localStorage.removeItem("admin_token")
-    setToken("")
+  // Auth0 returned an error (e.g. misconfigured API audience, callback mismatch)
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base-200">
+        <div className="card w-96 bg-base-100 shadow-xl">
+          <div className="card-body text-center">
+            <h2 className="card-title justify-center text-error text-xl mb-2">
+              Authentication Error
+            </h2>
+            <p className="text-sm text-base-content/70 mb-4">{error.message}</p>
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                redirectAttempted.current = false
+                loginWithRedirect()
+              }}
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  // Inactivity auto-logout (30 minutes of no activity)
-  useEffect(() => {
-    if (!loggedIn) return
-
-    let timeoutId
-
-    function resetTimer() {
-      if (timeoutId) clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => {
-        console.warn("Session timed out due to inactivity.")
-        handleLogout()
-      }, 30 * 60 * 1000)
+  // Not logged in — redirect to Auth0 Universal Login (once only to prevent loops)
+  if (!isAuthenticated) {
+    if (!redirectAttempted.current) {
+      redirectAttempted.current = true
+      loginWithRedirect()
     }
-
-    const events = ["mousemove", "keydown", "mousedown", "scroll", "touchstart"]
-    events.forEach((evt) => {
-      window.addEventListener(evt, resetTimer)
-    })
-
-    // Initialize the timer
-    resetTimer()
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId)
-      events.forEach((evt) => {
-        window.removeEventListener(evt, resetTimer)
-      })
-    }
-  }, [loggedIn])
-
-  if (!loggedIn) {
-    return <LoginPage onLogin={handleLogin} />
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base-200">
+        <div className="text-center">
+          <span className="loading loading-spinner loading-lg text-primary" />
+          <p className="mt-4 text-base-content/60">Redirecting to login…</p>
+        </div>
+      </div>
+    )
   }
 
+  // Authenticated — render the admin panel wrapped in AuthProvider
+  // (AuthProvider needs to live inside Auth0Provider so it can call useAuth0)
   return (
-    <AdminLayout
-      current={page}
-      onNavigate={setPage}
-      onLogout={handleLogout}
-    />
+    <AuthProvider>
+      <AdminLayout
+        current={page}
+        onNavigate={setPage}
+      />
+    </AuthProvider>
   )
 }

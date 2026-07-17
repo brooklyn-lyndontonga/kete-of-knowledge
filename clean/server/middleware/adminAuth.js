@@ -1,35 +1,59 @@
-import jwt from "jsonwebtoken"
+import { auth } from "express-oauth2-jwt-bearer"
 
-const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET || "dev-admin-secret"
+// ─────────────────────────────────────
+// Auth0 JWT validation middleware
+// ─────────────────────────────────────
+// Validates the access token in the Authorization header against Auth0's
+// JWKS endpoint. Populates req.auth with the decoded payload on success.
 
-if (!process.env.ADMIN_JWT_SECRET) {
-  console.warn("⚠️  ADMIN_JWT_SECRET not set. Using a dev fallback.")
+const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN || ""
+const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE || ""
+
+if (!AUTH0_DOMAIN) {
+  console.warn("⚠️  AUTH0_DOMAIN not set. Admin auth will fail.")
 }
 
-export function requireAdminAuth(req, res, next) {
-  const header = req.headers.authorization || ""
+/**
+ * Custom namespace claim used by the Auth0 Action to embed the user's
+ * admin role ("admin" | "editor") into the access token.
+ *
+ * Must match the namespace in your Auth0 "Assign Role" Action.
+ */
+const ROLE_CLAIM = "https://kete.app/role"
 
-  if (!header.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Missing auth token" })
-  }
+/**
+ * Express middleware that validates Auth0 access tokens.
+ *
+ * Uses JWKS (JSON Web Key Sets) to verify the token signature against
+ * Auth0's published keys — no shared secret needed.
+ */
+export const requireAdminAuth = AUTH0_DOMAIN
+  ? auth({
+      issuerBaseURL: `https://${AUTH0_DOMAIN}/`,
+      audience: AUTH0_AUDIENCE || undefined,
+    })
+  : (_req, _res, next) => {
+      // Passthrough in development when Auth0 is not configured.
+      // Remove this fallback in production.
+      console.warn("⚠️  Auth0 not configured — skipping admin auth.")
+      next()
+    }
 
-  const token = header.slice("Bearer ".length)
-
-  try {
-    const payload = jwt.verify(token, ADMIN_JWT_SECRET)
-    req.admin = payload
-    return next()
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid or expired token" })
-  }
+/**
+ * After requireAdminAuth runs, req.auth.payload contains the decoded JWT.
+ * This helper extracts the role from the custom namespace claim.
+ */
+export function getAdminRole(req) {
+  return req.auth?.payload?.[ROLE_CLAIM] || "editor"
 }
 
-export function getAdminJwtSecret() {
-  return ADMIN_JWT_SECRET
-}
-
+/**
+ * Middleware that restricts a route to users with the "admin" role.
+ * Must be used AFTER requireAdminAuth.
+ */
 export function requireAdminRole(req, res, next) {
-  if (req.admin?.role !== "admin") {
+  const role = getAdminRole(req)
+  if (role !== "admin") {
     return res.status(403).json({ error: "Forbidden: Admin role required for this action" })
   }
   return next()

@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useState } from "react"
+import { useAuthContext } from "../auth/auth-context"
 import Sidebar from "../components/Sidebar"
 import HelpDrawer from "../components/HelpDrawer"
 
@@ -10,7 +11,8 @@ import ProfileSeedsPage from "../pages/ProfileSeedsPage"
 import LearningResourcesPage from "../pages/LearningResourcesPage"
 import ConditionsPage from "../pages/ConditionsPage"
 
-export default function AdminLayout({ current, onNavigate, onLogout }) {
+export default function AdminLayout({ current, onNavigate }) {
+  const { logout } = useAuthContext()
   const [helpOpen, setHelpOpen] = useState(false)
 
   function renderPage() {
@@ -35,7 +37,7 @@ export default function AdminLayout({ current, onNavigate, onLogout }) {
       <Sidebar
         current={current}
         onNavigate={onNavigate}
-        onLogout={onLogout}
+        onLogout={logout}
         onHelpClick={() => setHelpOpen(true)}
       />
 
