@@ -10,6 +10,7 @@ const TABLES = [
   "checklists",
   "checklist_items",
   "contacts",
+  "reflections",
 ]
 
 /**

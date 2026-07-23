@@ -7,7 +7,12 @@
     "start": "node clean/server/index.js",
     "lint": "eslint . --ext .js,.jsx",
     "seed:content": "node clean/server/scripts/seed-content.js",
-    "smoke": "node clean/server/scripts/smoke-test.js"
+    "smoke": "node clean/server/scripts/smoke-test.js",
+    "test:sync": "node clean/server/tests/sync.test.mjs",
+    "test:bilingual": "node clean/server/tests/bilingual.test.mjs",
+    "test:contrast": "node clean/mobile/tests/contrast.test.mjs",
+    "test": "npm run test:manifest && npm run test:sync && npm run test:bilingual && npm run test:contrast",
+    "test:manifest": "node clean/server/tests/manifest.test.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",

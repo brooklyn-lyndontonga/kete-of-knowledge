@@ -60,6 +60,7 @@ export async function initDB() {
     "checklists",
     "checklist_items",
     "contacts",
+    "reflections",
   ])
 
   ready = true
@@ -86,6 +87,7 @@ export async function wipeLocalData() {
       DELETE FROM medicines;
       DELETE FROM symptoms;
       DELETE FROM goals;
+      DELETE FROM reflections;
       DELETE FROM contacts;
       DELETE FROM profiles;
       DELETE FROM consent;

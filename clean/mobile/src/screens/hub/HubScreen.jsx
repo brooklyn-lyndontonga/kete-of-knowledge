@@ -13,6 +13,7 @@ export default function HubScreen({ navigation }) {
     { label: t("hub.checklists"), route: "Checklists" },
     { label: t("hub.notes"), route: "Notes" },
     { label: t("hub.contacts"), route: "Contacts" },
+    { label: t("hub.reflections"), route: "Reflections" },
   ]
 
   return (

@@ -10,6 +10,7 @@ import {
 import { AppState } from "react-native"
 
 import { useAuth } from "../auth/AuthContext"
+import { subscribeToReconnect } from "./network"
 import {
   countPendingChanges,
   deleteRemoteData,
@@ -67,6 +68,13 @@ export function SyncProvider({ children }) {
     else setStatus("idle")
     refreshMeta()
   }, [isAuthenticated, run, refreshMeta])
+
+  // Sync the moment the device regains a connection. This is the
+  // "sync on reconnect" behaviour named in the project scope.
+  useEffect(() => {
+    if (!isAuthenticated) return undefined
+    return subscribeToReconnect(() => run({ force: true }))
+  }, [isAuthenticated, run])
 
   // Sync when the app comes back to the foreground.
   useEffect(() => {

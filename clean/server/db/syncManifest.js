@@ -61,6 +61,11 @@ export const SYNC_TABLES = [
     columns: ["checklist_uuid", "label", "done", "sort_order"],
   },
   {
+    local: "reflections",
+    remote: "user_reflections",
+    columns: ["prompt", "prompt_id", "response", "logged_at"],
+  },
+  {
     local: "contacts",
     remote: "user_contacts",
     columns: [

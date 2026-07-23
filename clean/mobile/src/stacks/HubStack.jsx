@@ -14,6 +14,7 @@ import NotesScreen from "../screens/hub/NotesScreen"
 import AddNotesScreen from "../screens/hub/AddNotesScreen"
 import ContactsScreen from "../screens/hub/ContactsScreen"
 import AddContactScreen from "../screens/hub/AddContactScreen"
+import ReflectionsScreen from "../screens/hub/ReflectionsScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -53,6 +54,8 @@ export default function HubStack() {
 
       <Stack.Screen name="Contacts" component={ContactsScreen} />
       <Stack.Screen name="AddContact" component={AddContactScreen} />
+
+      <Stack.Screen name="Reflections" component={ReflectionsScreen} />
     </Stack.Navigator>
   )
 }

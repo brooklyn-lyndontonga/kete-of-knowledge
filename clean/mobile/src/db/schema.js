@@ -140,6 +140,18 @@ CREATE TABLE IF NOT EXISTS goals (
   dirty INTEGER DEFAULT 1
 );
 
+CREATE TABLE IF NOT EXISTS reflections (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  prompt TEXT,
+  prompt_id TEXT,
+  response TEXT NOT NULL,
+  logged_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  uuid TEXT,
+  updated_at TEXT,
+  deleted_at TEXT,
+  dirty INTEGER DEFAULT 1
+);
+
 CREATE TABLE IF NOT EXISTS sync_state (
   key TEXT PRIMARY KEY,
   value TEXT

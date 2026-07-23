@@ -30,6 +30,7 @@ import appConditionRoutes from "./routes/app/conditions.js"
 import appProfileSeedRoutes from "./routes/app/profileSeeds.js"
 import appAuthRoutes from "./routes/app/auth.js"
 import appSyncRoutes from "./routes/app/sync.js"
+import appReflectionTemplateRoutes from "./routes/app/reflectionTemplates.js"
 
 // DB
 import { getDB, initSchema } from "./db/index.js"
@@ -140,6 +141,7 @@ app.use("/api/app/conditions", appConditionRoutes)
 app.use("/api/app/profile-seeds", appProfileSeedRoutes)
 app.use("/api/app/auth", authLimiter, appAuthRoutes)
 app.use("/api/app/sync", appSyncRoutes)
+app.use("/api/app/reflection-templates", appReflectionTemplateRoutes)
 
 // ─────────────────────────────────────
 // SERVER

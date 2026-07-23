@@ -38,6 +38,10 @@ export async function fetchCondition(id) {
   )
 }
 
+export async function fetchReflectionPrompts() {
+  return cachedFetch("reflection-prompts", "/reflection-templates")
+}
+
 export async function fetchProfileSeeds() {
   return cachedFetch("profile-seeds", "/profile-seeds")
 }
