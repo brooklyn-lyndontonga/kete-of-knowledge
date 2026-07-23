@@ -1,41 +1,34 @@
-import { View, TextInput, Pressable, Text, StyleSheet, Alert } from "react-native"
+ 
+ 
+import { View, TextInput, Pressable, Text, StyleSheet } from "react-native"
 import { useState } from "react"
+import { addChecklist } from "../../features/checklists.db"
 import { colors, radii, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import GuestGate from "../../auth/GuestGate"
-import { addChecklist } from "../../features/checklists.db.js"
 
 export default function AddChecklistScreen({ navigation }) {
   const [title, setTitle] = useState("")
   const [item, setItem] = useState("")
   const [items, setItems] = useState([])
-  const [saving, setSaving] = useState(false)
   const { isGuest } = useAuth()
 
   function addItem() {
-    if (!item.trim()) return
-    setItems([...items, { label: item.trim(), done: false }])
+    if (!item) return
+    setItems([...items, { label: item, done: false }])
     setItem("")
   }
 
-  function removeItem(index) {
-    setItems(items.filter((_, i) => i !== index))
-  }
+  const [saving, setSaving] = useState(false)
 
   async function save() {
     if (!title.trim() || saving) return
-
     setSaving(true)
     try {
       await addChecklist({ title: title.trim(), items })
       navigation.goBack()
     } catch (err) {
-      console.error("Failed to save checklist:", err)
-      Alert.alert(
-        "Couldn't save checklist",
-        "Something went wrong saving your checklist. Please try again."
-      )
-    } finally {
+      console.warn("Could not save checklist:", err?.message)
       setSaving(false)
     }
   }
@@ -52,13 +45,12 @@ export default function AddChecklistScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title} accessibilityRole="header">New Checklist</Text>
+      <Text style={styles.title}>New Checklist</Text>
       <TextInput
         placeholder="Checklist title"
         value={title}
         onChangeText={setTitle}
         style={styles.input}
-        accessibilityLabel="Checklist title"
       />
 
       <View style={styles.row}>
@@ -66,45 +58,21 @@ export default function AddChecklistScreen({ navigation }) {
           placeholder="Add item"
           value={item}
           onChangeText={setItem}
-          onSubmitEditing={addItem}
-          returnKeyType="done"
           style={[styles.input, styles.rowInput]}
-          accessibilityLabel="New checklist item"
         />
-        <Pressable
-          onPress={addItem}
-          accessibilityRole="button"
-          accessibilityLabel="Add item to checklist"
-          style={styles.secondaryButton}
-        >
+        <Pressable onPress={addItem} style={styles.secondaryButton}>
           <Text style={styles.secondaryText}>Add</Text>
         </Pressable>
       </View>
 
       {items.map((i, idx) => (
-        <Pressable
-          key={idx}
-          onPress={() => removeItem(idx)}
-          accessibilityRole="button"
-          accessibilityLabel={`Remove item ${i.label}`}
-        >
-          <Text style={styles.listItem}>• {i.label}  ✕</Text>
-        </Pressable>
+        <Text key={idx} style={styles.listItem}>
+          • {i.label}
+        </Text>
       ))}
 
-      <Pressable
-        onPress={save}
-        disabled={!title.trim() || saving}
-        accessibilityRole="button"
-        accessibilityLabel="Save checklist"
-        style={({ pressed }) => [
-          styles.primaryButton,
-          (pressed || saving || !title.trim()) && styles.primaryButtonDisabled,
-        ]}
-      >
-        <Text style={styles.primaryText}>
-          {saving ? "Saving…" : "Save Checklist"}
-        </Text>
+      <Pressable onPress={save} style={styles.primaryButton}>
+        <Text style={styles.primaryText}>Save Checklist</Text>
       </Pressable>
     </View>
   )
@@ -155,9 +123,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     backgroundColor: colors.olive,
     alignItems: "center",
-  },
-  primaryButtonDisabled: {
-    opacity: 0.6,
   },
   primaryText: {
     ...typography.bodyStrong,

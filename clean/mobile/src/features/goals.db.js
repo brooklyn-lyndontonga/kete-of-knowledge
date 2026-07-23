@@ -1,51 +1,32 @@
 import { getDB } from "../db"
 
-// Uses the modern expo-sqlite (SDK 51+) API.
-
-// -------------------------
-// Create a goal
-// -------------------------
 export async function addGoal({ title, description = "" }) {
-  const db = getDB()
+  const db = await getDB()
+  const createdAt = new Date().toISOString()
 
   const result = await db.runAsync(
-    `INSERT INTO goals (title, description, active)
-     VALUES (?, ?, 1)`,
-    [title, description]
+    `INSERT INTO goals (title, description, active, created_at)
+     VALUES (?, ?, 1, ?);`,
+    [title, description, createdAt]
   )
 
-  return { id: result.lastInsertRowId }
+  return { id: result.lastInsertRowId, title, description, active: 1, created_at: createdAt }
 }
 
-// -------------------------
-// Get all goals
-// -------------------------
 export async function getGoals() {
-  const db = getDB()
-
-  return db.getAllAsync(
-    `SELECT *
-     FROM goals
-     ORDER BY created_at DESC`
-  )
+  const db = await getDB()
+  return db.getAllAsync(`SELECT * FROM goals ORDER BY created_at DESC;`)
 }
 
-// -------------------------
-// Toggle achieved / active
-// -------------------------
 export async function toggleGoal(id, active) {
-  const db = getDB()
-
-  await db.runAsync(
-    `UPDATE goals SET active = ? WHERE id = ?`,
-    [active ? 1 : 0, id]
-  )
+  const db = await getDB()
+  await db.runAsync(`UPDATE goals SET active = ? WHERE id = ?;`, [
+    active ? 1 : 0,
+    id,
+  ])
 }
 
-// -------------------------
-// Delete a goal
-// -------------------------
 export async function deleteGoal(id) {
-  const db = getDB()
-  await db.runAsync(`DELETE FROM goals WHERE id = ?`, [id])
+  const db = await getDB()
+  await db.runAsync(`DELETE FROM goals WHERE id = ?;`, [id])
 }

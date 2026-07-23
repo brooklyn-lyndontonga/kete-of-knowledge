@@ -1,52 +1,62 @@
-import { ScrollView, Text, View, Pressable, StyleSheet } from "react-native"
-import { useEffect, useState, useCallback } from "react"
-import { useIsFocused } from "@react-navigation/native"
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
+import { useCallback, useState } from "react"
+import { useFocusEffect } from "@react-navigation/native"
+
+import {
+  deleteReminder,
+  getReminders,
+  toggleReminder,
+} from "../../features/reminders.db"
+import { isAvailable } from "../../features/notifications"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import { useAuthGuard } from "../../auth/useAuthGuard"
-import { getReminders, toggleReminder } from "../../features/reminders.db.js"
 
 export default function RemindersScreen({ navigation }) {
   const [reminders, setReminders] = useState([])
-  const [error, setError] = useState(false)
-  const isFocused = useIsFocused()
+  const [alertsOn, setAlertsOn] = useState(true)
   const { isGuest } = useAuth()
   const guard = useAuthGuard()
 
-  const load = useCallback(async () => {
-    try {
-      const rows = await getReminders()
-      setReminders(rows || [])
-      setError(false)
-    } catch (err) {
-      console.error("Failed to load reminders:", err)
-      setError(true)
-    }
+  const load = useCallback(() => {
+    getReminders()
+      .then((rows) => setReminders(rows || []))
+      .catch((err) => console.warn("Could not load reminders:", err?.message))
+    isAvailable().then(setAlertsOn)
   }, [])
 
-  useEffect(() => {
-    if (isFocused) load()
-  }, [isFocused, load])
-
-  async function handleToggle(reminder) {
-    try {
-      await toggleReminder(reminder.id, reminder.active === 0)
+  useFocusEffect(
+    useCallback(() => {
       load()
-    } catch (err) {
-      console.error("Failed to toggle reminder:", err)
-    }
+    }, [load])
+  )
+
+  function confirmDelete(reminder) {
+    Alert.alert("Delete reminder", `Delete "${reminder.title}"?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => deleteReminder(reminder.id).then(load),
+      },
+    ])
   }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title} accessibilityRole="header">Reminders</Text>
+        <Text style={styles.title}>Reminders</Text>
         <Text style={styles.subtitle}>Whakamahara</Text>
       </View>
+
+      {!alertsOn ? (
+        <Text style={styles.notice}>
+          Reminders are saved, but alerts are turned off for this build.
+        </Text>
+      ) : null}
+
       <Pressable
         onPress={() => guard(() => navigation.navigate("AddReminder"))}
-        accessibilityRole="button"
-        accessibilityLabel="Add reminder"
         style={({ pressed }) => [
           styles.primaryButton,
           (isGuest || pressed) && styles.primaryButtonDisabled,
@@ -55,37 +65,58 @@ export default function RemindersScreen({ navigation }) {
         <Text style={styles.primaryText}>Add Reminder</Text>
       </Pressable>
 
-      {error ? (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>{"Couldn't load your reminders."}</Text>
-          <Pressable onPress={load} accessibilityRole="button" accessibilityLabel="Retry loading reminders">
-            <Text style={styles.retryText}>Tap to retry</Text>
-          </Pressable>
-        </View>
-      ) : reminders.length === 0 ? (
+      {reminders.length === 0 ? (
         <Text style={styles.empty}>No reminders yet</Text>
       ) : (
         reminders.map((item) => (
-          <Pressable
+          <View
             key={item.id}
-            onPress={() => handleToggle(item)}
-            accessibilityRole="button"
-            accessibilityLabel={`${item.title}, ${item.active ? "active" : "paused"}. Tap to ${item.active ? "pause" : "resume"}.`}
-            style={[styles.card, item.active === 0 && styles.cardInactive]}
+            style={[styles.card, !item.active && styles.cardInactive]}
           >
-            <View style={styles.cardRow}>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardBadge}>
-                {item.active ? "Active" : "Paused"}
-              </Text>
-            </View>
-            {item.schedule ? (
-              <Text style={styles.cardMeta}>{item.schedule}</Text>
-            ) : null}
+            <Text style={styles.cardTitle}>{item.title}</Text>
+            <Text style={styles.cardMeta}>
+              {item.time_of_day ? `Daily at ${item.time_of_day}` : "No time set"}
+            </Text>
             {item.notes ? (
               <Text style={styles.cardNotes}>{item.notes}</Text>
             ) : null}
-          </Pressable>
+
+            <View style={styles.actions}>
+              <Pressable
+                onPress={() =>
+                  guard(() =>
+                    toggleReminder(item.id, !item.active).then(load)
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.smallButton,
+                  pressed && styles.primaryButtonDisabled,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  item.active
+                    ? `Pause reminder ${item.title}`
+                    : `Resume reminder ${item.title}`
+                }
+              >
+                <Text style={styles.smallText}>
+                  {item.active ? "Pause" : "Resume"}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => guard(() => confirmDelete(item))}
+                style={({ pressed }) => [
+                  styles.smallButtonMuted,
+                  pressed && styles.primaryButtonDisabled,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={`Delete reminder ${item.title}`}
+              >
+                <Text style={styles.smallTextMuted}>Delete</Text>
+              </Pressable>
+            </View>
+          </View>
         ))
       )}
     </ScrollView>
@@ -93,90 +124,59 @@ export default function RemindersScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: colors.cornsilk,
-  },
-  content: {
-    padding: spacing.lg,
-    gap: spacing.md,
-    paddingBottom: 40,
-  },
-  header: {
-    gap: spacing.xs,
-  },
-  title: {
-    ...typography.title,
-    color: colors.text,
-  },
-  subtitle: {
+  screen: { backgroundColor: colors.cornsilk },
+  content: { padding: 20, gap: spacing.md, paddingBottom: 40 },
+  header: { gap: spacing.xs },
+  title: { ...typography.display, color: colors.olive },
+  subtitle: { ...typography.caption, color: colors.muted },
+  notice: {
     ...typography.caption,
-    color: colors.muted,
+    color: colors.russet,
+    backgroundColor: colors.meringue,
+    borderRadius: radii.md,
+    padding: spacing.sm,
   },
   primaryButton: {
-    padding: spacing.md,
-    borderRadius: radii.md,
     backgroundColor: colors.olive,
+    borderRadius: radii.pill,
+    paddingVertical: spacing.sm,
+    minHeight: 48,
     alignItems: "center",
+    justifyContent: "center",
   },
-  primaryButtonDisabled: {
-    opacity: 0.6,
-  },
-  primaryText: {
-    ...typography.bodyStrong,
-    color: colors.cornsilk,
-  },
-  empty: {
-    ...typography.body,
-    color: colors.muted,
-  },
-  errorBox: {
-    padding: spacing.md,
-    borderRadius: radii.md,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.xs,
-    alignItems: "center",
-  },
-  errorText: {
-    ...typography.body,
-    color: colors.text,
-  },
-  retryText: {
-    ...typography.bodyStrong,
-    color: colors.olive,
-  },
+  primaryButtonDisabled: { opacity: 0.7 },
+  primaryText: { ...typography.bodyStrong, color: colors.cornsilk },
   card: {
-    padding: spacing.md,
     backgroundColor: colors.card,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
+    padding: spacing.md,
+    gap: spacing.xs,
     ...shadow.card,
   },
-  cardInactive: {
-    opacity: 0.55,
+  cardInactive: { opacity: 0.6 },
+  cardTitle: { ...typography.bodyStrong, color: colors.text },
+  cardMeta: { ...typography.caption, color: colors.muted },
+  cardNotes: { ...typography.body, color: colors.muted },
+  actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.xs },
+  smallButton: {
+    backgroundColor: colors.olive,
+    borderRadius: radii.pill,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    minHeight: 44,
+    justifyContent: "center",
   },
-  cardRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  smallText: { ...typography.bodyStrong, color: colors.cornsilk },
+  smallButtonMuted: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.pill,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    minHeight: 44,
+    justifyContent: "center",
   },
-  cardTitle: {
-    ...typography.bodyStrong,
-    color: colors.text,
-  },
-  cardBadge: {
-    ...typography.caption,
-    color: colors.muted,
-  },
-  cardMeta: {
-    ...typography.caption,
-    color: colors.muted,
-  },
-  cardNotes: {
-    ...typography.body,
-    color: colors.text,
-    marginTop: 6,
-  },
+  smallTextMuted: { ...typography.bodyStrong, color: colors.russet },
+  empty: { ...typography.body, color: colors.muted, textAlign: "center" },
 })

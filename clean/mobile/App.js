@@ -1,7 +1,7 @@
  
 import { NavigationContainer } from "@react-navigation/native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native"
 import { StatusBar } from "expo-status-bar"
 import { useFonts } from "expo-font"
@@ -28,6 +28,8 @@ TextInput.defaultProps.style = [
 ]
 
 export default function App() {
+  const [dbReady, setDbReady] = useState(false)
+
   const [fontsLoaded] = useFonts({
     Manrope_400Regular,
     Manrope_600SemiBold,
@@ -35,10 +37,20 @@ export default function App() {
   })
 
   useEffect(() => {
+    let cancelled = false
+
     initDB()
+      .catch((err) => console.error("Database init failed:", err))
+      .finally(() => {
+        if (!cancelled) setDbReady(true)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || !dbReady) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <ActivityIndicator size="large" color={colors.olive} />

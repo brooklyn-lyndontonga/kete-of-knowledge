@@ -1,43 +1,82 @@
-import { openDatabaseSync } from "expo-sqlite";
-import { schema } from "./schema";
+import { openDatabaseAsync } from "expo-sqlite"
+import { schema, migrations } from "./schema"
 
-let db;
+const DB_NAME = "kete.db"
 
+let dbPromise = null
+let ready = false
+
+/**
+ * Single shared connection for the whole app.
+ * Everything (including notes) now lives in one database file.
+ */
 export function getDB() {
-  if (!db) {
-    db = openDatabaseSync("kete.db");
+  if (!dbPromise) {
+    dbPromise = openDatabaseAsync(DB_NAME)
   }
-  return db;
+  return dbPromise
 }
 
-export function initDB() {
-  const db = getDB();
+async function columnExists(db, table, column) {
+  const cols = await db.getAllAsync(`PRAGMA table_info(${table});`)
+  return cols.some((c) => c.name === column)
+}
 
-  // Enable foreign key enforcement (needed for checklist_items cascade)
-  db.execSync("PRAGMA foreign_keys = ON;");
-
-  schema
-    .split(";")
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .forEach((statement) => {
-      db.execSync(statement);
-    });
-
-  // ------------------------------------------------------------------
-  // Lightweight migrations for installs created before these columns
-  // existed. CREATE TABLE IF NOT EXISTS won't add columns to existing
-  // tables, so we ALTER and swallow the "duplicate column" error.
-  // ------------------------------------------------------------------
-  const migrations = [
-    "ALTER TABLE notes ADD COLUMN updated_at TEXT;",
-  ];
-
-  for (const migration of migrations) {
+async function runMigrations(db) {
+  for (const { table, column, type } of migrations) {
     try {
-      db.execSync(migration);
-    } catch (_err) {
-      // Column already exists — nothing to do
+      if (!(await columnExists(db, table, column))) {
+        await db.execAsync(
+          `ALTER TABLE ${table} ADD COLUMN ${column} ${type};`
+        )
+      }
+    } catch (err) {
+      // A missing table here is fine - CREATE TABLE IF NOT EXISTS above
+      // will have made it with the column already present.
+      console.warn(`Migration skipped: ${table}.${column}`, err?.message)
     }
   }
+}
+
+/**
+ * Create tables and apply migrations. Safe to call more than once.
+ */
+export async function initDB() {
+  const db = await getDB()
+
+  await db.execAsync("PRAGMA journal_mode = WAL;")
+  await db.execAsync("PRAGMA foreign_keys = ON;")
+  await db.execAsync(schema)
+  await runMigrations(db)
+
+  ready = true
+  return db
+}
+
+export function isReady() {
+  return ready
+}
+
+/**
+ * Removes every row of personal data from the device.
+ * Used by "Delete my data" in Settings.
+ */
+export async function wipeLocalData() {
+  const db = await getDB()
+
+  await db.withTransactionAsync(async () => {
+    await db.execAsync(`
+      DELETE FROM checklist_items;
+      DELETE FROM checklists;
+      DELETE FROM reminders;
+      DELETE FROM notes;
+      DELETE FROM medicines;
+      DELETE FROM symptoms;
+      DELETE FROM goals;
+      DELETE FROM contacts;
+      DELETE FROM profiles;
+      DELETE FROM consent;
+      DELETE FROM app_state;
+    `)
+  })
 }

@@ -1,96 +1,109 @@
-import { ScrollView, Text, View, Pressable, StyleSheet } from "react-native"
-import { useEffect, useState, useCallback } from "react"
-import { useIsFocused } from "@react-navigation/native"
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
+import { useCallback, useState } from "react"
+import { useFocusEffect } from "@react-navigation/native"
+
+import {
+  deleteChecklist,
+  getChecklists,
+  toggleChecklistItem,
+} from "../../features/checklists.db"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import { useAuthGuard } from "../../auth/useAuthGuard"
-import { getChecklists, toggleChecklistItem } from "../../features/checklists.db.js"
 
 export default function ChecklistsScreen({ navigation }) {
   const [checklists, setChecklists] = useState([])
-  const [error, setError] = useState(false)
-  const isFocused = useIsFocused()
   const { isGuest } = useAuth()
   const guard = useAuthGuard()
 
-  const load = useCallback(async () => {
-    try {
-      const rows = await getChecklists()
-      setChecklists(rows || [])
-      setError(false)
-    } catch (err) {
-      console.error("Failed to load checklists:", err)
-      setError(true)
-    }
+  const load = useCallback(() => {
+    getChecklists()
+      .then((rows) => setChecklists(rows || []))
+      .catch((err) => console.warn("Could not load checklists:", err?.message))
   }, [])
 
-  useEffect(() => {
-    if (isFocused) load()
-  }, [isFocused, load])
-
-  async function handleToggleItem(item) {
-    try {
-      await toggleChecklistItem(item.id, item.done === 0)
+  useFocusEffect(
+    useCallback(() => {
       load()
-    } catch (err) {
-      console.error("Failed to toggle checklist item:", err)
-    }
+    }, [load])
+  )
+
+  function confirmDelete(list) {
+    Alert.alert("Delete checklist", `Delete "${list.title}"?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => deleteChecklist(list.id).then(load),
+      },
+    ])
   }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title} accessibilityRole="header">Checklists</Text>
+        <Text style={styles.title}>Checklists</Text>
         <Text style={styles.subtitle}>Rārangi arowhai</Text>
       </View>
+
       <Pressable
         onPress={() => guard(() => navigation.navigate("AddChecklist"))}
-        accessibilityRole="button"
-        accessibilityLabel="Create checklist"
         style={({ pressed }) => [
           styles.primaryButton,
-          (isGuest || pressed) && styles.primaryButtonDisabled,
+          (isGuest || pressed) && styles.buttonPressed,
         ]}
       >
         <Text style={styles.primaryText}>Create Checklist</Text>
       </Pressable>
 
-      {error ? (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>{"Couldn't load your checklists."}</Text>
-          <Pressable onPress={load} accessibilityRole="button" accessibilityLabel="Retry loading checklists">
-            <Text style={styles.retryText}>Tap to retry</Text>
-          </Pressable>
-        </View>
-      ) : checklists.length === 0 ? (
+      {checklists.length === 0 ? (
         <Text style={styles.empty}>No checklists yet</Text>
       ) : (
         checklists.map((list) => {
-          const doneCount = list.items.filter((i) => i.done).length
+          const done = list.items.filter((i) => i.done).length
           return (
             <View key={list.id} style={styles.card}>
               <Text style={styles.cardTitle}>{list.title}</Text>
               <Text style={styles.cardMeta}>
-                {doneCount}/{list.items.length} done
+                {done} of {list.items.length} done
               </Text>
 
               {list.items.map((item) => (
                 <Pressable
                   key={item.id}
-                  onPress={() => handleToggleItem(item)}
+                  onPress={() =>
+                    guard(() =>
+                      toggleChecklistItem(item.id, !item.done).then(load)
+                    )
+                  }
+                  style={({ pressed }) => [
+                    styles.item,
+                    pressed && styles.buttonPressed,
+                  ]}
                   accessibilityRole="checkbox"
-                  accessibilityState={{ checked: !!item.done }}
+                  accessibilityState={{ checked: Boolean(item.done) }}
                   accessibilityLabel={item.label}
-                  style={styles.itemRow}
                 >
-                  <Text style={styles.itemCheck}>{item.done ? "☑" : "☐"}</Text>
+                  <Text style={styles.itemBox}>{item.done ? "☑" : "☐"}</Text>
                   <Text
-                    style={[styles.itemLabel, item.done && styles.itemLabelDone]}
+                    style={[styles.itemText, item.done && styles.itemTextDone]}
                   >
                     {item.label}
                   </Text>
                 </Pressable>
               ))}
+
+              <Pressable
+                onPress={() => guard(() => confirmDelete(list))}
+                style={({ pressed }) => [
+                  styles.deleteButton,
+                  pressed && styles.buttonPressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={`Delete checklist ${list.title}`}
+              >
+                <Text style={styles.deleteText}>Delete list</Text>
+              </Pressable>
             </View>
           )
         })
@@ -100,93 +113,52 @@ export default function ChecklistsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: colors.cornsilk,
-  },
-  content: {
-    padding: spacing.lg,
-    gap: spacing.md,
-    paddingBottom: 40,
-  },
-  header: {
-    gap: spacing.xs,
-  },
-  title: {
-    ...typography.title,
-    color: colors.text,
-  },
-  subtitle: {
-    ...typography.caption,
-    color: colors.muted,
-  },
+  screen: { backgroundColor: colors.cornsilk },
+  content: { padding: 20, gap: spacing.md, paddingBottom: 40 },
+  header: { gap: spacing.xs },
+  title: { ...typography.display, color: colors.olive },
+  subtitle: { ...typography.caption, color: colors.muted },
   primaryButton: {
-    padding: spacing.md,
-    borderRadius: radii.md,
     backgroundColor: colors.olive,
+    borderRadius: radii.pill,
+    paddingVertical: spacing.sm,
+    minHeight: 48,
     alignItems: "center",
+    justifyContent: "center",
   },
-  primaryButtonDisabled: {
-    opacity: 0.6,
-  },
-  primaryText: {
-    ...typography.bodyStrong,
-    color: colors.cornsilk,
-  },
-  empty: {
-    ...typography.body,
-    color: colors.muted,
-  },
-  errorBox: {
-    padding: spacing.md,
-    borderRadius: radii.md,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.xs,
-    alignItems: "center",
-  },
-  errorText: {
-    ...typography.body,
-    color: colors.text,
-  },
-  retryText: {
-    ...typography.bodyStrong,
-    color: colors.olive,
-  },
+  buttonPressed: { opacity: 0.7 },
+  primaryText: { ...typography.bodyStrong, color: colors.cornsilk },
   card: {
-    padding: spacing.md,
     backgroundColor: colors.card,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
+    padding: spacing.md,
     gap: spacing.xs,
     ...shadow.card,
   },
-  cardTitle: {
-    ...typography.bodyStrong,
-    color: colors.text,
-  },
-  cardMeta: {
-    ...typography.caption,
-    color: colors.muted,
-  },
-  itemRow: {
+  cardTitle: { ...typography.title, color: colors.text },
+  cardMeta: { ...typography.caption, color: colors.muted },
+  item: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
-    paddingVertical: 4,
+    paddingVertical: spacing.sm,
+    minHeight: 44,
   },
-  itemCheck: {
-    ...typography.body,
-    color: colors.olive,
+  itemBox: { fontSize: 20, color: colors.olive },
+  itemText: { ...typography.body, color: colors.text, flexShrink: 1 },
+  itemTextDone: { color: colors.muted, textDecorationLine: "line-through" },
+  deleteButton: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.surface,
+    borderRadius: radii.pill,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    minHeight: 44,
+    justifyContent: "center",
+    marginTop: spacing.xs,
   },
-  itemLabel: {
-    ...typography.body,
-    color: colors.text,
-    flex: 1,
-  },
-  itemLabelDone: {
-    textDecorationLine: "line-through",
-    color: colors.muted,
-  },
+  deleteText: { ...typography.bodyStrong, color: colors.russet },
+  empty: { ...typography.body, color: colors.muted, textAlign: "center" },
 })

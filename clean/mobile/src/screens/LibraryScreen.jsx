@@ -1,102 +1,83 @@
-import { ScrollView, Text, ActivityIndicator, StyleSheet, View, Pressable } from "react-native"
-import { useEffect, useState, useCallback } from "react"
+ 
+import {
+  ScrollView,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  View,
+  Pressable,
+} from "react-native"
+import { useEffect, useState } from "react"
 
 import { fetchLearningResources } from "../api/appApi"
 import SearchBar from "../components/library/SearchBar"
 import CategorySection from "../components/library/CategorySection"
-import { colors, layout, spacing, typography } from "../theme"
+import { colors, layout, radii, shadow, spacing, typography } from "../theme"
 
-// The server returns one row per (resource, category) pair, so a resource
-// assigned to both "learn" and "practice" arrives twice, and a resource
-// with no category arrives with category: null. This groups rows back into
-// unique resources, each with a categories array.
-function groupResources(rows) {
-  const byId = new Map()
-
-  for (const row of rows) {
-    if (!byId.has(row.id)) {
-      byId.set(row.id, { ...row, categories: [] })
-    }
-    if (row.category) {
-      byId.get(row.id).categories.push(row.category)
-    }
-  }
-
-  return Array.from(byId.values())
-}
-
-export default function LibraryScreen() {
-  const [resources, setResources] = useState([])
+export default function LibraryScreen({ navigation }) {
+  const [resources, setResources] = useState([])   // ✅ default array
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
   const [query, setQuery] = useState("")
 
-  const load = useCallback(() => {
-    setLoading(true)
-    setError(false)
-
+  useEffect(() => {
     fetchLearningResources()
       .then((data) => {
-        setResources(groupResources(Array.isArray(data) ? data : []))
-      })
-      .catch((err) => {
-        console.error("Failed to load library:", err)
-        setError(true)
+        setResources(Array.isArray(data) ? data : [])
       })
       .finally(() => setLoading(false))
   }, [])
-
-  useEffect(() => {
-    load()
-  }, [load])
 
   if (loading) {
     return <ActivityIndicator style={{ marginTop: 40 }} color={colors.olive} />
   }
 
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorTitle}>{"Couldn't load the library"}</Text>
-        <Text style={styles.errorBody}>
-          Check your connection and try again.
-        </Text>
-        <Pressable
-          onPress={load}
-          accessibilityRole="button"
-          accessibilityLabel="Retry loading the library"
-          style={styles.retryButton}
-        >
-          <Text style={styles.retryText}>Retry</Text>
-        </Pressable>
-      </View>
-    )
-  }
-
-  const matchesQuery = (r) =>
-    r.title?.toLowerCase().includes(query.toLowerCase())
-
   const filterByCategory = (category) =>
-    resources.filter((r) => r.categories.includes(category) && matchesQuery(r))
-
-  // Published resources the admin forgot to categorise still deserve a home
-  const uncategorised = resources.filter(
-    (r) => r.categories.length === 0 && matchesQuery(r)
-  )
+    resources.filter(
+      (r) =>
+        r.category === category &&
+        r.title?.toLowerCase().includes(query.toLowerCase())
+    )
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+    >
       <View style={styles.header}>
-        <Text style={styles.title} accessibilityRole="header">Library</Text>
+        <Text style={styles.title}>Library</Text>
         <Text style={styles.subtitle}>Puna mātauranga</Text>
       </View>
 
       <SearchBar value={query} onChange={setQuery} />
 
-      <CategorySection title="Learn" items={filterByCategory("learn")} />
-      <CategorySection title="Practice" items={filterByCategory("practice")} />
-      <CategorySection title="Support" items={filterByCategory("support")} />
-      <CategorySection title="More Resources" items={uncategorised} />
+      <Pressable
+        onPress={() => navigation.navigate("Conditions")}
+        style={({ pressed }) => [styles.linkCard, pressed && { opacity: 0.85 }]}
+        accessibilityRole="button"
+        accessibilityLabel="Open the conditions library"
+      >
+        <Text style={styles.linkTitle}>Conditions</Text>
+        <Text style={styles.linkReo}>Ngā mate</Text>
+        <Text style={styles.linkBody}>
+          Plain-language information about heart conditions, what can trigger
+          them, and how they are managed.
+        </Text>
+      </Pressable>
+
+      <CategorySection
+        title="Learn"
+        items={filterByCategory("learn")}
+      />
+
+      <CategorySection
+        title="Practice"
+        items={filterByCategory("practice")}
+      />
+
+      <CategorySection
+        title="Support"
+        items={filterByCategory("support")}
+      />
     </ScrollView>
   )
 }
@@ -106,47 +87,41 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cornsilk,
   },
   content: {
-    padding: spacing.lg,
+    padding: layout.screenPadding,
     gap: spacing.md,
-    paddingBottom: layout?.tabBarOffset ?? 40,
+    paddingBottom: 40,
   },
   header: {
     gap: spacing.xs,
   },
   title: {
-    ...typography.title,
-    color: colors.text,
+    ...typography.display,
+    color: colors.olive,
   },
   subtitle: {
     ...typography.caption,
     color: colors.muted,
   },
-  errorContainer: {
-    flex: 1,
-    padding: spacing.lg,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    backgroundColor: colors.cornsilk,
+  linkCard: {
+    backgroundColor: colors.card,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    gap: spacing.xs,
+    ...shadow.card,
   },
-  errorTitle: {
+  linkTitle: {
     ...typography.title,
     color: colors.text,
   },
-  errorBody: {
+  linkReo: {
+    ...typography.caption,
+    color: colors.muted,
+  },
+  linkBody: {
     ...typography.body,
     color: colors.muted,
-    textAlign: "center",
-  },
-  retryButton: {
-    marginTop: spacing.sm,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: 999,
-    backgroundColor: colors.olive,
-  },
-  retryText: {
-    ...typography.bodyStrong,
-    color: colors.cornsilk,
+    marginTop: spacing.xs,
   },
 })

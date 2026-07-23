@@ -1,51 +1,42 @@
 import { getDB } from "../db"
 
-// Uses the modern expo-sqlite (SDK 51+) API.
-
-// -------------------------
-// Add medicine
-// -------------------------
 export async function addMedicine({ name, type = "", dosage = "", notes = "" }) {
-  const db = getDB()
+  const db = await getDB()
+  const createdAt = new Date().toISOString()
 
   const result = await db.runAsync(
-    `INSERT INTO medicines (name, type, dosage, notes, active)
-     VALUES (?, ?, ?, ?, 1)`,
-    [name, type, dosage, notes]
+    `INSERT INTO medicines (name, type, dosage, notes, active, created_at)
+     VALUES (?, ?, ?, ?, 1, ?);`,
+    [name, type, dosage, notes, createdAt]
   )
 
-  return { id: result.lastInsertRowId }
+  return { id: result.lastInsertRowId, name, type, dosage, notes, active: 1 }
 }
 
-// -------------------------
-// Get medicines
-// -------------------------
 export async function getMedicines() {
-  const db = getDB()
-
+  const db = await getDB()
   return db.getAllAsync(
-    `SELECT *
-     FROM medicines
-     ORDER BY active DESC, name ASC`
+    `SELECT * FROM medicines ORDER BY active DESC, name ASC;`
   )
 }
 
-// -------------------------
-// Toggle active
-// -------------------------
-export async function toggleMedicine(id, active) {
-  const db = getDB()
-
+export async function updateMedicine({ id, name, type = "", dosage = "", notes = "" }) {
+  const db = await getDB()
   await db.runAsync(
-    `UPDATE medicines SET active = ? WHERE id = ?`,
-    [active ? 1 : 0, id]
+    `UPDATE medicines SET name = ?, type = ?, dosage = ?, notes = ? WHERE id = ?;`,
+    [name, type, dosage, notes, id]
   )
 }
 
-// -------------------------
-// Delete a medicine
-// -------------------------
+export async function toggleMedicine(id, active) {
+  const db = await getDB()
+  await db.runAsync(`UPDATE medicines SET active = ? WHERE id = ?;`, [
+    active ? 1 : 0,
+    id,
+  ])
+}
+
 export async function deleteMedicine(id) {
-  const db = getDB()
-  await db.runAsync(`DELETE FROM medicines WHERE id = ?`, [id])
+  const db = await getDB()
+  await db.runAsync(`DELETE FROM medicines WHERE id = ?;`, [id])
 }
