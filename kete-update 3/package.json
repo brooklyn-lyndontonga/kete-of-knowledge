@@ -1,0 +1,52 @@
+{
+  "name": "kete-of-knowledge",
+  "version": "1.0.0",
+  "description": "Kete of Knowledge \u2013 Mobile App: a React Native (Expo) app providing accessible health and wellbeing information to wh\u0101nau.",
+  "main": "index.expo.js",
+  "type": "module",
+  "scripts": {
+    "start": "node clean/server/index.js",
+    "lint": "eslint . --ext .js,.jsx",
+    "seed:content": "node clean/server/scripts/seed-content.js",
+    "smoke": "node clean/server/scripts/smoke-test.js",
+    "test:sync": "node clean/server/tests/sync.test.mjs",
+    "test:bilingual": "node clean/server/tests/bilingual.test.mjs",
+    "test:contrast": "node clean/mobile/tests/contrast.test.mjs",
+    "test": "npm run test:manifest && npm run test:sync && npm run test:bilingual && npm run test:contrast",
+    "test:manifest": "node clean/server/tests/manifest.test.mjs",
+    "check:release": "node clean/server/scripts/check-release.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.8.1",
+    "cors": "2.8.5",
+    "dotenv": "17.2.3",
+    "express": "5.1.0",
+    "express-rate-limit": "^8.3.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "nodemailer": "^8.0.0",
+    "prisma": "^5.20.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.38.0",
+    "@types/node": "24.10.1",
+    "baseline-browser-mapping": "^2.9.14",
+    "eslint": "9.38.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-unused-imports": "4.3.0",
+    "globals": "16.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brooklyn-lyndontonga/kete-of-knowledge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/brooklyn-lyndontonga/kete-of-knowledge/issues"
+  },
+  "homepage": "https://github.com/brooklyn-lyndontonga/kete-of-knowledge#readme",
+  "license": "ISC"
+}
