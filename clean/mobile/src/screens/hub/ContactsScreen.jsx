@@ -18,6 +18,7 @@ import {
 import { colors, layout, radii, shadow, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import { useAuthGuard } from "../../auth/useAuthGuard"
+import { EMERGENCY_NUMBER } from "../../config"
 import { useLanguage } from "../../i18n/LanguageContext"
 
 export async function dial(phone) {
@@ -79,7 +80,7 @@ export default function ContactsScreen({ navigation }) {
       </View>
 
       <Pressable
-        onPress={() => dial("111")}
+        onPress={() => dial(EMERGENCY_NUMBER)}
         style={({ pressed }) => [
           styles.emergencyBar,
           pressed && styles.pressed,

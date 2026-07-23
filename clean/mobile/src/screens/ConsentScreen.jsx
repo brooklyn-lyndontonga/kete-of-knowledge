@@ -10,8 +10,7 @@ import { useState } from "react"
 
 import { acceptConsent } from "../features/consent.db"
 import { colors, layout, radii, spacing, typography } from "../theme"
-
-const PRIVACY_POLICY_URL = "https://thecentreforhealth.co.nz/kete-privacy"
+import { REQUIRED_BEFORE_RELEASE } from "../config"
 
 export default function ConsentScreen({ onAccepted }) {
   const [saving, setSaving] = useState(false)
@@ -62,7 +61,11 @@ export default function ConsentScreen({ onAccepted }) {
       </View>
 
       <Pressable
-        onPress={() => Linking.openURL(PRIVACY_POLICY_URL).catch(() => {})}
+        onPress={() =>
+          Linking.openURL(REQUIRED_BEFORE_RELEASE.privacyPolicyUrl).catch(
+            () => {}
+          )
+        }
         style={({ pressed }) => [styles.link, pressed && styles.pressed]}
         accessibilityRole="link"
       >

@@ -12,7 +12,8 @@
     "test:bilingual": "node clean/server/tests/bilingual.test.mjs",
     "test:contrast": "node clean/mobile/tests/contrast.test.mjs",
     "test": "npm run test:manifest && npm run test:sync && npm run test:bilingual && npm run test:contrast",
-    "test:manifest": "node clean/server/tests/manifest.test.mjs"
+    "test:manifest": "node clean/server/tests/manifest.test.mjs",
+    "check:release": "node clean/server/scripts/check-release.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",

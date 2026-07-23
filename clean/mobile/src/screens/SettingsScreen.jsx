@@ -16,11 +16,7 @@ import { useSync } from "../sync/SyncContext"
 import { buildDataExportString } from "../features/exportData"
 import { wipeLocalData } from "../db"
 import { colors, layout, radii, shadow, spacing, typography } from "../theme"
-
-// Replace with the client's hosted URLs before store submission.
-const PRIVACY_POLICY_URL = "https://thecentreforhealth.co.nz/kete-privacy"
-const TERMS_URL = "https://thecentreforhealth.co.nz/kete-terms"
-const SUPPORT_EMAIL = "support@thecentreforhealth.co.nz"
+import { REQUIRED_BEFORE_RELEASE } from "../config"
 
 function relativeTime(iso, t) {
   if (!iso) return t("sync.never")
@@ -60,6 +56,8 @@ function Row({ label, description, onPress, tone = "default", disabled }) {
     </Pressable>
   )
 }
+
+const { privacyPolicyUrl, termsUrl, supportEmail } = REQUIRED_BEFORE_RELEASE
 
 export default function SettingsScreen() {
   const { isAuthenticated, isGuest, login, logout, session } = useAuth()
@@ -250,13 +248,13 @@ export default function SettingsScreen() {
         </Text>
         <Row
           label={t("settings.privacy")}
-          onPress={() => open(PRIVACY_POLICY_URL)}
+          onPress={() => open(privacyPolicyUrl)}
         />
-        <Row label={t("settings.terms")} onPress={() => open(TERMS_URL)} />
+        <Row label={t("settings.terms")} onPress={() => open(termsUrl)} />
         <Row
           label={t("settings.help")}
-          description={SUPPORT_EMAIL}
-          onPress={() => open(`mailto:${SUPPORT_EMAIL}`)}
+          description={supportEmail}
+          onPress={() => open(`mailto:${supportEmail}`)}
         />
       </View>
     </ScrollView>
