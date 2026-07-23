@@ -1,0 +1,3341 @@
+diff --git a/clean/mobile/App.js b/clean/mobile/App.js
+index ebc0309..5e69267 100644
+--- a/clean/mobile/App.js
++++ b/clean/mobile/App.js
+@@ -1,7 +1,7 @@
+  
+ import { NavigationContainer } from "@react-navigation/native"
+ import { SafeAreaView } from "react-native-safe-area-context"
+-import { useEffect } from "react"
++import { useEffect, useState } from "react"
+ import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native"
+ import { StatusBar } from "expo-status-bar"
+ import { useFonts } from "expo-font"
+@@ -28,6 +28,8 @@ TextInput.defaultProps.style = [
+ ]
+ 
+ export default function App() {
++  const [dbReady, setDbReady] = useState(false)
++
+   const [fontsLoaded] = useFonts({
+     Manrope_400Regular,
+     Manrope_600SemiBold,
+@@ -35,10 +37,20 @@ export default function App() {
+   })
+ 
+   useEffect(() => {
++    let cancelled = false
++
+     initDB()
++      .catch((err) => console.error("Database init failed:", err))
++      .finally(() => {
++        if (!cancelled) setDbReady(true)
++      })
++
++    return () => {
++      cancelled = true
++    }
+   }, [])
+ 
+-  if (!fontsLoaded) {
++  if (!fontsLoaded || !dbReady) {
+     return (
+       <SafeAreaView style={styles.safeArea}>
+         <ActivityIndicator size="large" color={colors.olive} />
+diff --git a/clean/mobile/src/api/contentApi.js b/clean/mobile/src/api/contentApi.js
+index e69de29..ea02c05 100644
+--- a/clean/mobile/src/api/contentApi.js
++++ b/clean/mobile/src/api/contentApi.js
+@@ -0,0 +1,42 @@
++import { getCached, setCached } from "../storage/cache"
++import { APP_API_BASE_URL } from "./apiConfig"
++
++async function fetchJson(endpoint) {
++  const res = await fetch(`${APP_API_BASE_URL}${endpoint}`)
++  if (!res.ok) throw new Error(`API error: ${res.status}`)
++  return res.json()
++}
++
++/**
++ * Cache-first read with a background refresh, matching the pattern
++ * already used for whakataukī and learning resources so the content
++ * stays readable offline.
++ */
++async function cachedFetch(cacheKey, endpoint) {
++  const cached = await getCached(cacheKey)
++
++  fetchJson(endpoint)
++    .then((fresh) => setCached(cacheKey, fresh))
++    .catch(() => {}) // offline-safe
++
++  if (cached) return cached
++
++  const fresh = await fetchJson(endpoint)
++  await setCached(cacheKey, fresh)
++  return fresh
++}
++
++export async function fetchConditions() {
++  return cachedFetch("conditions", "/conditions")
++}
++
++export async function fetchCondition(id) {
++  const all = await fetchConditions()
++  return (Array.isArray(all) ? all : []).find(
++    (c) => String(c.id) === String(id)
++  ) || null
++}
++
++export async function fetchProfileSeeds() {
++  return cachedFetch("profile-seeds", "/profile-seeds")
++}
+diff --git a/clean/mobile/src/auth/AuthContext.jsx b/clean/mobile/src/auth/AuthContext.jsx
+index 7189ed6..75f5bb2 100644
+--- a/clean/mobile/src/auth/AuthContext.jsx
++++ b/clean/mobile/src/auth/AuthContext.jsx
+@@ -131,6 +131,12 @@ export function AuthProvider({ children }) {
+   const openAuth = () => setShowAuth(true)
+   const closeAuth = () => setShowAuth(false)
+ 
++  // GuestGate, useAuthGuard and SettingsStack call login()/authReady.
++  // login() surfaces the sign-in screen; authReady means we've finished
++  // restoring any stored session and aren't mid-request.
++  const login = () => setShowAuth(true)
++  const authReady = !loading && !authenticating
++
+   const value = useMemo(
+     () => ({
+       session,
+@@ -138,15 +144,17 @@ export function AuthProvider({ children }) {
+       isGuest: guest,
+       isLoading: loading,
+       isAuthenticating: authenticating,
++      authReady,
+       showAuth,
+       sendMagicLink,
+       verifyMagicLink,
++      login,
+       logout,
+       continueAsGuest,
+       openAuth,
+       closeAuth,
+     }),
+-    [session, guest, loading, authenticating, showAuth]
++    [session, guest, loading, authenticating, authReady, showAuth]
+   )
+ 
+   return (
+diff --git a/clean/mobile/src/db/index.js b/clean/mobile/src/db/index.js
+index 107d276..c0f61e7 100644
+--- a/clean/mobile/src/db/index.js
++++ b/clean/mobile/src/db/index.js
+@@ -1,23 +1,82 @@
+-import { openDatabaseSync } from "expo-sqlite";
+-import { schema } from "./schema";
++import { openDatabaseAsync } from "expo-sqlite"
++import { schema, migrations } from "./schema"
+ 
+-let db;
++const DB_NAME = "kete.db"
+ 
++let dbPromise = null
++let ready = false
++
++/**
++ * Single shared connection for the whole app.
++ * Everything (including notes) now lives in one database file.
++ */
+ export function getDB() {
+-  if (!db) {
+-    db = openDatabaseSync("kete.db");
++  if (!dbPromise) {
++    dbPromise = openDatabaseAsync(DB_NAME)
++  }
++  return dbPromise
++}
++
++async function columnExists(db, table, column) {
++  const cols = await db.getAllAsync(`PRAGMA table_info(${table});`)
++  return cols.some((c) => c.name === column)
++}
++
++async function runMigrations(db) {
++  for (const { table, column, type } of migrations) {
++    try {
++      if (!(await columnExists(db, table, column))) {
++        await db.execAsync(
++          `ALTER TABLE ${table} ADD COLUMN ${column} ${type};`
++        )
++      }
++    } catch (err) {
++      // A missing table here is fine - CREATE TABLE IF NOT EXISTS above
++      // will have made it with the column already present.
++      console.warn(`Migration skipped: ${table}.${column}`, err?.message)
++    }
+   }
+-  return db;
+ }
+ 
+-export function initDB() {
+-  const db = getDB();
++/**
++ * Create tables and apply migrations. Safe to call more than once.
++ */
++export async function initDB() {
++  const db = await getDB()
++
++  await db.execAsync("PRAGMA journal_mode = WAL;")
++  await db.execAsync("PRAGMA foreign_keys = ON;")
++  await db.execAsync(schema)
++  await runMigrations(db)
++
++  ready = true
++  return db
++}
++
++export function isReady() {
++  return ready
++}
++
++/**
++ * Removes every row of personal data from the device.
++ * Used by "Delete my data" in Settings.
++ */
++export async function wipeLocalData() {
++  const db = await getDB()
+ 
+-  schema
+-    .split(";")
+-    .map(s => s.trim())
+-    .filter(Boolean)
+-    .forEach((statement) => {
+-      db.execSync(statement);
+-    });
++  await db.withTransactionAsync(async () => {
++    await db.execAsync(`
++      DELETE FROM checklist_items;
++      DELETE FROM checklists;
++      DELETE FROM reminders;
++      DELETE FROM notes;
++      DELETE FROM medicines;
++      DELETE FROM symptoms;
++      DELETE FROM goals;
++      DELETE FROM contacts;
++      DELETE FROM profiles;
++      DELETE FROM consent;
++      DELETE FROM app_state;
++    `)
++  })
+ }
+diff --git a/clean/mobile/src/db/schema.js b/clean/mobile/src/db/schema.js
+index 3c634dd..a9e1745 100644
+--- a/clean/mobile/src/db/schema.js
++++ b/clean/mobile/src/db/schema.js
+@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS app_state (
+ CREATE TABLE IF NOT EXISTS consent (
+   id INTEGER PRIMARY KEY AUTOINCREMENT,
+   accepted INTEGER NOT NULL,
++  version TEXT,
+   accepted_at TEXT NOT NULL
+ );
+ 
+@@ -18,9 +19,22 @@ CREATE TABLE IF NOT EXISTS profiles (
+   health_info TEXT,
+   health_providers TEXT,
+   emergency_contacts TEXT,
+-  created_at TEXT DEFAULT CURRENT_TIMESTAMP
++  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
++  updated_at TEXT
+ );
+ 
++CREATE TABLE IF NOT EXISTS contacts (
++  id INTEGER PRIMARY KEY AUTOINCREMENT,
++  name TEXT NOT NULL,
++  relationship TEXT,
++  phone TEXT,
++  email TEXT,
++  category TEXT DEFAULT 'whanau',
++  is_emergency INTEGER DEFAULT 0,
++  notes TEXT,
++  sort_order INTEGER DEFAULT 0,
++  created_at TEXT DEFAULT CURRENT_TIMESTAMP
++);
+ 
+ CREATE TABLE IF NOT EXISTS symptoms (
+   id INTEGER PRIMARY KEY AUTOINCREMENT,
+@@ -37,22 +51,27 @@ CREATE TABLE IF NOT EXISTS medicines (
+   type TEXT,
+   dosage TEXT,
+   notes TEXT,
+-  active INTEGER DEFAULT 1
++  active INTEGER DEFAULT 1,
++  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+ );
+ 
+ CREATE TABLE IF NOT EXISTS notes (
+   id INTEGER PRIMARY KEY AUTOINCREMENT,
+   title TEXT,
+   content TEXT NOT NULL,
+-  created_at TEXT DEFAULT CURRENT_TIMESTAMP
++  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
++  updated_at TEXT
+ );
+ 
+ CREATE TABLE IF NOT EXISTS reminders (
+   id INTEGER PRIMARY KEY AUTOINCREMENT,
+   title TEXT NOT NULL,
+   schedule TEXT,
++  time_of_day TEXT,
+   notes TEXT,
+-  active INTEGER DEFAULT 1
++  active INTEGER DEFAULT 1,
++  notification_id TEXT,
++  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+ );
+ 
+ CREATE TABLE IF NOT EXISTS checklists (
+@@ -61,6 +80,21 @@ CREATE TABLE IF NOT EXISTS checklists (
+   created_at TEXT DEFAULT CURRENT_TIMESTAMP
+ );
+ 
++CREATE TABLE IF NOT EXISTS checklist_items (
++  id INTEGER PRIMARY KEY AUTOINCREMENT,
++  checklist_id INTEGER NOT NULL,
++  label TEXT NOT NULL,
++  done INTEGER DEFAULT 0,
++  sort_order INTEGER DEFAULT 0,
++  FOREIGN KEY (checklist_id) REFERENCES checklists(id) ON DELETE CASCADE
++);
++
++CREATE INDEX IF NOT EXISTS idx_checklist_items_list
++  ON checklist_items (checklist_id);
++
++CREATE INDEX IF NOT EXISTS idx_symptoms_logged_at
++  ON symptoms (logged_at);
++
+ CREATE TABLE IF NOT EXISTS goals (
+   id INTEGER PRIMARY KEY AUTOINCREMENT,
+   title TEXT NOT NULL,
+@@ -74,3 +108,17 @@ CREATE TABLE IF NOT EXISTS settings (
+   value TEXT
+ );
+ `;
++
++/**
++ * Columns added after the first beta shipped.
++ * Applied idempotently on every launch so existing installs upgrade cleanly.
++ */
++export const migrations = [
++  { table: "profiles", column: "updated_at", type: "TEXT" },
++  { table: "notes", column: "updated_at", type: "TEXT" },
++  { table: "reminders", column: "time_of_day", type: "TEXT" },
++  { table: "reminders", column: "notification_id", type: "TEXT" },
++  { table: "reminders", column: "created_at", type: "TEXT" },
++  { table: "medicines", column: "created_at", type: "TEXT" },
++  { table: "consent", column: "version", type: "TEXT" },
++];
+diff --git a/clean/mobile/src/features/checklists.db.js b/clean/mobile/src/features/checklists.db.js
+index 5017b6a..a44ae85 100644
+--- a/clean/mobile/src/features/checklists.db.js
++++ b/clean/mobile/src/features/checklists.db.js
+@@ -1,44 +1,58 @@
+ import { getDB } from "../db"
+ 
+-// -------------------------
+-// Add checklist
+-// -------------------------
+-export function addChecklist({ title }) {
+-  const db = getDB()
+-
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        INSERT INTO checklists (title)
+-        VALUES (?)
+-        `,
+-        [title],
+-        (_, result) => resolve(result),
+-        (_, error) => reject(error)
++export async function addChecklist({ title, items = [] }) {
++  const db = await getDB()
++  const createdAt = new Date().toISOString()
++  let checklistId = null
++
++  await db.withTransactionAsync(async () => {
++    const result = await db.runAsync(
++      `INSERT INTO checklists (title, created_at) VALUES (?, ?);`,
++      [title, createdAt]
++    )
++    checklistId = result.lastInsertRowId
++
++    for (let i = 0; i < items.length; i++) {
++      const item = items[i]
++      await db.runAsync(
++        `INSERT INTO checklist_items (checklist_id, label, done, sort_order)
++         VALUES (?, ?, ?, ?);`,
++        [checklistId, item.label, item.done ? 1 : 0, i]
+       )
+-    })
++    }
+   })
++
++  return { id: checklistId, title, items, created_at: createdAt }
+ }
+ 
+-// -------------------------
+-// Get checklists
+-// -------------------------
+-export function getChecklists() {
+-  const db = getDB()
+-
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        SELECT *
+-        FROM checklists
+-        ORDER BY id DESC
+-        `,
+-        [],
+-        (_, { rows }) => resolve(rows._array),
+-        (_, error) => reject(error)
+-      )
+-    })
++export async function getChecklists() {
++  const db = await getDB()
++
++  const lists = await db.getAllAsync(
++    `SELECT * FROM checklists ORDER BY id DESC;`
++  )
++  const allItems = await db.getAllAsync(
++    `SELECT * FROM checklist_items ORDER BY sort_order ASC, id ASC;`
++  )
++
++  return lists.map((list) => ({
++    ...list,
++    items: allItems.filter((i) => i.checklist_id === list.id),
++  }))
++}
++
++export async function toggleChecklistItem(itemId, done) {
++  const db = await getDB()
++  await db.runAsync(`UPDATE checklist_items SET done = ? WHERE id = ?;`, [
++    done ? 1 : 0,
++    itemId,
++  ])
++}
++
++export async function deleteChecklist(id) {
++  const db = await getDB()
++  await db.withTransactionAsync(async () => {
++    await db.runAsync(`DELETE FROM checklist_items WHERE checklist_id = ?;`, [id])
++    await db.runAsync(`DELETE FROM checklists WHERE id = ?;`, [id])
+   })
+ }
+diff --git a/clean/mobile/src/features/consent.db.js b/clean/mobile/src/features/consent.db.js
+new file mode 100644
+index 0000000..c59ba50
+--- /dev/null
++++ b/clean/mobile/src/features/consent.db.js
+@@ -0,0 +1,21 @@
++import { getDB } from "../db"
++
++export const CONSENT_VERSION = "1.0"
++
++export async function hasAcceptedConsent() {
++  const db = await getDB()
++  const row = await db.getFirstAsync(
++    `SELECT * FROM consent WHERE accepted = 1 AND version = ?
++     ORDER BY id DESC LIMIT 1;`,
++    [CONSENT_VERSION]
++  )
++  return Boolean(row)
++}
++
++export async function acceptConsent() {
++  const db = await getDB()
++  await db.runAsync(
++    `INSERT INTO consent (accepted, version, accepted_at) VALUES (1, ?, ?);`,
++    [CONSENT_VERSION, new Date().toISOString()]
++  )
++}
+diff --git a/clean/mobile/src/features/contacts.db.js b/clean/mobile/src/features/contacts.db.js
+new file mode 100644
+index 0000000..9f8316f
+--- /dev/null
++++ b/clean/mobile/src/features/contacts.db.js
+@@ -0,0 +1,79 @@
++import { getDB } from "../db"
++
++export const CONTACT_CATEGORIES = [
++  { key: "whanau", label: "Whānau", reo: "Whānau" },
++  { key: "provider", label: "Health provider", reo: "Kaiwhakarato hauora" },
++  { key: "emergency", label: "Emergency", reo: "Ohotata" },
++]
++
++export async function addContact({
++  name,
++  relationship = "",
++  phone = "",
++  email = "",
++  category = "whanau",
++  isEmergency = false,
++  notes = "",
++}) {
++  const db = await getDB()
++
++  const result = await db.runAsync(
++    `INSERT INTO contacts (name, relationship, phone, email, category, is_emergency, notes, created_at)
++     VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
++    [
++      name,
++      relationship,
++      phone,
++      email,
++      category,
++      isEmergency ? 1 : 0,
++      notes,
++      new Date().toISOString(),
++    ]
++  )
++
++  return { id: result.lastInsertRowId, name, phone, category }
++}
++
++export async function getContacts() {
++  const db = await getDB()
++  return db.getAllAsync(
++    `SELECT * FROM contacts
++     ORDER BY is_emergency DESC, sort_order ASC, name ASC;`
++  )
++}
++
++export async function getContactsByCategory() {
++  const rows = await getContacts()
++  const grouped = {}
++  for (const { key } of CONTACT_CATEGORIES) grouped[key] = []
++  for (const row of rows) {
++    const key = grouped[row.category] ? row.category : "whanau"
++    grouped[key].push(row)
++  }
++  return grouped
++}
++
++export async function updateContact({ id, ...fields }) {
++  const db = await getDB()
++  await db.runAsync(
++    `UPDATE contacts
++     SET name = ?, relationship = ?, phone = ?, email = ?, category = ?, is_emergency = ?, notes = ?
++     WHERE id = ?;`,
++    [
++      fields.name,
++      fields.relationship || "",
++      fields.phone || "",
++      fields.email || "",
++      fields.category || "whanau",
++      fields.isEmergency ? 1 : 0,
++      fields.notes || "",
++      id,
++    ]
++  )
++}
++
++export async function deleteContact(id) {
++  const db = await getDB()
++  await db.runAsync(`DELETE FROM contacts WHERE id = ?;`, [id])
++}
+diff --git a/clean/mobile/src/features/exportData.js b/clean/mobile/src/features/exportData.js
+new file mode 100644
+index 0000000..6cea9b4
+--- /dev/null
++++ b/clean/mobile/src/features/exportData.js
+@@ -0,0 +1,40 @@
++import { getDB } from "../db"
++
++const TABLES = [
++  "profiles",
++  "goals",
++  "symptoms",
++  "medicines",
++  "notes",
++  "reminders",
++  "checklists",
++  "checklist_items",
++  "contacts",
++]
++
++/**
++ * Builds a single JSON object containing everything stored on this device.
++ * Backs "Export my data" in Settings.
++ */
++export async function buildDataExport() {
++  const db = await getDB()
++  const data = {}
++
++  for (const table of TABLES) {
++    try {
++      data[table] = await db.getAllAsync(`SELECT * FROM ${table};`)
++    } catch {
++      data[table] = []
++    }
++  }
++
++  return {
++    app: "Kete of Knowledge",
++    exported_at: new Date().toISOString(),
++    data,
++  }
++}
++
++export async function buildDataExportString() {
++  return JSON.stringify(await buildDataExport(), null, 2)
++}
+diff --git a/clean/mobile/src/features/goals.db.js b/clean/mobile/src/features/goals.db.js
+index 7d30403..75e91fc 100644
+--- a/clean/mobile/src/features/goals.db.js
++++ b/clean/mobile/src/features/goals.db.js
+@@ -1,66 +1,32 @@
+ import { getDB } from "../db"
+ 
+-// -------------------------
+-// Create a goal
+-// -------------------------
+-export function addGoal({ title, description = "" }) {
+-  const db = getDB()
++export async function addGoal({ title, description = "" }) {
++  const db = await getDB()
++  const createdAt = new Date().toISOString()
+ 
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        INSERT INTO goals (title, description, active)
+-        VALUES (?, ?, 1)
+-        `,
+-        [title, description],
+-        (_, result) => resolve(result),
+-        (_, error) => reject(error)
+-      )
+-    })
+-  })
+-}
++  const result = await db.runAsync(
++    `INSERT INTO goals (title, description, active, created_at)
++     VALUES (?, ?, 1, ?);`,
++    [title, description, createdAt]
++  )
+ 
+-// -------------------------
+-// Get all goals
+-// -------------------------
+-export function getGoals() {
+-  const db = getDB()
++  return { id: result.lastInsertRowId, title, description, active: 1, created_at: createdAt }
++}
+ 
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        SELECT *
+-        FROM goals
+-        ORDER BY created_at DESC
+-        `,
+-        [],
+-        (_, { rows }) => resolve(rows._array),
+-        (_, error) => reject(error)
+-      )
+-    })
+-  })
++export async function getGoals() {
++  const db = await getDB()
++  return db.getAllAsync(`SELECT * FROM goals ORDER BY created_at DESC;`)
+ }
+ 
+-// -------------------------
+-// Toggle achieved / active
+-// -------------------------
+-export function toggleGoal(id, active) {
+-  const db = getDB()
++export async function toggleGoal(id, active) {
++  const db = await getDB()
++  await db.runAsync(`UPDATE goals SET active = ? WHERE id = ?;`, [
++    active ? 1 : 0,
++    id,
++  ])
++}
+ 
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        UPDATE goals
+-        SET active = ?
+-        WHERE id = ?
+-        `,
+-        [active ? 1 : 0, id],
+-        () => resolve(),
+-        (_, error) => reject(error)
+-      )
+-    })
+-  })
++export async function deleteGoal(id) {
++  const db = await getDB()
++  await db.runAsync(`DELETE FROM goals WHERE id = ?;`, [id])
+ }
+diff --git a/clean/mobile/src/features/medicines.db.js b/clean/mobile/src/features/medicines.db.js
+index 01ced02..53e08ea 100644
+--- a/clean/mobile/src/features/medicines.db.js
++++ b/clean/mobile/src/features/medicines.db.js
+@@ -1,67 +1,42 @@
+ import { getDB } from "../db"
+ 
+-// -------------------------
+-// Add medicine
+-// -------------------------
+-export function addMedicine({
+-  name,
+-  type = "",
+-  dosage = "",
+-  notes = "",
+-}) {
+-  const db = getDB()
++export async function addMedicine({ name, type = "", dosage = "", notes = "" }) {
++  const db = await getDB()
++  const createdAt = new Date().toISOString()
+ 
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        INSERT INTO medicines (name, type, dosage, notes, active)
+-        VALUES (?, ?, ?, ?, 1)
+-        `,
+-        [name, type, dosage, notes],
+-        (_, result) => resolve(result),
+-        (_, error) => reject(error)
+-      )
+-    })
+-  })
++  const result = await db.runAsync(
++    `INSERT INTO medicines (name, type, dosage, notes, active, created_at)
++     VALUES (?, ?, ?, ?, 1, ?);`,
++    [name, type, dosage, notes, createdAt]
++  )
++
++  return { id: result.lastInsertRowId, name, type, dosage, notes, active: 1 }
+ }
+ 
+-// -------------------------
+-// Get medicines
+-// -------------------------
+-export function getMedicines() {
+-  const db = getDB()
++export async function getMedicines() {
++  const db = await getDB()
++  return db.getAllAsync(
++    `SELECT * FROM medicines ORDER BY active DESC, name ASC;`
++  )
++}
+ 
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        SELECT *
+-        FROM medicines
+-        ORDER BY active DESC, name ASC
+-        `,
+-        [],
+-        (_, { rows }) => resolve(rows._array),
+-        (_, error) => reject(error)
+-      )
+-    })
+-  })
++export async function updateMedicine({ id, name, type = "", dosage = "", notes = "" }) {
++  const db = await getDB()
++  await db.runAsync(
++    `UPDATE medicines SET name = ?, type = ?, dosage = ?, notes = ? WHERE id = ?;`,
++    [name, type, dosage, notes, id]
++  )
+ }
+ 
+-// -------------------------
+-// Toggle active
+-// -------------------------
+-export function toggleMedicine(id, active) {
+-  const db = getDB()
++export async function toggleMedicine(id, active) {
++  const db = await getDB()
++  await db.runAsync(`UPDATE medicines SET active = ? WHERE id = ?;`, [
++    active ? 1 : 0,
++    id,
++  ])
++}
+ 
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `UPDATE medicines SET active = ? WHERE id = ?`,
+-        [active ? 1 : 0, id],
+-        (_, result) => resolve(result),
+-        (_, error) => reject(error)
+-      )
+-    })
+-  })
++export async function deleteMedicine(id) {
++  const db = await getDB()
++  await db.runAsync(`DELETE FROM medicines WHERE id = ?;`, [id])
+ }
+diff --git a/clean/mobile/src/features/notes.db.js b/clean/mobile/src/features/notes.db.js
+index 8f80749..b289044 100644
+--- a/clean/mobile/src/features/notes.db.js
++++ b/clean/mobile/src/features/notes.db.js
+@@ -1,107 +1,41 @@
+-import { openDatabaseAsync } from "expo-sqlite"
+-
+-let db = null
+-
+-/**
+- * Get or open database (singleton)
+- */
+-async function getDb() {
+-  if (!db) {
+-    db = await openDatabaseAsync("app.db")
+-  }
+-  return db
+-}
++import { getDB } from "../db"
+ 
+ /**
+- * Initialise notes table
+- * Call once on app start
++ * Kept for backwards compatibility - table creation now happens
++ * centrally in initDB(). This is a no-op.
+  */
+-export async function initNotesTable() {
+-  const db = await getDb()
++export async function initNotesTable() {}
+ 
+-  await db.execAsync(`
+-    CREATE TABLE IF NOT EXISTS notes (
+-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+-      title TEXT,
+-      content TEXT NOT NULL,
+-      created_at TEXT NOT NULL,
+-      updated_at TEXT
+-    );
+-  `)
+-}
+-
+-/**
+- * Get all notes
+- */
+ export async function getNotes() {
+-  const db = await getDb()
+-
+-  const rows = await db.getAllAsync(`
+-    SELECT * FROM notes
+-    ORDER BY created_at DESC;
+-  `)
+-
+-  return rows
++  const db = await getDB()
++  return db.getAllAsync(`SELECT * FROM notes ORDER BY created_at DESC;`)
+ }
+ 
+-/**
+- * Add a new note
+- */
+ export async function addNote({ title = "", content }) {
+-  const db = await getDb()
++  const db = await getDB()
+   const timestamp = new Date().toISOString()
+ 
+   const result = await db.runAsync(
+-    `
+-    INSERT INTO notes (title, content, created_at)
+-    VALUES (?, ?, ?);
+-    `,
++    `INSERT INTO notes (title, content, created_at) VALUES (?, ?, ?);`,
+     [title, content, timestamp]
+   )
+ 
+-  return {
+-    id: result.lastInsertRowId,
+-    title,
+-    content,
+-    created_at: timestamp
+-  }
++  return { id: result.lastInsertRowId, title, content, created_at: timestamp }
+ }
+ 
+-/**
+- * Update an existing note
+- */
+ export async function updateNote({ id, title = "", content }) {
+-  const db = await getDb()
++  const db = await getDB()
+   const timestamp = new Date().toISOString()
+ 
+   await db.runAsync(
+-    `
+-    UPDATE notes
+-    SET title = ?, content = ?, updated_at = ?
+-    WHERE id = ?;
+-    `,
++    `UPDATE notes SET title = ?, content = ?, updated_at = ? WHERE id = ?;`,
+     [title, content, timestamp, id]
+   )
+ 
+-  return {
+-    id,
+-    title,
+-    content,
+-    updated_at: timestamp
+-  }
++  return { id, title, content, updated_at: timestamp }
+ }
+ 
+-/**
+- * Delete a note
+- */
+ export async function deleteNote(id) {
+-  const db = await getDb()
+-
+-  await db.runAsync(
+-    `
+-    DELETE FROM notes
+-    WHERE id = ?;
+-    `,
+-    [id]
+-  )
++  const db = await getDB()
++  await db.runAsync(`DELETE FROM notes WHERE id = ?;`, [id])
+ }
+diff --git a/clean/mobile/src/features/notifications.js b/clean/mobile/src/features/notifications.js
+new file mode 100644
+index 0000000..c349441
+--- /dev/null
++++ b/clean/mobile/src/features/notifications.js
+@@ -0,0 +1,77 @@
++/**
++ * Thin wrapper around expo-notifications.
++ *
++ * The module is loaded lazily so the app still runs (reminders simply
++ * won't alert) if the native module isn't in the current build. Run
++ * `npx expo install expo-notifications` and rebuild to enable alerts.
++ */
++
++let Notifications = null
++let loadAttempted = false
++
++async function load() {
++  if (loadAttempted) return Notifications
++  loadAttempted = true
++  try {
++    Notifications = await import("expo-notifications")
++    Notifications.setNotificationHandler({
++      handleNotification: async () => ({
++        shouldShowAlert: true,
++        shouldPlaySound: true,
++        shouldSetBadge: false,
++      }),
++    })
++  } catch {
++    console.warn("expo-notifications unavailable - reminders will not alert.")
++    Notifications = null
++  }
++  return Notifications
++}
++
++export async function isAvailable() {
++  return Boolean(await load())
++}
++
++export async function requestPermission() {
++  const N = await load()
++  if (!N) return false
++
++  const { status: existing } = await N.getPermissionsAsync()
++  if (existing === "granted") return true
++
++  const { status } = await N.requestPermissionsAsync()
++  return status === "granted"
++}
++
++/**
++ * Schedules a daily repeating notification.
++ * timeOfDay is "HH:MM" in 24-hour form.
++ * Returns the notification id to store against the reminder, or null.
++ */
++export async function scheduleDailyReminder({ title, body = "", timeOfDay }) {
++  const N = await load()
++  if (!N) return null
++
++  const granted = await requestPermission()
++  if (!granted) return null
++
++  const [hourRaw, minuteRaw] = String(timeOfDay || "").split(":")
++  const hour = Number(hourRaw)
++  const minute = Number(minuteRaw)
++  if (Number.isNaN(hour) || Number.isNaN(minute)) return null
++
++  return N.scheduleNotificationAsync({
++    content: { title, body },
++    trigger: { hour, minute, repeats: true },
++  })
++}
++
++export async function cancelReminder(notificationId) {
++  const N = await load()
++  if (!N || !notificationId) return
++  try {
++    await N.cancelScheduledNotificationAsync(notificationId)
++  } catch (err) {
++    console.warn("Could not cancel notification:", err?.message)
++  }
++}
+diff --git a/clean/mobile/src/features/profile.db.js b/clean/mobile/src/features/profile.db.js
+index cbfbd6d..06d90ff 100644
+--- a/clean/mobile/src/features/profile.db.js
++++ b/clean/mobile/src/features/profile.db.js
+@@ -1,48 +1,76 @@
+-import { getDB } from "../db/index.js";
+-
+-export function getProfile() {
+-  const db = getDB();
+-
+-  return new Promise((resolve) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        "SELECT * FROM profiles ORDER BY id DESC LIMIT 1",
+-        [],
+-        (_, { rows }) => resolve(rows._array[0] || null)
+-      );
+-    });
+-  });
++import { getDB } from "../db"
++
++function parseJson(value, fallback) {
++  if (!value) return fallback
++  try {
++    return JSON.parse(value)
++  } catch {
++    return fallback
++  }
++}
++
++export async function getProfile() {
++  const db = await getDB()
++
++  const row = await db.getFirstAsync(
++    `SELECT * FROM profiles ORDER BY id DESC LIMIT 1;`
++  )
++  if (!row) return null
++
++  return {
++    ...row,
++    health_providers: parseJson(row.health_providers, []),
++    emergency_contacts: parseJson(row.emergency_contacts, []),
++  }
+ }
+ 
+-export function saveProfile(profile) {
+-  const db = getDB();
++/**
++ * Upserts the single local profile rather than inserting a new row
++ * every save, which is what the previous version did.
++ */
++export async function saveProfile(profile) {
++  const db = await getDB()
+   const {
++    name = "",
++    dob = "",
++    photo_uri = null,
++    health_info = "",
++    health_providers = [],
++    emergency_contacts = [],
++  } = profile || {}
++
++  const timestamp = new Date().toISOString()
++  const existing = await db.getFirstAsync(
++    `SELECT id FROM profiles ORDER BY id DESC LIMIT 1;`
++  )
++
++  const params = [
+     name,
+     dob,
+     photo_uri,
+     health_info,
+-    health_providers,
+-    emergency_contacts,
+-  } = profile;
+-
+-  return new Promise((resolve) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        INSERT INTO profiles
+-        (name, dob, photo_uri, health_info, health_providers, emergency_contacts)
+-        VALUES (?, ?, ?, ?, ?, ?)
+-        `,
+-        [
+-          name,
+-          dob,
+-          photo_uri || null,
+-          health_info,
+-          JSON.stringify(health_providers || []),
+-          JSON.stringify(emergency_contacts || []),
+-        ],
+-        () => resolve()
+-      );
+-    });
+-  });
++    JSON.stringify(health_providers || []),
++    JSON.stringify(emergency_contacts || []),
++    timestamp,
++  ]
++
++  if (existing) {
++    await db.runAsync(
++      `UPDATE profiles
++       SET name = ?, dob = ?, photo_uri = ?, health_info = ?,
++           health_providers = ?, emergency_contacts = ?, updated_at = ?
++       WHERE id = ?;`,
++      [...params, existing.id]
++    )
++    return { id: existing.id, ...profile }
++  }
++
++  const result = await db.runAsync(
++    `INSERT INTO profiles
++     (name, dob, photo_uri, health_info, health_providers, emergency_contacts, updated_at)
++     VALUES (?, ?, ?, ?, ?, ?, ?);`,
++    params
++  )
++
++  return { id: result.lastInsertRowId, ...profile }
+ }
+diff --git a/clean/mobile/src/features/reminders.db.js b/clean/mobile/src/features/reminders.db.js
+index 44e965e..5de9e6d 100644
+--- a/clean/mobile/src/features/reminders.db.js
++++ b/clean/mobile/src/features/reminders.db.js
+@@ -1,48 +1,75 @@
+ import { getDB } from "../db"
++import { scheduleDailyReminder, cancelReminder } from "./notifications"
+ 
+-// -------------------------
+-// Add reminder
+-// -------------------------
+-export function addReminder({
++export async function addReminder({
+   title,
+-  schedule = "",
++  schedule = "daily",
++  timeOfDay = "",
+   notes = "",
+ }) {
+-  const db = getDB()
+-
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        INSERT INTO reminders (title, schedule, notes, active)
+-        VALUES (?, ?, ?, 1)
+-        `,
+-        [title, schedule, notes],
+-        (_, result) => resolve(result),
+-        (_, error) => reject(error)
+-      )
+-    })
+-  })
++  const db = await getDB()
++  const createdAt = new Date().toISOString()
++
++  const notificationId = timeOfDay
++    ? await scheduleDailyReminder({ title, body: notes, timeOfDay })
++    : null
++
++  const result = await db.runAsync(
++    `INSERT INTO reminders (title, schedule, time_of_day, notes, active, notification_id, created_at)
++     VALUES (?, ?, ?, ?, 1, ?, ?);`,
++    [title, schedule, timeOfDay, notes, notificationId, createdAt]
++  )
++
++  return {
++    id: result.lastInsertRowId,
++    title,
++    schedule,
++    time_of_day: timeOfDay,
++    notes,
++    active: 1,
++    notification_id: notificationId,
++  }
++}
++
++export async function getReminders() {
++  const db = await getDB()
++  return db.getAllAsync(
++    `SELECT * FROM reminders ORDER BY active DESC, id DESC;`
++  )
++}
++
++export async function toggleReminder(id, active) {
++  const db = await getDB()
++  const row = await db.getFirstAsync(`SELECT * FROM reminders WHERE id = ?;`, [id])
++  if (!row) return
++
++  let notificationId = row.notification_id
++
++  if (active) {
++    notificationId = row.time_of_day
++      ? await scheduleDailyReminder({
++          title: row.title,
++          body: row.notes,
++          timeOfDay: row.time_of_day,
++        })
++      : null
++  } else {
++    await cancelReminder(row.notification_id)
++    notificationId = null
++  }
++
++  await db.runAsync(
++    `UPDATE reminders SET active = ?, notification_id = ? WHERE id = ?;`,
++    [active ? 1 : 0, notificationId, id]
++  )
+ }
+ 
+-// -------------------------
+-// Get reminders
+-// -------------------------
+-export function getReminders() {
+-  const db = getDB()
+-
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        SELECT *
+-        FROM reminders
+-        ORDER BY active DESC, id DESC
+-        `,
+-        [],
+-        (_, { rows }) => resolve(rows._array),
+-        (_, error) => reject(error)
+-      )
+-    })
+-  })
++export async function deleteReminder(id) {
++  const db = await getDB()
++  const row = await db.getFirstAsync(
++    `SELECT notification_id FROM reminders WHERE id = ?;`,
++    [id]
++  )
++  await cancelReminder(row?.notification_id)
++  await db.runAsync(`DELETE FROM reminders WHERE id = ?;`, [id])
+ }
+diff --git a/clean/mobile/src/features/symptoms.db.js b/clean/mobile/src/features/symptoms.db.js
+index 6a6bb22..ce564f3 100644
+--- a/clean/mobile/src/features/symptoms.db.js
++++ b/clean/mobile/src/features/symptoms.db.js
+@@ -1,44 +1,59 @@
+ import { getDB } from "../db"
+ 
+-// -------------------------
+-// Add symptom
+-// -------------------------
+-export function addSymptom({ symptom, severity = null, notes = "", tags = "" }) {
+-  const db = getDB()
+-
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        INSERT INTO symptoms (symptom, severity, notes, tags)
+-        VALUES (?, ?, ?, ?)
+-        `,
+-        [symptom, severity, notes, tags],
+-        (_, result) => resolve(result),
+-        (_, error) => reject(error)
+-      )
+-    })
+-  })
++export async function addSymptom({ symptom, severity = null, notes = "", tags = "" }) {
++  const db = await getDB()
++  const loggedAt = new Date().toISOString()
++
++  const result = await db.runAsync(
++    `INSERT INTO symptoms (symptom, severity, notes, tags, logged_at)
++     VALUES (?, ?, ?, ?, ?);`,
++    [symptom, severity, notes, tags, loggedAt]
++  )
++
++  return { id: result.lastInsertRowId, symptom, severity, notes, tags, logged_at: loggedAt }
++}
++
++export async function getSymptoms() {
++  const db = await getDB()
++  return db.getAllAsync(`SELECT * FROM symptoms ORDER BY logged_at DESC;`)
++}
++
++/**
++ * Symptoms for the 7 days ending today, grouped by date key (YYYY-MM-DD).
++ * Backs the weekly grid on the symptoms hub.
++ */
++export async function getSymptomsForWeek(endDate = new Date()) {
++  const db = await getDB()
++
++  const end = new Date(endDate)
++  end.setHours(23, 59, 59, 999)
++  const start = new Date(end)
++  start.setDate(start.getDate() - 6)
++  start.setHours(0, 0, 0, 0)
++
++  const rows = await db.getAllAsync(
++    `SELECT * FROM symptoms
++     WHERE logged_at >= ? AND logged_at <= ?
++     ORDER BY logged_at ASC;`,
++    [start.toISOString(), end.toISOString()]
++  )
++
++  const days = {}
++  for (let i = 0; i < 7; i++) {
++    const d = new Date(start)
++    d.setDate(start.getDate() + i)
++    days[d.toISOString().slice(0, 10)] = []
++  }
++
++  for (const row of rows) {
++    const key = String(row.logged_at).slice(0, 10)
++    if (days[key]) days[key].push(row)
++  }
++
++  return days
+ }
+ 
+-// -------------------------
+-// Get all symptoms
+-// -------------------------
+-export function getSymptoms() {
+-  const db = getDB()
+-
+-  return new Promise((resolve, reject) => {
+-    db.transaction((tx) => {
+-      tx.executeSql(
+-        `
+-        SELECT *
+-        FROM symptoms
+-        ORDER BY logged_at DESC
+-        `,
+-        [],
+-        (_, { rows }) => resolve(rows._array),
+-        (_, error) => reject(error)
+-      )
+-    })
+-  })
++export async function deleteSymptom(id) {
++  const db = await getDB()
++  await db.runAsync(`DELETE FROM symptoms WHERE id = ?;`, [id])
+ }
+diff --git a/clean/mobile/src/screens/ConsentScreen.jsx b/clean/mobile/src/screens/ConsentScreen.jsx
+new file mode 100644
+index 0000000..ca01a51
+--- /dev/null
++++ b/clean/mobile/src/screens/ConsentScreen.jsx
+@@ -0,0 +1,127 @@
++import {
++  Linking,
++  Pressable,
++  ScrollView,
++  StyleSheet,
++  Text,
++  View,
++} from "react-native"
++import { useState } from "react"
++
++import { acceptConsent } from "../features/consent.db"
++import { colors, layout, radii, spacing, typography } from "../theme"
++
++const PRIVACY_POLICY_URL = "https://thecentreforhealth.co.nz/kete-privacy"
++
++export default function ConsentScreen({ onAccepted }) {
++  const [saving, setSaving] = useState(false)
++
++  async function accept() {
++    if (saving) return
++    setSaving(true)
++    try {
++      await acceptConsent()
++      onAccepted?.()
++    } catch (err) {
++      console.warn("Could not record consent:", err?.message)
++      setSaving(false)
++    }
++  }
++
++  return (
++    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
++      <View style={styles.header}>
++        <Text style={styles.title}>Nau mai, haere mai</Text>
++        <Text style={styles.subtitle}>Welcome to Kete of Knowledge</Text>
++      </View>
++
++      <View style={styles.card}>
++        <Text style={styles.heading}>Your information stays with you</Text>
++        <Text style={styles.body}>
++          Everything you record in this app — your profile, goals, symptoms,
++          medicines, notes and contacts — is stored on this device only. It is
++          not uploaded to our servers and we cannot see it.
++        </Text>
++      </View>
++
++      <View style={styles.card}>
++        <Text style={styles.heading}>What we do collect</Text>
++        <Text style={styles.body}>
++          If you sign in, we store your email address so we can send you a
++          secure sign-in link. That is all.
++        </Text>
++      </View>
++
++      <View style={styles.card}>
++        <Text style={styles.heading}>This is not medical advice</Text>
++        <Text style={styles.body}>
++          The information in this app is for learning. It does not replace
++          advice from your doctor or health provider. If you feel unwell,
++          contact them or call 111.
++        </Text>
++      </View>
++
++      <Pressable
++        onPress={() => Linking.openURL(PRIVACY_POLICY_URL).catch(() => {})}
++        style={({ pressed }) => [styles.link, pressed && styles.pressed]}
++        accessibilityRole="link"
++      >
++        <Text style={styles.linkText}>Read the full privacy policy</Text>
++      </Pressable>
++
++      <Pressable
++        onPress={accept}
++        disabled={saving}
++        style={({ pressed }) => [
++          styles.primaryButton,
++          (saving || pressed) && styles.pressed,
++        ]}
++        accessibilityRole="button"
++        accessibilityLabel="I understand and agree"
++      >
++        <Text style={styles.primaryText}>
++          {saving ? "Just a moment…" : "I understand"}
++        </Text>
++      </Pressable>
++    </ScrollView>
++  )
++}
++
++const styles = StyleSheet.create({
++  screen: { backgroundColor: colors.cornsilk },
++  content: {
++    padding: layout.screenPadding,
++    gap: spacing.md,
++    paddingBottom: 40,
++    paddingTop: spacing.xl,
++  },
++  header: { gap: spacing.xs, marginBottom: spacing.sm },
++  title: { ...typography.display, color: colors.olive },
++  subtitle: { ...typography.body, color: colors.muted },
++  card: {
++    backgroundColor: colors.card,
++    borderRadius: radii.lg,
++    borderWidth: 1,
++    borderColor: colors.border,
++    padding: spacing.md,
++    gap: spacing.xs,
++  },
++  heading: { ...typography.bodyStrong, color: colors.text },
++  body: { ...typography.body, color: colors.muted },
++  link: { paddingVertical: spacing.sm, minHeight: 44, justifyContent: "center" },
++  linkText: {
++    ...typography.bodyStrong,
++    color: colors.olive,
++    textDecorationLine: "underline",
++  },
++  pressed: { opacity: 0.75 },
++  primaryButton: {
++    backgroundColor: colors.olive,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.md,
++    minHeight: 52,
++    alignItems: "center",
++    justifyContent: "center",
++  },
++  primaryText: { ...typography.bodyStrong, color: colors.cornsilk },
++})
+diff --git a/clean/mobile/src/screens/LibraryScreen.jsx b/clean/mobile/src/screens/LibraryScreen.jsx
+index 24aa917..93dff95 100644
+--- a/clean/mobile/src/screens/LibraryScreen.jsx
++++ b/clean/mobile/src/screens/LibraryScreen.jsx
+@@ -1,13 +1,20 @@
+  
+-import { ScrollView, Text, ActivityIndicator, StyleSheet, View } from "react-native"
++import {
++  ScrollView,
++  Text,
++  ActivityIndicator,
++  StyleSheet,
++  View,
++  Pressable,
++} from "react-native"
+ import { useEffect, useState } from "react"
+ 
+ import { fetchLearningResources } from "../api/appApi"
+ import SearchBar from "../components/library/SearchBar"
+ import CategorySection from "../components/library/CategorySection"
+-import { colors, layout, spacing, typography } from "../theme"
++import { colors, layout, radii, shadow, spacing, typography } from "../theme"
+ 
+-export default function LibraryScreen() {
++export default function LibraryScreen({ navigation }) {
+   const [resources, setResources] = useState([])   // ✅ default array
+   const [loading, setLoading] = useState(true)
+   const [query, setQuery] = useState("")
+@@ -43,6 +50,20 @@ export default function LibraryScreen() {
+ 
+       <SearchBar value={query} onChange={setQuery} />
+ 
++      <Pressable
++        onPress={() => navigation.navigate("Conditions")}
++        style={({ pressed }) => [styles.linkCard, pressed && { opacity: 0.85 }]}
++        accessibilityRole="button"
++        accessibilityLabel="Open the conditions library"
++      >
++        <Text style={styles.linkTitle}>Conditions</Text>
++        <Text style={styles.linkReo}>Ngā mate</Text>
++        <Text style={styles.linkBody}>
++          Plain-language information about heart conditions, what can trigger
++          them, and how they are managed.
++        </Text>
++      </Pressable>
++
+       <CategorySection
+         title="Learn"
+         items={filterByCategory("learn")}
+@@ -81,4 +102,26 @@ const styles = StyleSheet.create({
+     ...typography.caption,
+     color: colors.muted,
+   },
++  linkCard: {
++    backgroundColor: colors.card,
++    borderRadius: radii.lg,
++    borderWidth: 1,
++    borderColor: colors.border,
++    padding: spacing.md,
++    gap: spacing.xs,
++    ...shadow.card,
++  },
++  linkTitle: {
++    ...typography.title,
++    color: colors.text,
++  },
++  linkReo: {
++    ...typography.caption,
++    color: colors.muted,
++  },
++  linkBody: {
++    ...typography.body,
++    color: colors.muted,
++    marginTop: spacing.xs,
++  },
+ })
+diff --git a/clean/mobile/src/screens/SettingsScreen.jsx b/clean/mobile/src/screens/SettingsScreen.jsx
+index e69de29..ea29110 100644
+--- a/clean/mobile/src/screens/SettingsScreen.jsx
++++ b/clean/mobile/src/screens/SettingsScreen.jsx
+@@ -0,0 +1,207 @@
++import {
++  Alert,
++  Linking,
++  Pressable,
++  ScrollView,
++  Share,
++  StyleSheet,
++  Text,
++  View,
++} from "react-native"
++import { useState } from "react"
++
++import { useAuth } from "../auth/AuthContext"
++import { buildDataExportString } from "../features/exportData"
++import { wipeLocalData } from "../db"
++import { colors, layout, radii, shadow, spacing, typography } from "../theme"
++
++// Replace with the client's hosted policy URLs before store submission.
++const PRIVACY_POLICY_URL = "https://thecentreforhealth.co.nz/kete-privacy"
++const TERMS_URL = "https://thecentreforhealth.co.nz/kete-terms"
++const SUPPORT_EMAIL = "support@thecentreforhealth.co.nz"
++
++function Row({ label, reo, description, onPress, tone = "default" }) {
++  return (
++    <Pressable
++      onPress={onPress}
++      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
++      accessibilityRole="button"
++      accessibilityLabel={label}
++    >
++      <Text style={[styles.rowLabel, tone === "danger" && styles.dangerText]}>
++        {label}
++      </Text>
++      {reo ? <Text style={styles.rowReo}>{reo}</Text> : null}
++      {description ? (
++        <Text style={styles.rowDescription}>{description}</Text>
++      ) : null}
++    </Pressable>
++  )
++}
++
++export default function SettingsScreen() {
++  const { isAuthenticated, isGuest, login, logout, session } = useAuth()
++  const [busy, setBusy] = useState(false)
++
++  async function exportData() {
++    if (busy) return
++    setBusy(true)
++    try {
++      const payload = await buildDataExportString()
++      await Share.share({
++        title: "My Kete of Knowledge data",
++        message: payload,
++      })
++    } catch (err) {
++      Alert.alert("Export failed", "Couldn't prepare your data just now.")
++      console.warn("Export failed:", err?.message)
++    } finally {
++      setBusy(false)
++    }
++  }
++
++  function confirmDelete() {
++    Alert.alert(
++      "Delete my data",
++      "This permanently removes everything saved on this device — your profile, goals, symptoms, medicines, notes, reminders, checklists and contacts. This cannot be undone.",
++      [
++        { text: "Cancel", style: "cancel" },
++        {
++          text: "Delete everything",
++          style: "destructive",
++          onPress: async () => {
++            try {
++              await wipeLocalData()
++              Alert.alert("Deleted", "Your data has been removed from this device.")
++            } catch (err) {
++              Alert.alert("Couldn't delete", "Please try again.")
++              console.warn("Wipe failed:", err?.message)
++            }
++          },
++        },
++      ]
++    )
++  }
++
++  function open(url) {
++    Linking.openURL(url).catch(() =>
++      Alert.alert("Couldn't open link", "Please check your connection.")
++    )
++  }
++
++  return (
++    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
++      <View style={styles.header}>
++        <Text style={styles.title}>Settings</Text>
++        <Text style={styles.subtitle}>Tautuhinga</Text>
++      </View>
++
++      <View style={styles.group}>
++        <Text style={styles.groupTitle}>Account</Text>
++        {session?.user?.email ? (
++          <Text style={styles.accountEmail}>{session.user.email}</Text>
++        ) : (
++          <Text style={styles.accountEmail}>
++            {isGuest ? "Browsing as guest" : "Not signed in"}
++          </Text>
++        )}
++        <Row
++          label={isAuthenticated ? "Sign out" : "Sign in"}
++          reo={isAuthenticated ? "Takiputa" : "Takiuru"}
++          onPress={isAuthenticated ? logout : login}
++        />
++      </View>
++
++      <View style={styles.group}>
++        <Text style={styles.groupTitle}>My data</Text>
++        <Row
++          label={busy ? "Preparing…" : "Export my data"}
++          reo="Tuku i aku raraunga"
++          description="Save a copy of everything stored on this device."
++          onPress={exportData}
++        />
++        <Row
++          label="Delete my data"
++          reo="Muku i aku raraunga"
++          description="Permanently remove everything saved on this device."
++          onPress={confirmDelete}
++          tone="danger"
++        />
++      </View>
++
++      <View style={styles.group}>
++        <Text style={styles.groupTitle}>Privacy & help</Text>
++        <Row
++          label="Privacy policy"
++          reo="Kaupapa here matatapu"
++          onPress={() => open(PRIVACY_POLICY_URL)}
++        />
++        <Row
++          label="Terms of use"
++          reo="Ngā ture whakamahi"
++          onPress={() => open(TERMS_URL)}
++        />
++        <Row
++          label="Get help"
++          reo="Tono āwhina"
++          description={SUPPORT_EMAIL}
++          onPress={() => open(`mailto:${SUPPORT_EMAIL}`)}
++        />
++      </View>
++
++      <Text style={styles.footnote}>
++        Your health information is stored on this device only. It is not
++        uploaded to our servers.
++      </Text>
++    </ScrollView>
++  )
++}
++
++const styles = StyleSheet.create({
++  screen: { backgroundColor: colors.cornsilk },
++  content: {
++    padding: layout.screenPadding,
++    gap: spacing.md,
++    paddingBottom: 40,
++  },
++  header: { gap: spacing.xs },
++  title: { ...typography.display, color: colors.olive },
++  subtitle: { ...typography.caption, color: colors.muted },
++  group: {
++    backgroundColor: colors.card,
++    borderRadius: radii.lg,
++    borderWidth: 1,
++    borderColor: colors.border,
++    padding: spacing.md,
++    gap: spacing.xs,
++    ...shadow.card,
++  },
++  groupTitle: { ...typography.title, color: colors.text },
++  accountEmail: {
++    ...typography.caption,
++    color: colors.muted,
++    marginBottom: spacing.xs,
++  },
++  row: {
++    paddingVertical: spacing.sm,
++    borderTopWidth: 1,
++    borderTopColor: colors.border,
++    minHeight: 48,
++    justifyContent: "center",
++  },
++  pressed: { opacity: 0.7 },
++  rowLabel: { ...typography.bodyStrong, color: colors.olive },
++  rowReo: { ...typography.caption, color: colors.muted },
++  rowDescription: {
++    ...typography.caption,
++    color: colors.muted,
++    marginTop: 2,
++  },
++  dangerText: { color: colors.orange },
++  footnote: {
++    ...typography.caption,
++    color: colors.muted,
++    textAlign: "center",
++    lineHeight: 19,
++  },
++})
+diff --git a/clean/mobile/src/screens/hub/AddChecklistScreen.jsx b/clean/mobile/src/screens/hub/AddChecklistScreen.jsx
+index e098cde..0d16e97 100644
+--- a/clean/mobile/src/screens/hub/AddChecklistScreen.jsx
++++ b/clean/mobile/src/screens/hub/AddChecklistScreen.jsx
+@@ -2,6 +2,7 @@
+  
+ import { View, TextInput, Pressable, Text, StyleSheet } from "react-native"
+ import { useState } from "react"
++import { addChecklist } from "../../features/checklists.db"
+ import { colors, radii, spacing, typography } from "../../theme"
+ import { useAuth } from "../../auth/AuthContext"
+ import GuestGate from "../../auth/GuestGate"
+@@ -18,10 +19,18 @@ export default function AddChecklistScreen({ navigation }) {
+     setItem("")
+   }
+ 
+-  function save() {
+-    if (!title) return
+-    // later → SQLite insert
+-    navigation.goBack()
++  const [saving, setSaving] = useState(false)
++
++  async function save() {
++    if (!title.trim() || saving) return
++    setSaving(true)
++    try {
++      await addChecklist({ title: title.trim(), items })
++      navigation.goBack()
++    } catch (err) {
++      console.warn("Could not save checklist:", err?.message)
++      setSaving(false)
++    }
+   }
+ 
+   if (isGuest) {
+diff --git a/clean/mobile/src/screens/hub/AddContactScreen.jsx b/clean/mobile/src/screens/hub/AddContactScreen.jsx
+new file mode 100644
+index 0000000..666f1aa
+--- /dev/null
++++ b/clean/mobile/src/screens/hub/AddContactScreen.jsx
+@@ -0,0 +1,185 @@
++import {
++  Pressable,
++  ScrollView,
++  StyleSheet,
++  Text,
++  TextInput,
++  View,
++} from "react-native"
++import { useState } from "react"
++
++import { CONTACT_CATEGORIES, addContact } from "../../features/contacts.db"
++import { colors, layout, radii, spacing, typography } from "../../theme"
++import { useAuth } from "../../auth/AuthContext"
++import GuestGate from "../../auth/GuestGate"
++
++export default function AddContactScreen({ navigation }) {
++  const [name, setName] = useState("")
++  const [relationship, setRelationship] = useState("")
++  const [phone, setPhone] = useState("")
++  const [email, setEmail] = useState("")
++  const [category, setCategory] = useState("whanau")
++  const [isEmergency, setIsEmergency] = useState(false)
++  const [saving, setSaving] = useState(false)
++  const { isGuest } = useAuth()
++
++  async function save() {
++    if (!name.trim() || saving) return
++    setSaving(true)
++    try {
++      await addContact({
++        name: name.trim(),
++        relationship,
++        phone,
++        email,
++        category,
++        isEmergency,
++      })
++      navigation.goBack()
++    } catch (err) {
++      console.warn("Could not save contact:", err?.message)
++      setSaving(false)
++    }
++  }
++
++  if (isGuest) {
++    return (
++      <GuestGate
++        title="Sign in to add contacts"
++        subtitle="Takiuru kia tāpiri whakapā"
++        description="Create an account to save your whānau and provider contacts."
++      />
++    )
++  }
++
++  return (
++    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
++      <Text style={styles.title}>New Contact</Text>
++
++      <TextInput
++        placeholder="Name"
++        value={name}
++        onChangeText={setName}
++        style={styles.input}
++        accessibilityLabel="Contact name"
++      />
++      <TextInput
++        placeholder="Relationship (e.g. daughter, GP)"
++        value={relationship}
++        onChangeText={setRelationship}
++        style={styles.input}
++      />
++      <TextInput
++        placeholder="Phone number"
++        value={phone}
++        onChangeText={setPhone}
++        keyboardType="phone-pad"
++        style={styles.input}
++      />
++      <TextInput
++        placeholder="Email (optional)"
++        value={email}
++        onChangeText={setEmail}
++        keyboardType="email-address"
++        autoCapitalize="none"
++        style={styles.input}
++      />
++
++      <Text style={styles.label}>Category</Text>
++      <View style={styles.row}>
++        {CONTACT_CATEGORIES.map(({ key, label }) => (
++          <Pressable
++            key={key}
++            onPress={() => setCategory(key)}
++            style={[styles.chip, category === key && styles.chipActive]}
++            accessibilityRole="radio"
++            accessibilityState={{ selected: category === key }}
++          >
++            <Text
++              style={[
++                styles.chipText,
++                category === key && styles.chipTextActive,
++              ]}
++            >
++              {label}
++            </Text>
++          </Pressable>
++        ))}
++      </View>
++
++      <Pressable
++        onPress={() => setIsEmergency((v) => !v)}
++        style={[styles.toggle, isEmergency && styles.toggleActive]}
++        accessibilityRole="checkbox"
++        accessibilityState={{ checked: isEmergency }}
++      >
++        <Text
++          style={[styles.chipText, isEmergency && styles.chipTextActive]}
++        >
++          {isEmergency ? "✓ " : ""}Show in emergency quick-dial
++        </Text>
++      </Pressable>
++
++      <Pressable
++        onPress={save}
++        disabled={!name.trim() || saving}
++        style={({ pressed }) => [
++          styles.primaryButton,
++          (!name.trim() || saving || pressed) && styles.buttonPressed,
++        ]}
++      >
++        <Text style={styles.primaryText}>
++          {saving ? "Saving…" : "Save Contact"}
++        </Text>
++      </Pressable>
++    </ScrollView>
++  )
++}
++
++const styles = StyleSheet.create({
++  screen: { backgroundColor: colors.cornsilk },
++  content: { padding: layout.screenPadding, gap: spacing.sm, paddingBottom: 40 },
++  title: { ...typography.title, color: colors.text, marginBottom: spacing.xs },
++  label: { ...typography.caption, color: colors.muted, marginTop: spacing.sm },
++  input: {
++    backgroundColor: colors.card,
++    borderRadius: radii.md,
++    borderWidth: 1,
++    borderColor: colors.border,
++    paddingHorizontal: spacing.md,
++    paddingVertical: spacing.sm,
++    minHeight: 48,
++  },
++  row: { flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
++  chip: {
++    backgroundColor: colors.surface,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.sm,
++    paddingHorizontal: spacing.md,
++    minHeight: 44,
++    justifyContent: "center",
++  },
++  chipActive: { backgroundColor: colors.olive },
++  chipText: { ...typography.bodyStrong, color: colors.russet },
++  chipTextActive: { color: colors.cornsilk },
++  toggle: {
++    backgroundColor: colors.surface,
++    borderRadius: radii.md,
++    padding: spacing.md,
++    marginTop: spacing.sm,
++    minHeight: 48,
++    justifyContent: "center",
++  },
++  toggleActive: { backgroundColor: colors.olive },
++  primaryButton: {
++    marginTop: spacing.md,
++    backgroundColor: colors.olive,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.sm,
++    minHeight: 48,
++    alignItems: "center",
++    justifyContent: "center",
++  },
++  buttonPressed: { opacity: 0.7 },
++  primaryText: { ...typography.bodyStrong, color: colors.cornsilk },
++})
+diff --git a/clean/mobile/src/screens/hub/AddReminderScreen.jsx b/clean/mobile/src/screens/hub/AddReminderScreen.jsx
+index 7e41fb6..0d14c0d 100644
+--- a/clean/mobile/src/screens/hub/AddReminderScreen.jsx
++++ b/clean/mobile/src/screens/hub/AddReminderScreen.jsx
+@@ -1,21 +1,51 @@
+- 
+- 
+-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
++import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native"
+ import { useState } from "react"
++
++import { addReminder } from "../../features/reminders.db"
+ import { colors, radii, spacing, typography } from "../../theme"
+ import { useAuth } from "../../auth/AuthContext"
+ import GuestGate from "../../auth/GuestGate"
+ 
++const PRESETS = [
++  { label: "Morning", value: "08:00" },
++  { label: "Midday", value: "12:00" },
++  { label: "Evening", value: "18:00" },
++  { label: "Night", value: "21:00" },
++]
++
++const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/
++
+ export default function AddReminderScreen({ navigation }) {
+   const [title, setTitle] = useState("")
+   const [time, setTime] = useState("")
+   const [notes, setNotes] = useState("")
++  const [saving, setSaving] = useState(false)
++  const [error, setError] = useState("")
+   const { isGuest } = useAuth()
+ 
+-  function save() {
+-    if (!title) return
+-    // later → SQLite insert
+-    navigation.goBack()
++  async function save() {
++    if (!title.trim() || saving) return
++
++    if (time && !TIME_PATTERN.test(time)) {
++      setError("Please enter the time as HH:MM, for example 08:30.")
++      return
++    }
++
++    setSaving(true)
++    setError("")
++    try {
++      await addReminder({
++        title: title.trim(),
++        schedule: "daily",
++        timeOfDay: time,
++        notes,
++      })
++      navigation.goBack()
++    } catch (err) {
++      console.warn("Could not save reminder:", err?.message)
++      setError("Something went wrong saving this reminder.")
++      setSaving(false)
++    }
+   }
+ 
+   if (isGuest) {
+@@ -29,20 +59,50 @@ export default function AddReminderScreen({ navigation }) {
+   }
+ 
+   return (
+-    <View style={styles.container}>
++    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+       <Text style={styles.title}>Add Reminder</Text>
++
+       <TextInput
+         placeholder="Reminder title"
+         value={title}
+         onChangeText={setTitle}
+         style={styles.input}
++        accessibilityLabel="Reminder title"
+       />
++
++      <Text style={styles.label}>When each day</Text>
++      <View style={styles.row}>
++        {PRESETS.map((preset) => (
++          <Pressable
++            key={preset.value}
++            onPress={() => setTime(preset.value)}
++            style={[styles.chip, time === preset.value && styles.chipActive]}
++            accessibilityRole="radio"
++            accessibilityState={{ selected: time === preset.value }}
++          >
++            <Text
++              style={[
++                styles.chipText,
++                time === preset.value && styles.chipTextActive,
++              ]}
++            >
++              {preset.label}
++            </Text>
++          </Pressable>
++        ))}
++      </View>
++
+       <TextInput
+-        placeholder="Time (e.g. Morning)"
++        placeholder="Or type a time (HH:MM)"
+         value={time}
+-        onChangeText={setTime}
++        onChangeText={(value) => {
++          setTime(value)
++          setError("")
++        }}
+         style={styles.input}
++        accessibilityLabel="Reminder time in 24 hour format"
+       />
++
+       <TextInput
+         placeholder="Notes"
+         value={notes}
+@@ -50,43 +110,62 @@ export default function AddReminderScreen({ navigation }) {
+         style={[styles.input, styles.inputMultiline]}
+         multiline
+       />
+-      <Pressable onPress={save} style={styles.primaryButton}>
+-        <Text style={styles.primaryText}>Save Reminder</Text>
++
++      {error ? <Text style={styles.error}>{error}</Text> : null}
++
++      <Pressable
++        onPress={save}
++        disabled={!title.trim() || saving}
++        style={({ pressed }) => [
++          styles.primaryButton,
++          (!title.trim() || saving || pressed) && styles.buttonPressed,
++        ]}
++      >
++        <Text style={styles.primaryText}>
++          {saving ? "Saving…" : "Save Reminder"}
++        </Text>
+       </Pressable>
+-    </View>
++    </ScrollView>
+   )
+ }
+ 
+ const styles = StyleSheet.create({
+-  container: {
+-    padding: spacing.lg,
+-    gap: spacing.md,
+-    backgroundColor: colors.cornsilk,
+-    flex: 1,
+-  },
+-  title: {
+-    ...typography.title,
+-    color: colors.text,
++  screen: { backgroundColor: colors.cornsilk },
++  container: { padding: 20, gap: spacing.sm, paddingBottom: 40 },
++  title: { ...typography.title, color: colors.text },
++  label: { ...typography.caption, color: colors.muted, marginTop: spacing.sm },
++  row: { flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
++  chip: {
++    backgroundColor: colors.surface,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.sm,
++    paddingHorizontal: spacing.md,
++    minHeight: 44,
++    justifyContent: "center",
+   },
++  chipActive: { backgroundColor: colors.olive },
++  chipText: { ...typography.bodyStrong, color: colors.russet },
++  chipTextActive: { color: colors.cornsilk },
+   input: {
+-    padding: spacing.md,
++    backgroundColor: colors.card,
+     borderRadius: radii.md,
+     borderWidth: 1,
+     borderColor: colors.border,
+-    backgroundColor: colors.card,
+-  },
+-  inputMultiline: {
+-    minHeight: 90,
+-    textAlignVertical: "top",
++    paddingHorizontal: spacing.md,
++    paddingVertical: spacing.sm,
++    minHeight: 48,
+   },
++  inputMultiline: { minHeight: 100, textAlignVertical: "top" },
++  error: { ...typography.caption, color: colors.orange },
+   primaryButton: {
+-    padding: spacing.md,
+-    borderRadius: radii.md,
++    marginTop: spacing.md,
+     backgroundColor: colors.olive,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.sm,
++    minHeight: 48,
+     alignItems: "center",
++    justifyContent: "center",
+   },
+-  primaryText: {
+-    ...typography.bodyStrong,
+-    color: colors.cornsilk,
+-  },
++  buttonPressed: { opacity: 0.7 },
++  primaryText: { ...typography.bodyStrong, color: colors.cornsilk },
+ })
+diff --git a/clean/mobile/src/screens/hub/ChecklistsScreen.jsx b/clean/mobile/src/screens/hub/ChecklistsScreen.jsx
+index 8373f99..12ecbaa 100644
+--- a/clean/mobile/src/screens/hub/ChecklistsScreen.jsx
++++ b/clean/mobile/src/screens/hub/ChecklistsScreen.jsx
+@@ -1,8 +1,12 @@
+-/* eslint-disable no-unused-vars */
+- 
+- 
+-import { ScrollView, Text, View, Pressable, StyleSheet } from "react-native"
+-import { useState } from "react"
++import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
++import { useCallback, useState } from "react"
++import { useFocusEffect } from "@react-navigation/native"
++
++import {
++  deleteChecklist,
++  getChecklists,
++  toggleChecklistItem,
++} from "../../features/checklists.db"
+ import { colors, radii, shadow, spacing, typography } from "../../theme"
+ import { useAuth } from "../../auth/AuthContext"
+ import { useAuthGuard } from "../../auth/useAuthGuard"
+@@ -12,17 +16,41 @@ export default function ChecklistsScreen({ navigation }) {
+   const { isGuest } = useAuth()
+   const guard = useAuthGuard()
+ 
++  const load = useCallback(() => {
++    getChecklists()
++      .then((rows) => setChecklists(rows || []))
++      .catch((err) => console.warn("Could not load checklists:", err?.message))
++  }, [])
++
++  useFocusEffect(
++    useCallback(() => {
++      load()
++    }, [load])
++  )
++
++  function confirmDelete(list) {
++    Alert.alert("Delete checklist", `Delete "${list.title}"?`, [
++      { text: "Cancel", style: "cancel" },
++      {
++        text: "Delete",
++        style: "destructive",
++        onPress: () => deleteChecklist(list.id).then(load),
++      },
++    ])
++  }
++
+   return (
+     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+       <View style={styles.header}>
+         <Text style={styles.title}>Checklists</Text>
+         <Text style={styles.subtitle}>Rārangi arowhai</Text>
+       </View>
++
+       <Pressable
+         onPress={() => guard(() => navigation.navigate("AddChecklist"))}
+         style={({ pressed }) => [
+           styles.primaryButton,
+-          (isGuest || pressed) && styles.primaryButtonDisabled,
++          (isGuest || pressed) && styles.buttonPressed,
+         ]}
+       >
+         <Text style={styles.primaryText}>Create Checklist</Text>
+@@ -31,68 +59,106 @@ export default function ChecklistsScreen({ navigation }) {
+       {checklists.length === 0 ? (
+         <Text style={styles.empty}>No checklists yet</Text>
+       ) : (
+-        checklists.map((list, index) => (
+-          <View key={index} style={styles.card}>
+-            <Text style={styles.cardTitle}>{list.title}</Text>
+-            <Text style={styles.cardMeta}>{list.items.length} items</Text>
+-          </View>
+-        ))
++        checklists.map((list) => {
++          const done = list.items.filter((i) => i.done).length
++          return (
++            <View key={list.id} style={styles.card}>
++              <Text style={styles.cardTitle}>{list.title}</Text>
++              <Text style={styles.cardMeta}>
++                {done} of {list.items.length} done
++              </Text>
++
++              {list.items.map((item) => (
++                <Pressable
++                  key={item.id}
++                  onPress={() =>
++                    guard(() =>
++                      toggleChecklistItem(item.id, !item.done).then(load)
++                    )
++                  }
++                  style={({ pressed }) => [
++                    styles.item,
++                    pressed && styles.buttonPressed,
++                  ]}
++                  accessibilityRole="checkbox"
++                  accessibilityState={{ checked: Boolean(item.done) }}
++                  accessibilityLabel={item.label}
++                >
++                  <Text style={styles.itemBox}>{item.done ? "☑" : "☐"}</Text>
++                  <Text
++                    style={[styles.itemText, item.done && styles.itemTextDone]}
++                  >
++                    {item.label}
++                  </Text>
++                </Pressable>
++              ))}
++
++              <Pressable
++                onPress={() => guard(() => confirmDelete(list))}
++                style={({ pressed }) => [
++                  styles.deleteButton,
++                  pressed && styles.buttonPressed,
++                ]}
++                accessibilityRole="button"
++                accessibilityLabel={`Delete checklist ${list.title}`}
++              >
++                <Text style={styles.deleteText}>Delete list</Text>
++              </Pressable>
++            </View>
++          )
++        })
+       )}
+     </ScrollView>
+   )
+ }
+ 
+ const styles = StyleSheet.create({
+-  screen: {
+-    backgroundColor: colors.cornsilk,
+-  },
+-  content: {
+-    padding: spacing.lg,
+-    gap: spacing.md,
+-    paddingBottom: 40,
+-  },
+-  header: {
+-    gap: spacing.xs,
+-  },
+-  title: {
+-    ...typography.title,
+-    color: colors.text,
+-  },
+-  subtitle: {
+-    ...typography.caption,
+-    color: colors.muted,
+-  },
++  screen: { backgroundColor: colors.cornsilk },
++  content: { padding: 20, gap: spacing.md, paddingBottom: 40 },
++  header: { gap: spacing.xs },
++  title: { ...typography.display, color: colors.olive },
++  subtitle: { ...typography.caption, color: colors.muted },
+   primaryButton: {
+-    padding: spacing.md,
+-    borderRadius: radii.md,
+     backgroundColor: colors.olive,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.sm,
++    minHeight: 48,
+     alignItems: "center",
++    justifyContent: "center",
+   },
+-  primaryButtonDisabled: {
+-    opacity: 0.6,
+-  },
+-  primaryText: {
+-    ...typography.bodyStrong,
+-    color: colors.cornsilk,
+-  },
+-  empty: {
+-    ...typography.body,
+-    color: colors.muted,
+-  },
++  buttonPressed: { opacity: 0.7 },
++  primaryText: { ...typography.bodyStrong, color: colors.cornsilk },
+   card: {
+-    padding: spacing.md,
+     backgroundColor: colors.card,
+-    borderRadius: radii.md,
++    borderRadius: radii.lg,
+     borderWidth: 1,
+     borderColor: colors.border,
++    padding: spacing.md,
++    gap: spacing.xs,
+     ...shadow.card,
+   },
+-  cardTitle: {
+-    ...typography.bodyStrong,
+-    color: colors.text,
++  cardTitle: { ...typography.title, color: colors.text },
++  cardMeta: { ...typography.caption, color: colors.muted },
++  item: {
++    flexDirection: "row",
++    alignItems: "center",
++    gap: spacing.sm,
++    paddingVertical: spacing.sm,
++    minHeight: 44,
+   },
+-  cardMeta: {
+-    ...typography.caption,
+-    color: colors.muted,
++  itemBox: { fontSize: 20, color: colors.olive },
++  itemText: { ...typography.body, color: colors.text, flexShrink: 1 },
++  itemTextDone: { color: colors.muted, textDecorationLine: "line-through" },
++  deleteButton: {
++    alignSelf: "flex-start",
++    backgroundColor: colors.surface,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.xs,
++    paddingHorizontal: spacing.md,
++    minHeight: 44,
++    justifyContent: "center",
++    marginTop: spacing.xs,
+   },
++  deleteText: { ...typography.bodyStrong, color: colors.russet },
++  empty: { ...typography.body, color: colors.muted, textAlign: "center" },
+ })
+diff --git a/clean/mobile/src/screens/hub/ContactsScreen.jsx b/clean/mobile/src/screens/hub/ContactsScreen.jsx
+new file mode 100644
+index 0000000..7889eb0
+--- /dev/null
++++ b/clean/mobile/src/screens/hub/ContactsScreen.jsx
+@@ -0,0 +1,242 @@
++import {
++  Alert,
++  Linking,
++  Pressable,
++  ScrollView,
++  StyleSheet,
++  Text,
++  View,
++} from "react-native"
++import { useCallback, useState } from "react"
++import { useFocusEffect } from "@react-navigation/native"
++
++import {
++  CONTACT_CATEGORIES,
++  deleteContact,
++  getContactsByCategory,
++} from "../../features/contacts.db"
++import { colors, layout, radii, shadow, spacing, typography } from "../../theme"
++import { useAuth } from "../../auth/AuthContext"
++import { useAuthGuard } from "../../auth/useAuthGuard"
++
++export async function dial(phone) {
++  if (!phone) return
++  const url = `tel:${String(phone).replace(/\s+/g, "")}`
++  const supported = await Linking.canOpenURL(url)
++  if (supported) {
++    Linking.openURL(url)
++  } else {
++    Alert.alert("Can't make calls", "This device can't start a phone call.")
++  }
++}
++
++export default function ContactsScreen({ navigation }) {
++  const [grouped, setGrouped] = useState({})
++  const { isGuest } = useAuth()
++  const guard = useAuthGuard()
++
++  const load = useCallback(() => {
++    getContactsByCategory()
++      .then(setGrouped)
++      .catch((err) => console.warn("Could not load contacts:", err?.message))
++  }, [])
++
++  useFocusEffect(
++    useCallback(() => {
++      load()
++    }, [load])
++  )
++
++  function confirmDelete(contact) {
++    Alert.alert("Remove contact", `Remove ${contact.name} from your contacts?`, [
++      { text: "Cancel", style: "cancel" },
++      {
++        text: "Remove",
++        style: "destructive",
++        onPress: () => deleteContact(contact.id).then(load),
++      },
++    ])
++  }
++
++  const emergency = (grouped.emergency || []).concat(
++    Object.values(grouped)
++      .flat()
++      .filter((c) => c.is_emergency && c.category !== "emergency")
++  )
++
++  return (
++    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
++      <View style={styles.header}>
++        <Text style={styles.title}>Contacts</Text>
++        <Text style={styles.subtitle}>Ngā whakapā</Text>
++      </View>
++
++      <Pressable
++        onPress={() => dial("111")}
++        style={({ pressed }) => [styles.emergencyBar, pressed && styles.pressed]}
++        accessibilityRole="button"
++        accessibilityLabel="Call 111 emergency services"
++      >
++        <Text style={styles.emergencyText}>Call 111</Text>
++        <Text style={styles.emergencySub}>Emergency services</Text>
++      </Pressable>
++
++      {emergency.length > 0 ? (
++        <View style={styles.quickRow}>
++          {emergency.slice(0, 3).map((contact) => (
++            <Pressable
++              key={`quick-${contact.id}`}
++              onPress={() => dial(contact.phone)}
++              style={({ pressed }) => [styles.quickChip, pressed && styles.pressed]}
++              accessibilityRole="button"
++              accessibilityLabel={`Call ${contact.name}`}
++            >
++              <Text style={styles.quickChipText} numberOfLines={1}>
++                {contact.name}
++              </Text>
++            </Pressable>
++          ))}
++        </View>
++      ) : null}
++
++      <Pressable
++        onPress={() => guard(() => navigation.navigate("AddContact"))}
++        style={({ pressed }) => [
++          styles.primaryButton,
++          (isGuest || pressed) && styles.pressed,
++        ]}
++      >
++        <Text style={styles.primaryText}>Add Contact</Text>
++      </Pressable>
++
++      {CONTACT_CATEGORIES.map(({ key, label, reo }) => {
++        const items = grouped[key] || []
++        return (
++          <View key={key} style={styles.section}>
++            <Text style={styles.sectionTitle}>{label}</Text>
++            <Text style={styles.sectionReo}>{reo}</Text>
++
++            {items.length === 0 ? (
++              <Text style={styles.empty}>None added yet</Text>
++            ) : (
++              items.map((contact) => (
++                <View key={contact.id} style={styles.card}>
++                  <View style={styles.cardMain}>
++                    <Text style={styles.cardTitle}>{contact.name}</Text>
++                    {contact.relationship ? (
++                      <Text style={styles.cardMeta}>{contact.relationship}</Text>
++                    ) : null}
++                    {contact.phone ? (
++                      <Text style={styles.cardMeta}>{contact.phone}</Text>
++                    ) : null}
++                  </View>
++
++                  <View style={styles.cardActions}>
++                    {contact.phone ? (
++                      <Pressable
++                        onPress={() => dial(contact.phone)}
++                        style={({ pressed }) => [
++                          styles.callButton,
++                          pressed && styles.pressed,
++                        ]}
++                        accessibilityRole="button"
++                        accessibilityLabel={`Call ${contact.name}`}
++                      >
++                        <Text style={styles.callText}>Call</Text>
++                      </Pressable>
++                    ) : null}
++                    <Pressable
++                      onPress={() => guard(() => confirmDelete(contact))}
++                      style={({ pressed }) => [
++                        styles.removeButton,
++                        pressed && styles.pressed,
++                      ]}
++                      accessibilityRole="button"
++                      accessibilityLabel={`Remove ${contact.name}`}
++                    >
++                      <Text style={styles.removeText}>Remove</Text>
++                    </Pressable>
++                  </View>
++                </View>
++              ))
++            )}
++          </View>
++        )
++      })}
++    </ScrollView>
++  )
++}
++
++const styles = StyleSheet.create({
++  screen: { backgroundColor: colors.cornsilk },
++  content: {
++    padding: layout.screenPadding,
++    gap: spacing.md,
++    paddingBottom: 40,
++  },
++  header: { gap: spacing.xs },
++  title: { ...typography.display, color: colors.olive },
++  subtitle: { ...typography.caption, color: colors.muted },
++  pressed: { opacity: 0.85 },
++  emergencyBar: {
++    backgroundColor: colors.orange,
++    borderRadius: radii.lg,
++    padding: spacing.md,
++    alignItems: "center",
++    ...shadow.card,
++  },
++  emergencyText: { ...typography.display, color: colors.white, fontSize: 24 },
++  emergencySub: { ...typography.caption, color: colors.white, opacity: 0.9 },
++  quickRow: { flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
++  quickChip: {
++    backgroundColor: colors.meringue,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.sm,
++    paddingHorizontal: spacing.md,
++    maxWidth: "48%",
++  },
++  quickChipText: { ...typography.bodyStrong, color: colors.olive },
++  primaryButton: {
++    backgroundColor: colors.olive,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.sm,
++    alignItems: "center",
++  },
++  primaryText: { ...typography.bodyStrong, color: colors.cornsilk },
++  section: { gap: spacing.xs, marginTop: spacing.sm },
++  sectionTitle: { ...typography.title, color: colors.text },
++  sectionReo: { ...typography.caption, color: colors.muted },
++  card: {
++    backgroundColor: colors.card,
++    borderRadius: radii.lg,
++    borderWidth: 1,
++    borderColor: colors.border,
++    padding: spacing.md,
++    marginTop: spacing.xs,
++    gap: spacing.sm,
++    ...shadow.card,
++  },
++  cardMain: { gap: 2 },
++  cardTitle: { ...typography.bodyStrong, color: colors.text },
++  cardMeta: { ...typography.caption, color: colors.muted },
++  cardActions: { flexDirection: "row", gap: spacing.sm },
++  callButton: {
++    backgroundColor: colors.olive,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.xs,
++    paddingHorizontal: spacing.md,
++    minHeight: 44,
++    justifyContent: "center",
++  },
++  callText: { ...typography.bodyStrong, color: colors.cornsilk },
++  removeButton: {
++    backgroundColor: colors.surface,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.xs,
++    paddingHorizontal: spacing.md,
++    minHeight: 44,
++    justifyContent: "center",
++  },
++  removeText: { ...typography.bodyStrong, color: colors.russet },
++  empty: { ...typography.caption, color: colors.muted, marginTop: spacing.xs },
++})
+diff --git a/clean/mobile/src/screens/hub/HubScreen.jsx b/clean/mobile/src/screens/hub/HubScreen.jsx
+index c37ac0c..7a1c14e 100644
+--- a/clean/mobile/src/screens/hub/HubScreen.jsx
++++ b/clean/mobile/src/screens/hub/HubScreen.jsx
+@@ -13,6 +13,7 @@ export default function HubScreen({ navigation }) {
+     { label: "Reminders", subtitle: "Whakamahara", route: "Reminders" },
+     { label: "Checklists", subtitle: "Rārangi Arowhai", route: "Checklists" },
+     { label: "Notes", subtitle: "Tuhipoka", route: "Notes" },
++    { label: "Contacts", subtitle: "Ngā Whakapā", route: "Contacts" },
+   ]
+ 
+   return (
+diff --git a/clean/mobile/src/screens/hub/RemindersScreen.jsx b/clean/mobile/src/screens/hub/RemindersScreen.jsx
+index ea6c5fb..9902b7e 100644
+--- a/clean/mobile/src/screens/hub/RemindersScreen.jsx
++++ b/clean/mobile/src/screens/hub/RemindersScreen.jsx
+@@ -1,24 +1,60 @@
+-/* eslint-disable no-unused-vars */
+- 
+- 
+-import { ScrollView, Text, View, Pressable, StyleSheet } from "react-native"
+-import { useState } from "react"
++import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
++import { useCallback, useState } from "react"
++import { useFocusEffect } from "@react-navigation/native"
++
++import {
++  deleteReminder,
++  getReminders,
++  toggleReminder,
++} from "../../features/reminders.db"
++import { isAvailable } from "../../features/notifications"
+ import { colors, radii, shadow, spacing, typography } from "../../theme"
+ import { useAuth } from "../../auth/AuthContext"
+ import { useAuthGuard } from "../../auth/useAuthGuard"
+ 
+ export default function RemindersScreen({ navigation }) {
+-  // MVP: local-only reminders
+   const [reminders, setReminders] = useState([])
++  const [alertsOn, setAlertsOn] = useState(true)
+   const { isGuest } = useAuth()
+   const guard = useAuthGuard()
+ 
++  const load = useCallback(() => {
++    getReminders()
++      .then((rows) => setReminders(rows || []))
++      .catch((err) => console.warn("Could not load reminders:", err?.message))
++    isAvailable().then(setAlertsOn)
++  }, [])
++
++  useFocusEffect(
++    useCallback(() => {
++      load()
++    }, [load])
++  )
++
++  function confirmDelete(reminder) {
++    Alert.alert("Delete reminder", `Delete "${reminder.title}"?`, [
++      { text: "Cancel", style: "cancel" },
++      {
++        text: "Delete",
++        style: "destructive",
++        onPress: () => deleteReminder(reminder.id).then(load),
++      },
++    ])
++  }
++
+   return (
+     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+       <View style={styles.header}>
+         <Text style={styles.title}>Reminders</Text>
+         <Text style={styles.subtitle}>Whakamahara</Text>
+       </View>
++
++      {!alertsOn ? (
++        <Text style={styles.notice}>
++          Reminders are saved, but alerts are turned off for this build.
++        </Text>
++      ) : null}
++
+       <Pressable
+         onPress={() => guard(() => navigation.navigate("AddReminder"))}
+         style={({ pressed }) => [
+@@ -32,13 +68,54 @@ export default function RemindersScreen({ navigation }) {
+       {reminders.length === 0 ? (
+         <Text style={styles.empty}>No reminders yet</Text>
+       ) : (
+-        reminders.map((item, index) => (
+-          <View key={index} style={styles.card}>
++        reminders.map((item) => (
++          <View
++            key={item.id}
++            style={[styles.card, !item.active && styles.cardInactive]}
++          >
+             <Text style={styles.cardTitle}>{item.title}</Text>
+-            <Text style={styles.cardMeta}>{item.time}</Text>
++            <Text style={styles.cardMeta}>
++              {item.time_of_day ? `Daily at ${item.time_of_day}` : "No time set"}
++            </Text>
+             {item.notes ? (
+               <Text style={styles.cardNotes}>{item.notes}</Text>
+             ) : null}
++
++            <View style={styles.actions}>
++              <Pressable
++                onPress={() =>
++                  guard(() =>
++                    toggleReminder(item.id, !item.active).then(load)
++                  )
++                }
++                style={({ pressed }) => [
++                  styles.smallButton,
++                  pressed && styles.primaryButtonDisabled,
++                ]}
++                accessibilityRole="button"
++                accessibilityLabel={
++                  item.active
++                    ? `Pause reminder ${item.title}`
++                    : `Resume reminder ${item.title}`
++                }
++              >
++                <Text style={styles.smallText}>
++                  {item.active ? "Pause" : "Resume"}
++                </Text>
++              </Pressable>
++
++              <Pressable
++                onPress={() => guard(() => confirmDelete(item))}
++                style={({ pressed }) => [
++                  styles.smallButtonMuted,
++                  pressed && styles.primaryButtonDisabled,
++                ]}
++                accessibilityRole="button"
++                accessibilityLabel={`Delete reminder ${item.title}`}
++              >
++                <Text style={styles.smallTextMuted}>Delete</Text>
++              </Pressable>
++            </View>
+           </View>
+         ))
+       )}
+@@ -47,61 +124,59 @@ export default function RemindersScreen({ navigation }) {
+ }
+ 
+ const styles = StyleSheet.create({
+-  screen: {
+-    backgroundColor: colors.cornsilk,
+-  },
+-  content: {
+-    padding: spacing.lg,
+-    gap: spacing.md,
+-    paddingBottom: 40,
+-  },
+-  header: {
+-    gap: spacing.xs,
+-  },
+-  title: {
+-    ...typography.title,
+-    color: colors.text,
+-  },
+-  subtitle: {
++  screen: { backgroundColor: colors.cornsilk },
++  content: { padding: 20, gap: spacing.md, paddingBottom: 40 },
++  header: { gap: spacing.xs },
++  title: { ...typography.display, color: colors.olive },
++  subtitle: { ...typography.caption, color: colors.muted },
++  notice: {
+     ...typography.caption,
+-    color: colors.muted,
++    color: colors.russet,
++    backgroundColor: colors.meringue,
++    borderRadius: radii.md,
++    padding: spacing.sm,
+   },
+   primaryButton: {
+-    padding: spacing.md,
+-    borderRadius: radii.md,
+     backgroundColor: colors.olive,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.sm,
++    minHeight: 48,
+     alignItems: "center",
++    justifyContent: "center",
+   },
+-  primaryButtonDisabled: {
+-    opacity: 0.6,
+-  },
+-  primaryText: {
+-    ...typography.bodyStrong,
+-    color: colors.cornsilk,
+-  },
+-  empty: {
+-    ...typography.body,
+-    color: colors.muted,
+-  },
++  primaryButtonDisabled: { opacity: 0.7 },
++  primaryText: { ...typography.bodyStrong, color: colors.cornsilk },
+   card: {
+-    padding: spacing.md,
+     backgroundColor: colors.card,
+-    borderRadius: radii.md,
++    borderRadius: radii.lg,
+     borderWidth: 1,
+     borderColor: colors.border,
++    padding: spacing.md,
++    gap: spacing.xs,
+     ...shadow.card,
+   },
+-  cardTitle: {
+-    ...typography.bodyStrong,
+-    color: colors.text,
+-  },
+-  cardMeta: {
+-    ...typography.caption,
+-    color: colors.muted,
++  cardInactive: { opacity: 0.6 },
++  cardTitle: { ...typography.bodyStrong, color: colors.text },
++  cardMeta: { ...typography.caption, color: colors.muted },
++  cardNotes: { ...typography.body, color: colors.muted },
++  actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.xs },
++  smallButton: {
++    backgroundColor: colors.olive,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.xs,
++    paddingHorizontal: spacing.md,
++    minHeight: 44,
++    justifyContent: "center",
+   },
+-  cardNotes: {
+-    ...typography.body,
+-    color: colors.text,
+-    marginTop: 6,
++  smallText: { ...typography.bodyStrong, color: colors.cornsilk },
++  smallButtonMuted: {
++    backgroundColor: colors.surface,
++    borderRadius: radii.pill,
++    paddingVertical: spacing.xs,
++    paddingHorizontal: spacing.md,
++    minHeight: 44,
++    justifyContent: "center",
+   },
++  smallTextMuted: { ...typography.bodyStrong, color: colors.russet },
++  empty: { ...typography.body, color: colors.muted, textAlign: "center" },
+ })
+diff --git a/clean/mobile/src/screens/library/ConditionDetailScreen.jsx b/clean/mobile/src/screens/library/ConditionDetailScreen.jsx
+new file mode 100644
+index 0000000..7ac1411
+--- /dev/null
++++ b/clean/mobile/src/screens/library/ConditionDetailScreen.jsx
+@@ -0,0 +1,117 @@
++import {
++  ActivityIndicator,
++  ScrollView,
++  StyleSheet,
++  Text,
++  View,
++} from "react-native"
++import { useEffect, useState } from "react"
++
++import { fetchCondition } from "../../api/contentApi"
++import { colors, layout, radii, shadow, spacing, typography } from "../../theme"
++
++function Section({ heading, reo, body }) {
++  if (!body) return null
++  return (
++    <View style={styles.card}>
++      <Text style={styles.cardHeading}>{heading}</Text>
++      <Text style={styles.cardReo}>{reo}</Text>
++      <Text style={styles.cardBody}>{body}</Text>
++    </View>
++  )
++}
++
++export default function ConditionDetailScreen({ route }) {
++  const { id } = route.params || {}
++  const [condition, setCondition] = useState(null)
++  const [loading, setLoading] = useState(true)
++
++  useEffect(() => {
++    fetchCondition(id)
++      .then(setCondition)
++      .catch(() => setCondition(null))
++      .finally(() => setLoading(false))
++  }, [id])
++
++  if (loading) {
++    return <ActivityIndicator style={{ marginTop: 40 }} color={colors.olive} />
++  }
++
++  if (!condition) {
++    return (
++      <View style={styles.emptyWrap}>
++        <Text style={styles.empty}>
++          This information isn&apos;t available offline yet.
++        </Text>
++      </View>
++    )
++  }
++
++  return (
++    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
++      <View style={styles.header}>
++        <Text style={styles.title}>{condition.title}</Text>
++      </View>
++
++      <Section
++        heading="About"
++        reo="Mō tēnei"
++        body={condition.summary}
++      />
++      <Section
++        heading="Triggers"
++        reo="Ngā take"
++        body={condition.triggers}
++      />
++      <Section
++        heading="Managing this"
++        reo="Te whakahaere"
++        body={condition.treatments}
++      />
++
++      <Text style={styles.disclaimer}>
++        This information is for learning and does not replace advice from your
++        doctor or health provider. If you feel unwell, contact them or call 111.
++      </Text>
++    </ScrollView>
++  )
++}
++
++const styles = StyleSheet.create({
++  screen: { backgroundColor: colors.cornsilk },
++  content: {
++    padding: layout.screenPadding,
++    gap: spacing.md,
++    paddingBottom: 40,
++  },
++  header: { gap: spacing.xs },
++  title: { ...typography.display, color: colors.olive },
++  card: {
++    backgroundColor: colors.card,
++    borderRadius: radii.lg,
++    borderWidth: 1,
++    borderColor: colors.border,
++    padding: spacing.md,
++    gap: spacing.xs,
++    ...shadow.card,
++  },
++  cardHeading: { ...typography.title, color: colors.text },
++  cardReo: { ...typography.caption, color: colors.muted },
++  cardBody: { ...typography.body, color: colors.text, marginTop: spacing.xs },
++  disclaimer: {
++    ...typography.caption,
++    color: colors.russet,
++    backgroundColor: colors.meringue,
++    borderRadius: radii.md,
++    padding: spacing.md,
++    lineHeight: 19,
++  },
++  emptyWrap: {
++    flex: 1,
++    alignItems: "center",
++    justifyContent: "center",
++    padding: spacing.lg,
++    backgroundColor: colors.cornsilk,
++  },
++  empty: { ...typography.body, color: colors.muted, textAlign: "center" },
++})
+diff --git a/clean/mobile/src/screens/library/ConditionsScreen.jsx b/clean/mobile/src/screens/library/ConditionsScreen.jsx
+new file mode 100644
+index 0000000..ef259b5
+--- /dev/null
++++ b/clean/mobile/src/screens/library/ConditionsScreen.jsx
+@@ -0,0 +1,108 @@
++import {
++  ActivityIndicator,
++  Pressable,
++  ScrollView,
++  StyleSheet,
++  Text,
++  View,
++} from "react-native"
++import { useEffect, useState } from "react"
++
++import { fetchConditions } from "../../api/contentApi"
++import SearchBar from "../../components/library/SearchBar"
++import { colors, layout, radii, shadow, spacing, typography } from "../../theme"
++
++export default function ConditionsScreen({ navigation }) {
++  const [conditions, setConditions] = useState([])
++  const [loading, setLoading] = useState(true)
++  const [error, setError] = useState(false)
++  const [query, setQuery] = useState("")
++
++  useEffect(() => {
++    fetchConditions()
++      .then((data) => setConditions(Array.isArray(data) ? data : []))
++      .catch(() => setError(true))
++      .finally(() => setLoading(false))
++  }, [])
++
++  if (loading) {
++    return <ActivityIndicator style={{ marginTop: 40 }} color={colors.olive} />
++  }
++
++  const filtered = conditions.filter((c) =>
++    c.title?.toLowerCase().includes(query.toLowerCase())
++  )
++
++  return (
++    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
++      <View style={styles.header}>
++        <Text style={styles.title}>Conditions</Text>
++        <Text style={styles.subtitle}>Ngā mate</Text>
++      </View>
++
++      <SearchBar value={query} onChange={setQuery} />
++
++      {error && conditions.length === 0 ? (
++        <Text style={styles.empty}>
++          Couldn&apos;t load conditions. Check your connection and try again.
++        </Text>
++      ) : null}
++
++      {!error && filtered.length === 0 ? (
++        <Text style={styles.empty}>No conditions to show yet.</Text>
++      ) : null}
++
++      {filtered.map((condition) => (
++        <Pressable
++          key={condition.id}
++          onPress={() =>
++            navigation.navigate("ConditionDetail", {
++              id: condition.id,
++              title: condition.title,
++            })
++          }
++          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
++          accessibilityRole="button"
++          accessibilityLabel={`Read about ${condition.title}`}
++        >
++          <Text style={styles.cardTitle}>{condition.title}</Text>
++          {condition.summary ? (
++            <Text style={styles.cardSummary} numberOfLines={3}>
++              {condition.summary}
++            </Text>
++          ) : null}
++        </Pressable>
++      ))}
++    </ScrollView>
++  )
++}
++
++const styles = StyleSheet.create({
++  screen: { backgroundColor: colors.cornsilk },
++  content: {
++    padding: layout.screenPadding,
++    gap: spacing.md,
++    paddingBottom: 40,
++  },
++  header: { gap: spacing.xs },
++  title: { ...typography.display, color: colors.olive },
++  subtitle: { ...typography.caption, color: colors.muted },
++  card: {
++    backgroundColor: colors.card,
++    borderRadius: radii.lg,
++    borderWidth: 1,
++    borderColor: colors.border,
++    padding: spacing.md,
++    gap: spacing.xs,
++    ...shadow.card,
++  },
++  cardPressed: { opacity: 0.85 },
++  cardTitle: { ...typography.title, color: colors.text },
++  cardSummary: { ...typography.body, color: colors.muted },
++  empty: {
++    ...typography.body,
++    color: colors.muted,
++    textAlign: "center",
++    marginTop: spacing.lg,
++  },
++})
+diff --git a/clean/mobile/src/stacks/HubStack.jsx b/clean/mobile/src/stacks/HubStack.jsx
+index 096a037..38cbb44 100644
+--- a/clean/mobile/src/stacks/HubStack.jsx
++++ b/clean/mobile/src/stacks/HubStack.jsx
+@@ -14,6 +14,8 @@ import ChecklistsScreen from "../screens/hub/ChecklistsScreen"
+ import AddChecklistScreen from "../screens/hub/AddChecklistScreen"
+ import NotesScreen from "../screens/hub/NotesScreen"
+ import AddNotesScreen from "../screens/hub/AddNotesScreen"
++import ContactsScreen from "../screens/hub/ContactsScreen"
++import AddContactScreen from "../screens/hub/AddContactScreen"
+ 
+ const Stack = createNativeStackNavigator()
+ 
+@@ -50,6 +52,9 @@ export default function HubStack() {
+ 
+       <Stack.Screen name="Notes" component={NotesScreen} />
+       <Stack.Screen name="AddNote" component={AddNotesScreen} />
++
++      <Stack.Screen name="Contacts" component={ContactsScreen} />
++      <Stack.Screen name="AddContact" component={AddContactScreen} />
+     </Stack.Navigator>
+   )
+ }
+diff --git a/clean/mobile/src/stacks/LibraryStack.jsx b/clean/mobile/src/stacks/LibraryStack.jsx
+index fd57147..42f2cf1 100644
+--- a/clean/mobile/src/stacks/LibraryStack.jsx
++++ b/clean/mobile/src/stacks/LibraryStack.jsx
+@@ -1,6 +1,8 @@
+  
+ import { createNativeStackNavigator } from "@react-navigation/native-stack"
+ import LibraryScreen from "../screens/LibraryScreen"
++import ConditionsScreen from "../screens/library/ConditionsScreen"
++import ConditionDetailScreen from "../screens/library/ConditionDetailScreen"
+ import { colors, typography } from "../theme"
+ 
+ const Stack = createNativeStackNavigator()
+@@ -23,6 +25,16 @@ export default function LibraryStack() {
+         component={LibraryScreen}
+         options={{ title: "Library / Puna" }}
+       />
++      <Stack.Screen
++        name="Conditions"
++        component={ConditionsScreen}
++        options={{ title: "Conditions / Ngā mate" }}
++      />
++      <Stack.Screen
++        name="ConditionDetail"
++        component={ConditionDetailScreen}
++        options={({ route }) => ({ title: route.params?.title || "Condition" })}
++      />
+     </Stack.Navigator>
+   )
+ }
+diff --git a/clean/mobile/src/stacks/RootStack.jsx b/clean/mobile/src/stacks/RootStack.jsx
+index 6c9b690..0504201 100644
+--- a/clean/mobile/src/stacks/RootStack.jsx
++++ b/clean/mobile/src/stacks/RootStack.jsx
+@@ -1,13 +1,41 @@
+  
+ import { createNativeStackNavigator } from "@react-navigation/native-stack"
++import { ActivityIndicator, View } from "react-native"
++import { useEffect, useState } from "react"
++
+ import AppTabs from "./AppTabs"
+ import AuthStack from "./AuthStack"
++import ConsentScreen from "../screens/ConsentScreen"
++import { hasAcceptedConsent } from "../features/consent.db"
+ import { useAuth } from "../auth/AuthContext"
++import { colors } from "../theme"
+ 
+ const Stack = createNativeStackNavigator()
+ 
+ export default function RootStack() {
+   const { isAuthenticated, isGuest, showAuth } = useAuth()
++  const [consentChecked, setConsentChecked] = useState(false)
++  const [consented, setConsented] = useState(false)
++
++  useEffect(() => {
++    hasAcceptedConsent()
++      .then(setConsented)
++      .catch(() => setConsented(false))
++      .finally(() => setConsentChecked(true))
++  }, [])
++
++  if (!consentChecked) {
++    return (
++      <View style={{ flex: 1, justifyContent: "center", backgroundColor: colors.cornsilk }}>
++        <ActivityIndicator size="large" color={colors.olive} />
++      </View>
++    )
++  }
++
++  if (!consented) {
++    return <ConsentScreen onAccepted={() => setConsented(true)} />
++  }
++
+   const shouldShowAuth = showAuth || (!isAuthenticated && !isGuest)
+ 
+   return (
+diff --git a/clean/mobile/src/stacks/SettingsStack.jsx b/clean/mobile/src/stacks/SettingsStack.jsx
+index 6586f5a..bff4238 100644
+--- a/clean/mobile/src/stacks/SettingsStack.jsx
++++ b/clean/mobile/src/stacks/SettingsStack.jsx
+@@ -1,45 +1,8 @@
+- 
+ import { createNativeStackNavigator } from "@react-navigation/native-stack"
+-import { View, Text, StyleSheet, Pressable } from "react-native"
+-import { colors, spacing, typography, radii } from "../theme"
+-import { useAuth } from "../auth/AuthContext"
++import SettingsScreen from "../screens/SettingsScreen"
++import { colors, typography } from "../theme"
+ 
+-const Stack = createNativeStackNavigator();
+-
+-function SettingsScreen() {
+-  const { isAuthenticated, isGuest, login, logout, openAuth, authReady } = useAuth()
+-
+-  return (
+-    <View style={styles.container}>
+-      <Text style={styles.title}>Settings</Text>
+-      <Text style={styles.subtitle}>Tautuhinga</Text>
+-      <Pressable
+-        onPress={isAuthenticated ? logout : login}
+-        style={({ pressed }) => [
+-          styles.button,
+-          pressed && styles.buttonPressed,
+-        ]}
+-        disabled={!authReady && !isAuthenticated}
+-      >
+-        <Text style={styles.buttonText}>
+-          {isAuthenticated ? "Sign out" : isGuest ? "Sign in" : "Sign in"}
+-        </Text>
+-      </Pressable>
+-
+-      {isGuest ? (
+-        <Pressable
+-          onPress={openAuth}
+-          style={({ pressed }) => [
+-            styles.secondaryButton,
+-            pressed && styles.buttonPressed,
+-          ]}
+-        >
+-          <Text style={styles.secondaryText}>Open sign-in screen</Text>
+-        </Pressable>
+-      ) : null}
+-    </View>
+-  )
+-}
++const Stack = createNativeStackNavigator()
+ 
+ export default function SettingsStack() {
+   return (
+@@ -62,46 +25,3 @@ export default function SettingsStack() {
+     </Stack.Navigator>
+   )
+ }
+-
+-const styles = StyleSheet.create({
+-  container: {
+-    flex: 1,
+-    alignItems: "center",
+-    justifyContent: "center",
+-    padding: spacing.lg,
+-    gap: spacing.xs,
+-  },
+-  title: {
+-    ...typography.title,
+-    color: colors.text,
+-  },
+-  subtitle: {
+-    ...typography.caption,
+-    color: colors.muted,
+-  },
+-  button: {
+-    marginTop: spacing.md,
+-    paddingVertical: spacing.sm,
+-    paddingHorizontal: spacing.lg,
+-    borderRadius: radii.pill,
+-    backgroundColor: colors.olive,
+-  },
+-  buttonPressed: {
+-    opacity: 0.9,
+-  },
+-  buttonText: {
+-    ...typography.bodyStrong,
+-    color: colors.cornsilk,
+-  },
+-  secondaryButton: {
+-    marginTop: spacing.sm,
+-    paddingVertical: spacing.sm,
+-    paddingHorizontal: spacing.lg,
+-    borderRadius: radii.pill,
+-    backgroundColor: colors.meringue,
+-  },
+-  secondaryText: {
+-    ...typography.bodyStrong,
+-    color: colors.olive,
+-  },
+-})
