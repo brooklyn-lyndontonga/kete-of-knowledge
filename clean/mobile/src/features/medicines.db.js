@@ -1,67 +1,42 @@
 import { getDB } from "../db"
 
-// -------------------------
-// Add medicine
-// -------------------------
-export function addMedicine({
-  name,
-  type = "",
-  dosage = "",
-  notes = "",
-}) {
-  const db = getDB()
+export async function addMedicine({ name, type = "", dosage = "", notes = "" }) {
+  const db = await getDB()
+  const createdAt = new Date().toISOString()
 
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `
-        INSERT INTO medicines (name, type, dosage, notes, active)
-        VALUES (?, ?, ?, ?, 1)
-        `,
-        [name, type, dosage, notes],
-        (_, result) => resolve(result),
-        (_, error) => reject(error)
-      )
-    })
-  })
+  const result = await db.runAsync(
+    `INSERT INTO medicines (name, type, dosage, notes, active, created_at)
+     VALUES (?, ?, ?, ?, 1, ?);`,
+    [name, type, dosage, notes, createdAt]
+  )
+
+  return { id: result.lastInsertRowId, name, type, dosage, notes, active: 1 }
 }
 
-// -------------------------
-// Get medicines
-// -------------------------
-export function getMedicines() {
-  const db = getDB()
-
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `
-        SELECT *
-        FROM medicines
-        ORDER BY active DESC, name ASC
-        `,
-        [],
-        (_, { rows }) => resolve(rows._array),
-        (_, error) => reject(error)
-      )
-    })
-  })
+export async function getMedicines() {
+  const db = await getDB()
+  return db.getAllAsync(
+    `SELECT * FROM medicines ORDER BY active DESC, name ASC;`
+  )
 }
 
-// -------------------------
-// Toggle active
-// -------------------------
-export function toggleMedicine(id, active) {
-  const db = getDB()
+export async function updateMedicine({ id, name, type = "", dosage = "", notes = "" }) {
+  const db = await getDB()
+  await db.runAsync(
+    `UPDATE medicines SET name = ?, type = ?, dosage = ?, notes = ? WHERE id = ?;`,
+    [name, type, dosage, notes, id]
+  )
+}
 
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `UPDATE medicines SET active = ? WHERE id = ?`,
-        [active ? 1 : 0, id],
-        (_, result) => resolve(result),
-        (_, error) => reject(error)
-      )
-    })
-  })
+export async function toggleMedicine(id, active) {
+  const db = await getDB()
+  await db.runAsync(`UPDATE medicines SET active = ? WHERE id = ?;`, [
+    active ? 1 : 0,
+    id,
+  ])
+}
+
+export async function deleteMedicine(id) {
+  const db = await getDB()
+  await db.runAsync(`DELETE FROM medicines WHERE id = ?;`, [id])
 }

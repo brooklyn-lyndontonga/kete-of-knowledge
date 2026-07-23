@@ -1,66 +1,32 @@
 import { getDB } from "../db"
 
-// -------------------------
-// Create a goal
-// -------------------------
-export function addGoal({ title, description = "" }) {
-  const db = getDB()
+export async function addGoal({ title, description = "" }) {
+  const db = await getDB()
+  const createdAt = new Date().toISOString()
 
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `
-        INSERT INTO goals (title, description, active)
-        VALUES (?, ?, 1)
-        `,
-        [title, description],
-        (_, result) => resolve(result),
-        (_, error) => reject(error)
-      )
-    })
-  })
+  const result = await db.runAsync(
+    `INSERT INTO goals (title, description, active, created_at)
+     VALUES (?, ?, 1, ?);`,
+    [title, description, createdAt]
+  )
+
+  return { id: result.lastInsertRowId, title, description, active: 1, created_at: createdAt }
 }
 
-// -------------------------
-// Get all goals
-// -------------------------
-export function getGoals() {
-  const db = getDB()
-
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `
-        SELECT *
-        FROM goals
-        ORDER BY created_at DESC
-        `,
-        [],
-        (_, { rows }) => resolve(rows._array),
-        (_, error) => reject(error)
-      )
-    })
-  })
+export async function getGoals() {
+  const db = await getDB()
+  return db.getAllAsync(`SELECT * FROM goals ORDER BY created_at DESC;`)
 }
 
-// -------------------------
-// Toggle achieved / active
-// -------------------------
-export function toggleGoal(id, active) {
-  const db = getDB()
+export async function toggleGoal(id, active) {
+  const db = await getDB()
+  await db.runAsync(`UPDATE goals SET active = ? WHERE id = ?;`, [
+    active ? 1 : 0,
+    id,
+  ])
+}
 
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `
-        UPDATE goals
-        SET active = ?
-        WHERE id = ?
-        `,
-        [active ? 1 : 0, id],
-        () => resolve(),
-        (_, error) => reject(error)
-      )
-    })
-  })
+export async function deleteGoal(id) {
+  const db = await getDB()
+  await db.runAsync(`DELETE FROM goals WHERE id = ?;`, [id])
 }

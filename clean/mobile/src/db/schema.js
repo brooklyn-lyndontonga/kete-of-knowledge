@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS app_state (
 CREATE TABLE IF NOT EXISTS consent (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   accepted INTEGER NOT NULL,
+  version TEXT,
   accepted_at TEXT NOT NULL
 );
 
@@ -18,9 +19,22 @@ CREATE TABLE IF NOT EXISTS profiles (
   health_info TEXT,
   health_providers TEXT,
   emergency_contacts TEXT,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT
 );
 
+CREATE TABLE IF NOT EXISTS contacts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  relationship TEXT,
+  phone TEXT,
+  email TEXT,
+  category TEXT DEFAULT 'whanau',
+  is_emergency INTEGER DEFAULT 0,
+  notes TEXT,
+  sort_order INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE IF NOT EXISTS symptoms (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,22 +51,27 @@ CREATE TABLE IF NOT EXISTS medicines (
   type TEXT,
   dosage TEXT,
   notes TEXT,
-  active INTEGER DEFAULT 1
+  active INTEGER DEFAULT 1,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS notes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT,
   content TEXT NOT NULL,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS reminders (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   schedule TEXT,
+  time_of_day TEXT,
   notes TEXT,
-  active INTEGER DEFAULT 1
+  active INTEGER DEFAULT 1,
+  notification_id TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS checklists (
@@ -60,6 +79,21 @@ CREATE TABLE IF NOT EXISTS checklists (
   title TEXT NOT NULL,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS checklist_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  checklist_id INTEGER NOT NULL,
+  label TEXT NOT NULL,
+  done INTEGER DEFAULT 0,
+  sort_order INTEGER DEFAULT 0,
+  FOREIGN KEY (checklist_id) REFERENCES checklists(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_checklist_items_list
+  ON checklist_items (checklist_id);
+
+CREATE INDEX IF NOT EXISTS idx_symptoms_logged_at
+  ON symptoms (logged_at);
 
 CREATE TABLE IF NOT EXISTS goals (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,3 +108,17 @@ CREATE TABLE IF NOT EXISTS settings (
   value TEXT
 );
 `;
+
+/**
+ * Columns added after the first beta shipped.
+ * Applied idempotently on every launch so existing installs upgrade cleanly.
+ */
+export const migrations = [
+  { table: "profiles", column: "updated_at", type: "TEXT" },
+  { table: "notes", column: "updated_at", type: "TEXT" },
+  { table: "reminders", column: "time_of_day", type: "TEXT" },
+  { table: "reminders", column: "notification_id", type: "TEXT" },
+  { table: "reminders", column: "created_at", type: "TEXT" },
+  { table: "medicines", column: "created_at", type: "TEXT" },
+  { table: "consent", column: "version", type: "TEXT" },
+];

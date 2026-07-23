@@ -13,6 +13,7 @@ export default function HubScreen({ navigation }) {
     { label: "Reminders", subtitle: "Whakamahara", route: "Reminders" },
     { label: "Checklists", subtitle: "Rārangi Arowhai", route: "Checklists" },
     { label: "Notes", subtitle: "Tuhipoka", route: "Notes" },
+    { label: "Contacts", subtitle: "Ngā Whakapā", route: "Contacts" },
   ]
 
   return (

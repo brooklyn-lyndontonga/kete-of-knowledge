@@ -2,6 +2,7 @@
  
 import { View, TextInput, Pressable, Text, StyleSheet } from "react-native"
 import { useState } from "react"
+import { addChecklist } from "../../features/checklists.db"
 import { colors, radii, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import GuestGate from "../../auth/GuestGate"
@@ -18,10 +19,18 @@ export default function AddChecklistScreen({ navigation }) {
     setItem("")
   }
 
-  function save() {
-    if (!title) return
-    // later → SQLite insert
-    navigation.goBack()
+  const [saving, setSaving] = useState(false)
+
+  async function save() {
+    if (!title.trim() || saving) return
+    setSaving(true)
+    try {
+      await addChecklist({ title: title.trim(), items })
+      navigation.goBack()
+    } catch (err) {
+      console.warn("Could not save checklist:", err?.message)
+      setSaving(false)
+    }
   }
 
   if (isGuest) {

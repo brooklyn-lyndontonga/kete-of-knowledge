@@ -131,6 +131,12 @@ export function AuthProvider({ children }) {
   const openAuth = () => setShowAuth(true)
   const closeAuth = () => setShowAuth(false)
 
+  // GuestGate, useAuthGuard and SettingsStack call login()/authReady.
+  // login() surfaces the sign-in screen; authReady means we've finished
+  // restoring any stored session and aren't mid-request.
+  const login = () => setShowAuth(true)
+  const authReady = !loading && !authenticating
+
   const value = useMemo(
     () => ({
       session,
@@ -138,15 +144,17 @@ export function AuthProvider({ children }) {
       isGuest: guest,
       isLoading: loading,
       isAuthenticating: authenticating,
+      authReady,
       showAuth,
       sendMagicLink,
       verifyMagicLink,
+      login,
       logout,
       continueAsGuest,
       openAuth,
       closeAuth,
     }),
-    [session, guest, loading, authenticating, showAuth]
+    [session, guest, loading, authenticating, authReady, showAuth]
   )
 
   return (
