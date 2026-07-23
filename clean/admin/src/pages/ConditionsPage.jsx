@@ -30,21 +30,15 @@ export default function ConditionsPage() {
   // Search Filter
   const [searchQuery, setSearchQuery] = useState("")
 
-  const [activeCount, setActiveCount] = useState(0)
-  const [archivedCount, setArchivedCount] = useState(0)
-
   async function load() {
     setLoading(true)
     setError(null)
     try {
-      const [activeConds, archivedConds, resourcesData] = await Promise.all([
-        fetchConditions(false).catch(() => []),
-        fetchConditions(true).catch(() => []),
-        fetchLearningResources(false).catch(() => []),
+      const [conditionsData, resourcesData] = await Promise.all([
+        fetchConditions(showArchived).catch(() => []),
+        fetchLearningResources(showArchived).catch(() => []),
       ])
-      setActiveCount(activeConds?.length || 0)
-      setArchivedCount(archivedConds?.length || 0)
-      setRows(showArchived ? (archivedConds || []) : (activeConds || []))
+      setRows(conditionsData || [])
       setResources(resourcesData || [])
     } catch (err) {
       setError("Failed to load conditions or learning resources.")
@@ -58,13 +52,8 @@ export default function ConditionsPage() {
   }, [showArchived])
 
   async function reload() {
-    const [activeConds, archivedConds] = await Promise.all([
-      fetchConditions(false).catch(() => []),
-      fetchConditions(true).catch(() => []),
-    ])
-    setActiveCount(activeConds?.length || 0)
-    setArchivedCount(archivedConds?.length || 0)
-    setRows(showArchived ? (archivedConds || []) : (activeConds || []))
+    const data = await fetchConditions(showArchived)
+    setRows(data || [])
   }
 
   async function handleSave(formData) {
@@ -169,8 +158,23 @@ export default function ConditionsPage() {
         res.title?.toLowerCase().includes(row.title?.toLowerCase()) ||
         res.description?.toLowerCase().includes(row.title?.toLowerCase())
     )
+    const reoFields = ["title_mi", "summary_mi", "triggers_mi", "treatments_mi"]
+    const translated = reoFields.filter((f) => row[f]?.trim()).length
+
     return {
       ...row,
+      reo:
+        translated === reoFields.length ? (
+          <span className="badge badge-success badge-sm font-semibold text-white">
+            Complete
+          </span>
+        ) : translated > 0 ? (
+          <span className="badge badge-warning badge-sm font-semibold">
+            {translated}/{reoFields.length}
+          </span>
+        ) : (
+          <span className="badge badge-ghost badge-sm">None</span>
+        ),
       linkedCount:
         linked.length > 0 ? (
           <span className="badge badge-accent badge-sm font-semibold text-white">
@@ -210,13 +214,13 @@ export default function ConditionsPage() {
           className={`tab ${!showArchived ? "tab-active" : ""}`}
           onClick={() => setShowArchived(false)}
         >
-          Active Content ({activeCount})
+          Active Content
         </button>
         <button
           className={`tab ${showArchived ? "tab-active" : ""}`}
           onClick={() => setShowArchived(true)}
         >
-          Archived Content ({archivedCount})
+          Archived Content ({rows.length})
         </button>
       </div>
 
@@ -284,6 +288,7 @@ export default function ConditionsPage() {
           { key: "summary", label: "Summary" },
           { key: "triggers", label: "Triggers" },
           { key: "treatments", label: "Treatments" },
+          { key: "reo", label: "Te reo" },
           { key: "linkedCount", label: "Resources" },
           { key: "status", label: "Status" },
           { key: "sort_order", label: "Sort Order" },
@@ -331,6 +336,29 @@ export default function ConditionsPage() {
             label: "Treatments", 
             type: "textarea",
             helpText: "Detail common medical or therapeutic treatments or lifestyle care."
+          },
+          {
+            name: "title_mi",
+            label: "Title (te reo Māori)",
+            helpText: "Optional. Shown when the reader has chosen te reo Māori. Leave blank to fall back to English."
+          },
+          {
+            name: "summary_mi",
+            label: "Summary (te reo Māori)",
+            type: "textarea",
+            helpText: "Optional translation of the summary."
+          },
+          {
+            name: "triggers_mi",
+            label: "Triggers (te reo Māori)",
+            type: "textarea",
+            helpText: "Optional translation of the triggers."
+          },
+          {
+            name: "treatments_mi",
+            label: "Treatments (te reo Māori)",
+            type: "textarea",
+            helpText: "Optional translation of the treatments."
           },
           {
             name: "status",

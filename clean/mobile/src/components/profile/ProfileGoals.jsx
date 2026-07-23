@@ -1,6 +1,3 @@
- 
- 
-
 import { View, Text, Pressable, StyleSheet } from "react-native"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 
@@ -27,6 +24,7 @@ export default function ProfileGoals({ goals = [], onToggle, onAdd }) {
               styles.goalCard,
               pressed && styles.cardPressed,
             ]}
+            accessibilityRole="button"
           >
             <Text style={styles.goalTitle}>{goal.title}</Text>
             {goal.description ? (
@@ -43,6 +41,7 @@ export default function ProfileGoals({ goals = [], onToggle, onAdd }) {
           styles.addButton,
           pressed && styles.cardPressed,
         ]}
+        accessibilityRole="button"
       >
         <Text style={styles.addText}>Add Goal</Text>
       </Pressable>
@@ -55,10 +54,9 @@ export default function ProfileGoals({ goals = [], onToggle, onAdd }) {
             <Pressable
               key={goal.id}
               onPress={() => onToggle(goal)}
+              accessibilityRole="button"
             >
-              <Text style={styles.achievedItem}>
-                {goal.title}
-              </Text>
+              <Text style={styles.achievedItem}>{goal.title}</Text>
             </Pressable>
           ))}
         </View>

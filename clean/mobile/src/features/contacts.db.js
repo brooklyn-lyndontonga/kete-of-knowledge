@@ -1,4 +1,9 @@
-import { getDB } from "../db"
+import {
+  insertRecord,
+  listRecords,
+  softDeleteRecord,
+  updateRecord,
+} from "../db/records"
 
 export const CONTACT_CATEGORIES = [
   { key: "whanau", label: "Whānau", reo: "Whānau" },
@@ -15,32 +20,21 @@ export async function addContact({
   isEmergency = false,
   notes = "",
 }) {
-  const db = await getDB()
-
-  const result = await db.runAsync(
-    `INSERT INTO contacts (name, relationship, phone, email, category, is_emergency, notes, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
-    [
-      name,
-      relationship,
-      phone,
-      email,
-      category,
-      isEmergency ? 1 : 0,
-      notes,
-      new Date().toISOString(),
-    ]
-  )
-
-  return { id: result.lastInsertRowId, name, phone, category }
+  return insertRecord("contacts", {
+    name,
+    relationship,
+    phone,
+    email,
+    category,
+    is_emergency: isEmergency ? 1 : 0,
+    notes,
+  })
 }
 
 export async function getContacts() {
-  const db = await getDB()
-  return db.getAllAsync(
-    `SELECT * FROM contacts
-     ORDER BY is_emergency DESC, sort_order ASC, name ASC;`
-  )
+  return listRecords("contacts", {
+    orderBy: "is_emergency DESC, sort_order ASC, name ASC",
+  })
 }
 
 export async function getContactsByCategory() {
@@ -55,25 +49,17 @@ export async function getContactsByCategory() {
 }
 
 export async function updateContact({ id, ...fields }) {
-  const db = await getDB()
-  await db.runAsync(
-    `UPDATE contacts
-     SET name = ?, relationship = ?, phone = ?, email = ?, category = ?, is_emergency = ?, notes = ?
-     WHERE id = ?;`,
-    [
-      fields.name,
-      fields.relationship || "",
-      fields.phone || "",
-      fields.email || "",
-      fields.category || "whanau",
-      fields.isEmergency ? 1 : 0,
-      fields.notes || "",
-      id,
-    ]
-  )
+  return updateRecord("contacts", id, {
+    name: fields.name,
+    relationship: fields.relationship || "",
+    phone: fields.phone || "",
+    email: fields.email || "",
+    category: fields.category || "whanau",
+    is_emergency: fields.isEmergency ? 1 : 0,
+    notes: fields.notes || "",
+  })
 }
 
 export async function deleteContact(id) {
-  const db = await getDB()
-  await db.runAsync(`DELETE FROM contacts WHERE id = ?;`, [id])
+  return softDeleteRecord("contacts", id)
 }

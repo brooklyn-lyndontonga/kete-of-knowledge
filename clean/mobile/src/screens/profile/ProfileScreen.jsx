@@ -1,6 +1,3 @@
- 
- 
-
 import { ScrollView, StyleSheet } from "react-native"
 import { useEffect, useState } from "react"
 import { useIsFocused } from "@react-navigation/native"
@@ -44,10 +41,7 @@ export default function ProfileScreen({ navigation }) {
   }
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-    >
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       {/* 👤 Personal details */}
       <ProfileHeader onEdit={() => navigation.navigate("EditProfile")} />
 
@@ -59,9 +53,7 @@ export default function ProfileScreen({ navigation }) {
       />
 
       {/* 📝 Notes */}
-      <ProfileNotes
-        onOpen={() => navigation.navigate("ProfileNotes")}
-      />
+      <ProfileNotes onOpen={() => navigation.navigate("ProfileNotes")} />
     </ScrollView>
   )
 }

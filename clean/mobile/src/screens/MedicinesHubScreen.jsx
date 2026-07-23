@@ -1,8 +1,19 @@
- 
- 
-
-import { View, Text, Pressable, StyleSheet, ImageBackground } from "react-native"
-import { colors, layout, radii, shadow, spacing, typography, images } from "../theme"
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  ImageBackground,
+} from "react-native"
+import {
+  colors,
+  layout,
+  radii,
+  shadow,
+  spacing,
+  typography,
+  images,
+} from "../theme"
 import { useAuth } from "../auth/AuthContext"
 import { useAuthGuard } from "../auth/useAuthGuard"
 
@@ -13,8 +24,8 @@ export default function MedicinesHubScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.headerCardContainer}>
-        <ImageBackground 
-          source={images.kawakawa_close} 
+        <ImageBackground
+          source={images.kawakawa_close}
           style={styles.headerImageBg}
           imageStyle={styles.headerImageStyle}
         >
@@ -22,7 +33,8 @@ export default function MedicinesHubScreen({ navigation }) {
             <Text style={styles.kicker}>Rongoā Māori • Logger</Text>
             <Text style={styles.title}>Rongoā & Medicines</Text>
             <Text style={styles.subtitle}>
-              Ensure heart health by keeping an accurate log of your daily medicine and traditional remedies.
+              Ensure heart health by keeping an accurate log of your daily
+              medicine and traditional remedies.
             </Text>
           </View>
         </ImageBackground>
@@ -37,15 +49,21 @@ export default function MedicinesHubScreen({ navigation }) {
             styles.primaryCard,
             (isGuest || pressed) && styles.cardPressed,
           ]}
+          accessibilityRole="button"
         >
           <View style={styles.cardContent}>
             <Text style={styles.cardLabel}>Rārangi Rongoā</Text>
-            <Text style={[styles.cardTitle, { color: colors.olive }]}>Log a medicine / rongoā</Text>
+            <Text style={[styles.cardTitle, { color: colors.olive }]}>
+              Log a medicine / rongoā
+            </Text>
             <Text style={styles.cardDesc}>
-              Quickly record when you took your heart medicines, aspirin, or traditional plant remedies.
+              Quickly record when you took your heart medicines, aspirin, or
+              traditional plant remedies.
             </Text>
           </View>
-          <View style={[styles.actionCircle, { backgroundColor: colors.olive }]}>
+          <View
+            style={[styles.actionCircle, { backgroundColor: colors.olive }]}
+          >
             <Text style={styles.actionIcon}>+</Text>
           </View>
         </Pressable>
@@ -53,19 +71,20 @@ export default function MedicinesHubScreen({ navigation }) {
         {/* Card 2: Learn about medicines */}
         <Pressable
           onPress={() => navigation.navigate("Library")}
-          style={({ pressed }) => [
-            styles.card,
-            pressed && styles.cardPressed,
-          ]}
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          accessibilityRole="button"
         >
           <View style={styles.cardContent}>
             <Text style={styles.cardLabel}>Pukapuka Rongoā</Text>
             <Text style={styles.cardTitle}>Learn about medicines</Text>
             <Text style={styles.cardDesc}>
-              Understand cardiac medication interactions, guidelines, side effects, and safe traditional practices.
+              Understand cardiac medication interactions, guidelines, side
+              effects, and safe traditional practices.
             </Text>
           </View>
-          <View style={[styles.actionCircle, { backgroundColor: colors.russet }]}>
+          <View
+            style={[styles.actionCircle, { backgroundColor: colors.russet }]}
+          >
             <Text style={styles.actionIcon}>→</Text>
           </View>
         </Pressable>

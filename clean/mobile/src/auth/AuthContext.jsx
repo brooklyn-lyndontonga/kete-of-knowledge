@@ -1,4 +1,3 @@
- 
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import * as Linking from "expo-linking"
@@ -42,7 +41,7 @@ export function AuthProvider({ children }) {
     const handleDeepLink = (event) => {
       const { url } = event
       const parsed = Linking.parse(url)
-      
+
       if (parsed.path === "auth" && parsed.queryParams?.token) {
         verifyMagicLink(parsed.queryParams.token)
       }
@@ -157,9 +156,7 @@ export function AuthProvider({ children }) {
     [session, guest, loading, authenticating, authReady, showAuth]
   )
 
-  return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

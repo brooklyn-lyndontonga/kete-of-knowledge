@@ -1,4 +1,3 @@
- 
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { useAuth } from "./AuthContext"
 import { colors, radii, spacing, typography } from "../theme"
@@ -23,6 +22,7 @@ export default function GuestGate({
           styles.button,
           (!authReady || pressed) && styles.buttonPressed,
         ]}
+        accessibilityRole="button"
       >
         <Text style={styles.buttonText}>Sign in</Text>
       </Pressable>

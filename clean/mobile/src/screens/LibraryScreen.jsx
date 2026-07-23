@@ -1,4 +1,3 @@
- 
 import {
   ScrollView,
   Text,
@@ -13,11 +12,13 @@ import { fetchLearningResources } from "../api/appApi"
 import SearchBar from "../components/library/SearchBar"
 import CategorySection from "../components/library/CategorySection"
 import { colors, layout, radii, shadow, spacing, typography } from "../theme"
+import { useLanguage } from "../i18n/LanguageContext"
 
 export default function LibraryScreen({ navigation }) {
-  const [resources, setResources] = useState([])   // ✅ default array
+  const [resources, setResources] = useState([]) // ✅ default array
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState("")
+  const { t, content } = useLanguage()
 
   useEffect(() => {
     fetchLearningResources()
@@ -35,17 +36,15 @@ export default function LibraryScreen({ navigation }) {
     resources.filter(
       (r) =>
         r.category === category &&
-        r.title?.toLowerCase().includes(query.toLowerCase())
+        content(r, "title").toLowerCase().includes(query.toLowerCase())
     )
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-    >
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Library</Text>
-        <Text style={styles.subtitle}>Puna mātauranga</Text>
+        <Text style={styles.title} accessibilityRole="header">
+          {t("library.title")}
+        </Text>
       </View>
 
       <SearchBar value={query} onChange={setQuery} />
@@ -56,26 +55,22 @@ export default function LibraryScreen({ navigation }) {
         accessibilityRole="button"
         accessibilityLabel="Open the conditions library"
       >
-        <Text style={styles.linkTitle}>Conditions</Text>
-        <Text style={styles.linkReo}>Ngā mate</Text>
-        <Text style={styles.linkBody}>
-          Plain-language information about heart conditions, what can trigger
-          them, and how they are managed.
-        </Text>
+        <Text style={styles.linkTitle}>{t("library.conditions")}</Text>
+        <Text style={styles.linkBody}>{t("library.conditionsBlurb")}</Text>
       </Pressable>
 
       <CategorySection
-        title="Learn"
+        title={t("library.learn")}
         items={filterByCategory("learn")}
       />
 
       <CategorySection
-        title="Practice"
+        title={t("library.practice")}
         items={filterByCategory("practice")}
       />
 
       <CategorySection
-        title="Support"
+        title={t("library.support")}
         items={filterByCategory("support")}
       />
     </ScrollView>

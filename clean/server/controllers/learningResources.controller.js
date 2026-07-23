@@ -70,6 +70,9 @@ export async function createLearningResource(req, res) {
       req.body.url ??
       null
 
+    const titleMi = req.body.title_mi ?? null
+    const descriptionMi = req.body.description_mi ?? null
+
     const status = req.body.status ?? "draft"
     const sort_order = Number(req.body.sort_order) || 0
     const categories = req.body.categories || []
@@ -85,12 +88,14 @@ export async function createLearningResource(req, res) {
 
     const result = await db.run(
       `
-      INSERT INTO learning_resources (title, description, type, file_path, status, sort_order)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO learning_resources (title, description, title_mi, description_mi, type, file_path, status, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         title.trim(),
         description?.trim() || null,
+        titleMi?.trim() || null,
+        descriptionMi?.trim() || null,
         type,
         filePath,
         status,
@@ -156,6 +161,9 @@ export async function updateLearningResource(req, res) {
       req.body.url ??
       null
 
+    const titleMi = req.body.title_mi ?? null
+    const descriptionMi = req.body.description_mi ?? null
+
     const status = req.body.status ?? "draft"
     const sort_order = Number(req.body.sort_order) || 0
     const categories = req.body.categories || []
@@ -171,12 +179,14 @@ export async function updateLearningResource(req, res) {
     await db.run(
       `
       UPDATE learning_resources
-      SET title = ?, description = ?, type = ?, file_path = ?, status = ?, sort_order = ?
+      SET title = ?, description = ?, title_mi = ?, description_mi = ?, type = ?, file_path = ?, status = ?, sort_order = ?
       WHERE id = ?
       `,
       [
         title.trim(),
         description?.trim() || null,
+        titleMi?.trim() || null,
+        descriptionMi?.trim() || null,
         type,
         filePath,
         status,

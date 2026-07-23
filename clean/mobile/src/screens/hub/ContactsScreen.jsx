@@ -18,6 +18,7 @@ import {
 import { colors, layout, radii, shadow, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import { useAuthGuard } from "../../auth/useAuthGuard"
+import { useLanguage } from "../../i18n/LanguageContext"
 
 export async function dial(phone) {
   if (!phone) return
@@ -34,6 +35,7 @@ export default function ContactsScreen({ navigation }) {
   const [grouped, setGrouped] = useState({})
   const { isGuest } = useAuth()
   const guard = useAuthGuard()
+  const { t } = useLanguage()
 
   const load = useCallback(() => {
     getContactsByCategory()
@@ -48,14 +50,18 @@ export default function ContactsScreen({ navigation }) {
   )
 
   function confirmDelete(contact) {
-    Alert.alert("Remove contact", `Remove ${contact.name} from your contacts?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Remove",
-        style: "destructive",
-        onPress: () => deleteContact(contact.id).then(load),
-      },
-    ])
+    Alert.alert(
+      "Remove contact",
+      `Remove ${contact.name} from your contacts?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () => deleteContact(contact.id).then(load),
+        },
+      ]
+    )
   }
 
   const emergency = (grouped.emergency || []).concat(
@@ -67,18 +73,22 @@ export default function ContactsScreen({ navigation }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Contacts</Text>
-        <Text style={styles.subtitle}>Ngā whakapā</Text>
+        <Text style={styles.title} accessibilityRole="header">
+          {t("contacts.title")}
+        </Text>
       </View>
 
       <Pressable
         onPress={() => dial("111")}
-        style={({ pressed }) => [styles.emergencyBar, pressed && styles.pressed]}
+        style={({ pressed }) => [
+          styles.emergencyBar,
+          pressed && styles.pressed,
+        ]}
         accessibilityRole="button"
         accessibilityLabel="Call 111 emergency services"
       >
-        <Text style={styles.emergencyText}>Call 111</Text>
-        <Text style={styles.emergencySub}>Emergency services</Text>
+        <Text style={styles.emergencyText}>{t("contacts.call111")}</Text>
+        <Text style={styles.emergencySub}>{t("contacts.emergency")}</Text>
       </Pressable>
 
       {emergency.length > 0 ? (
@@ -87,7 +97,10 @@ export default function ContactsScreen({ navigation }) {
             <Pressable
               key={`quick-${contact.id}`}
               onPress={() => dial(contact.phone)}
-              style={({ pressed }) => [styles.quickChip, pressed && styles.pressed]}
+              style={({ pressed }) => [
+                styles.quickChip,
+                pressed && styles.pressed,
+              ]}
               accessibilityRole="button"
               accessibilityLabel={`Call ${contact.name}`}
             >
@@ -105,26 +118,31 @@ export default function ContactsScreen({ navigation }) {
           styles.primaryButton,
           (isGuest || pressed) && styles.pressed,
         ]}
+        accessibilityRole="button"
       >
-        <Text style={styles.primaryText}>Add Contact</Text>
+        <Text style={styles.primaryText}>{t("contacts.add")}</Text>
       </Pressable>
 
       {CONTACT_CATEGORIES.map(({ key, label, reo }) => {
         const items = grouped[key] || []
         return (
           <View key={key} style={styles.section}>
-            <Text style={styles.sectionTitle}>{label}</Text>
+            <Text style={styles.sectionTitle} accessibilityRole="header">
+              {label}
+            </Text>
             <Text style={styles.sectionReo}>{reo}</Text>
 
             {items.length === 0 ? (
-              <Text style={styles.empty}>None added yet</Text>
+              <Text style={styles.empty}>{t("contacts.none")}</Text>
             ) : (
               items.map((contact) => (
                 <View key={contact.id} style={styles.card}>
                   <View style={styles.cardMain}>
                     <Text style={styles.cardTitle}>{contact.name}</Text>
                     {contact.relationship ? (
-                      <Text style={styles.cardMeta}>{contact.relationship}</Text>
+                      <Text style={styles.cardMeta}>
+                        {contact.relationship}
+                      </Text>
                     ) : null}
                     {contact.phone ? (
                       <Text style={styles.cardMeta}>{contact.phone}</Text>
@@ -142,7 +160,7 @@ export default function ContactsScreen({ navigation }) {
                         accessibilityRole="button"
                         accessibilityLabel={`Call ${contact.name}`}
                       >
-                        <Text style={styles.callText}>Call</Text>
+                        <Text style={styles.callText}>{t("action.call")}</Text>
                       </Pressable>
                     ) : null}
                     <Pressable
@@ -154,7 +172,9 @@ export default function ContactsScreen({ navigation }) {
                       accessibilityRole="button"
                       accessibilityLabel={`Remove ${contact.name}`}
                     >
-                      <Text style={styles.removeText}>Remove</Text>
+                      <Text style={styles.removeText}>
+                        {t("action.remove")}
+                      </Text>
                     </Pressable>
                   </View>
                 </View>

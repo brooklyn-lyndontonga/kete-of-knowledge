@@ -1,6 +1,3 @@
- 
- 
-
 import { ScrollView, View, Text, Pressable, StyleSheet } from "react-native"
 import { useEffect, useState } from "react"
 import { useIsFocused } from "@react-navigation/native"
@@ -34,6 +31,7 @@ export default function MyMedicinesScreen({ navigation }) {
           styles.primaryButton,
           (isGuest || pressed) && styles.primaryButtonDisabled,
         ]}
+        accessibilityRole="button"
       >
         <Text style={styles.primaryText}>Add Medicine</Text>
       </Pressable>

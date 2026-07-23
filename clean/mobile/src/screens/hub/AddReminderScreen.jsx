@@ -1,4 +1,11 @@
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native"
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native"
 import { useState } from "react"
 
 import { addReminder } from "../../features/reminders.db"
@@ -120,6 +127,7 @@ export default function AddReminderScreen({ navigation }) {
           styles.primaryButton,
           (!title.trim() || saving || pressed) && styles.buttonPressed,
         ]}
+        accessibilityRole="button"
       >
         <Text style={styles.primaryText}>
           {saving ? "Saving…" : "Save Reminder"}

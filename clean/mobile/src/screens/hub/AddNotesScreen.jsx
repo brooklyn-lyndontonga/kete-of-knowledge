@@ -1,5 +1,3 @@
- 
- 
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 
@@ -43,6 +41,7 @@ export default function AddNoteScreen({ navigation }) {
         onChangeText={setTitle}
         style={styles.input}
       />
+
       <TextInput
         placeholder="Write your note"
         value={content}
@@ -50,7 +49,12 @@ export default function AddNoteScreen({ navigation }) {
         multiline
         style={[styles.input, styles.inputMultiline]}
       />
-      <Pressable onPress={save} style={styles.primaryButton}>
+
+      <Pressable
+        onPress={save}
+        style={styles.primaryButton}
+        accessibilityRole="button"
+      >
         <Text style={styles.primaryText}>Save Note</Text>
       </Pressable>
     </View>

@@ -1,5 +1,3 @@
- 
- 
 import { View, Text, StyleSheet } from "react-native"
 import ResourceCard from "../ResourceCard"
 import { colors, spacing, typography } from "../../theme"

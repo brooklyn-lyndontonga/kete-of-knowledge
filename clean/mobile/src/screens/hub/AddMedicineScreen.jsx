@@ -1,6 +1,3 @@
- 
- 
-
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 import { addMedicine } from "../../features/medicines.db.js"
@@ -52,7 +49,11 @@ export default function AddMedicineScreen({ navigation }) {
         multiline
       />
 
-      <Pressable onPress={save} style={styles.primaryButton}>
+      <Pressable
+        onPress={save}
+        style={styles.primaryButton}
+        accessibilityRole="button"
+      >
         <Text style={styles.primaryText}>Save</Text>
       </Pressable>
     </View>

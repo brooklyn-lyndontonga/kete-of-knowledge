@@ -1,5 +1,3 @@
- 
- 
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 
@@ -43,6 +41,7 @@ export default function AddSymptomScreen({ navigation }) {
         onChangeText={setSymptom}
         style={styles.input}
       />
+
       <TextInput
         placeholder="Severity (1–10)"
         value={severity}
@@ -50,6 +49,7 @@ export default function AddSymptomScreen({ navigation }) {
         style={styles.input}
         keyboardType="numeric"
       />
+
       <TextInput
         placeholder="Notes"
         value={notes}
@@ -57,7 +57,12 @@ export default function AddSymptomScreen({ navigation }) {
         style={[styles.input, styles.inputMultiline]}
         multiline
       />
-      <Pressable onPress={save} style={styles.primaryButton}>
+
+      <Pressable
+        onPress={save}
+        style={styles.primaryButton}
+        accessibilityRole="button"
+      >
         <Text style={styles.primaryText}>Save Symptom</Text>
       </Pressable>
     </View>

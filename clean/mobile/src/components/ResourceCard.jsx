@@ -1,5 +1,3 @@
- 
- 
 import { View, Text, StyleSheet } from "react-native"
 import { colors, radii, shadow, spacing, typography } from "../theme"
 

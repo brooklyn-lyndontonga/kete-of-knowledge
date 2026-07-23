@@ -18,16 +18,28 @@ export async function getAllConditions(req, res) {
 
 export async function createCondition(req, res) {
   try {
-    const { title, summary, triggers, treatments, status, sort_order } = req.body
+    const {
+      title, summary, triggers, treatments,
+      title_mi, summary_mi, triggers_mi, treatments_mi,
+      status, sort_order,
+    } = req.body
     const db = await getDB()
 
     const result = await db.run(
-      "INSERT INTO conditions (title, summary, triggers, treatments, status, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
+      `INSERT INTO conditions
+       (title, summary, triggers, treatments,
+        title_mi, summary_mi, triggers_mi, treatments_mi,
+        status, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         title,
         summary || null,
         triggers || null,
         treatments || null,
+        title_mi || null,
+        summary_mi || null,
+        triggers_mi || null,
+        treatments_mi || null,
         status || "draft",
         Number(sort_order) || 0
       ]
@@ -46,16 +58,28 @@ export async function createCondition(req, res) {
 export async function updateCondition(req, res) {
   try {
     const { id } = req.params
-    const { title, summary, triggers, treatments, status, sort_order } = req.body
+    const {
+      title, summary, triggers, treatments,
+      title_mi, summary_mi, triggers_mi, treatments_mi,
+      status, sort_order,
+    } = req.body
     const db = await getDB()
 
     await db.run(
-      "UPDATE conditions SET title = ?, summary = ?, triggers = ?, treatments = ?, status = ?, sort_order = ? WHERE id = ?",
+      `UPDATE conditions SET
+         title = ?, summary = ?, triggers = ?, treatments = ?,
+         title_mi = ?, summary_mi = ?, triggers_mi = ?, treatments_mi = ?,
+         status = ?, sort_order = ?
+       WHERE id = ?`,
       [
         title,
         summary || null,
         triggers || null,
         treatments || null,
+        title_mi || null,
+        summary_mi || null,
+        triggers_mi || null,
+        treatments_mi || null,
         status || "draft",
         Number(sort_order) || 0,
         id

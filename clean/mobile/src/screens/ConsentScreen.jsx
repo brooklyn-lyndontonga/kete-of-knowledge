@@ -108,7 +108,11 @@ const styles = StyleSheet.create({
   },
   heading: { ...typography.bodyStrong, color: colors.text },
   body: { ...typography.body, color: colors.muted },
-  link: { paddingVertical: spacing.sm, minHeight: 44, justifyContent: "center" },
+  link: {
+    paddingVertical: spacing.sm,
+    minHeight: 44,
+    justifyContent: "center",
+  },
   linkText: {
     ...typography.bodyStrong,
     color: colors.olive,

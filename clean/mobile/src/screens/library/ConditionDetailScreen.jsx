@@ -9,14 +9,17 @@ import { useEffect, useState } from "react"
 
 import { fetchCondition } from "../../api/contentApi"
 import { colors, layout, radii, shadow, spacing, typography } from "../../theme"
+import { useLanguage } from "../../i18n/LanguageContext"
 
-function Section({ heading, reo, body }) {
+function Section({ heading, body, fallback }) {
   if (!body) return null
   return (
     <View style={styles.card}>
-      <Text style={styles.cardHeading}>{heading}</Text>
-      <Text style={styles.cardReo}>{reo}</Text>
+      <Text style={styles.cardHeading} accessibilityRole="header">
+        {heading}
+      </Text>
       <Text style={styles.cardBody}>{body}</Text>
+      {fallback ? <Text style={styles.fallbackNote}>English only</Text> : null}
     </View>
   )
 }
@@ -25,6 +28,7 @@ export default function ConditionDetailScreen({ route }) {
   const { id } = route.params || {}
   const [condition, setCondition] = useState(null)
   const [loading, setLoading] = useState(true)
+  const { t, content, isFallback } = useLanguage()
 
   useEffect(() => {
     fetchCondition(id)
@@ -40,9 +44,7 @@ export default function ConditionDetailScreen({ route }) {
   if (!condition) {
     return (
       <View style={styles.emptyWrap}>
-        <Text style={styles.empty}>
-          This information isn&apos;t available offline yet.
-        </Text>
+        <Text style={styles.empty}>{t("condition.offline")}</Text>
       </View>
     )
   }
@@ -50,29 +52,28 @@ export default function ConditionDetailScreen({ route }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>{condition.title}</Text>
+        <Text style={styles.title} accessibilityRole="header">
+          {content(condition, "title")}
+        </Text>
       </View>
 
       <Section
-        heading="About"
-        reo="Mō tēnei"
-        body={condition.summary}
+        heading={t("condition.about")}
+        body={content(condition, "summary")}
+        fallback={isFallback(condition, "summary")}
       />
       <Section
-        heading="Triggers"
-        reo="Ngā take"
-        body={condition.triggers}
+        heading={t("condition.triggers")}
+        body={content(condition, "triggers")}
+        fallback={isFallback(condition, "triggers")}
       />
       <Section
-        heading="Managing this"
-        reo="Te whakahaere"
-        body={condition.treatments}
+        heading={t("condition.managing")}
+        body={content(condition, "treatments")}
+        fallback={isFallback(condition, "treatments")}
       />
 
-      <Text style={styles.disclaimer}>
-        This information is for learning and does not replace advice from your
-        doctor or health provider. If you feel unwell, contact them or call 111.
-      </Text>
+      <Text style={styles.disclaimer}>{t("condition.disclaimer")}</Text>
     </ScrollView>
   )
 }
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   cardHeading: { ...typography.title, color: colors.text },
-  cardReo: { ...typography.caption, color: colors.muted },
+  fallbackNote: { ...typography.caption, color: colors.camel },
   cardBody: { ...typography.body, color: colors.text, marginTop: spacing.xs },
   disclaimer: {
     ...typography.caption,

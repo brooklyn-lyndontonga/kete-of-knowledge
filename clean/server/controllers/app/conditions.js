@@ -13,7 +13,11 @@ export async function getAppConditions(req, res) {
         title,
         summary,
         triggers,
-        treatments
+        treatments,
+        title_mi,
+        summary_mi,
+        triggers_mi,
+        treatments_mi
       FROM conditions
       WHERE status = 'published' AND archived = 0
       ORDER BY sort_order ASC, title ASC

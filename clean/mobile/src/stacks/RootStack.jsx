@@ -1,4 +1,3 @@
- 
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { ActivityIndicator, View } from "react-native"
 import { useEffect, useState } from "react"
@@ -26,7 +25,13 @@ export default function RootStack() {
 
   if (!consentChecked) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", backgroundColor: colors.cornsilk }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          backgroundColor: colors.cornsilk,
+        }}
+      >
         <ActivityIndicator size="large" color={colors.olive} />
       </View>
     )

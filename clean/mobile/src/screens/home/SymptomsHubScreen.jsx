@@ -1,20 +1,36 @@
- 
- 
-
-import { View, Text, Pressable, StyleSheet, ImageBackground } from "react-native"
-import { colors, layout, radii, shadow, spacing, typography, images } from "../../theme"
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  ImageBackground,
+  ScrollView,
+} from "react-native"
+import {
+  colors,
+  layout,
+  radii,
+  shadow,
+  spacing,
+  typography,
+  images,
+} from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import { useAuthGuard } from "../../auth/useAuthGuard"
+import SymptomsWeekGrid from "../../components/symptoms/SymptomsWeekGrid"
 
 export default function SymptomsHubScreen({ navigation }) {
   const { isGuest } = useAuth()
   const guard = useAuthGuard()
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+    >
       <View style={styles.headerCardContainer}>
-        <ImageBackground 
-          source={images.sand_ripples} 
+        <ImageBackground
+          source={images.sand_ripples}
           style={styles.headerImageBg}
           imageStyle={styles.headerImageStyle}
         >
@@ -28,6 +44,10 @@ export default function SymptomsHubScreen({ navigation }) {
         </ImageBackground>
       </View>
 
+      <View style={styles.gridWrap}>
+        <SymptomsWeekGrid />
+      </View>
+
       <View style={styles.list}>
         {/* Card 1: Log a symptom */}
         <Pressable
@@ -37,15 +57,21 @@ export default function SymptomsHubScreen({ navigation }) {
             styles.primaryCard,
             (isGuest || pressed) && styles.cardPressed,
           ]}
+          accessibilityRole="button"
         >
           <View style={styles.cardContent}>
             <Text style={styles.cardLabel}>Tohumate Hou</Text>
-            <Text style={[styles.cardTitle, { color: colors.olive }]}>Log a new symptom</Text>
+            <Text style={[styles.cardTitle, { color: colors.olive }]}>
+              Log a new symptom
+            </Text>
             <Text style={styles.cardDesc}>
-              Quickly record heart rate spikes, palpitations, dizziness, or chest tightness.
+              Quickly record heart rate spikes, palpitations, dizziness, or
+              chest tightness.
             </Text>
           </View>
-          <View style={[styles.actionCircle, { backgroundColor: colors.olive }]}>
+          <View
+            style={[styles.actionCircle, { backgroundColor: colors.olive }]}
+          >
             <Text style={styles.actionIcon}>+</Text>
           </View>
         </Pressable>
@@ -53,28 +79,36 @@ export default function SymptomsHubScreen({ navigation }) {
         {/* Card 2: Learn about symptoms */}
         <Pressable
           onPress={() => navigation.navigate("Library")}
-          style={({ pressed }) => [
-            styles.card,
-            pressed && styles.cardPressed,
-          ]}
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          accessibilityRole="button"
         >
           <View style={styles.cardContent}>
             <Text style={styles.cardLabel}>Kete Mātauranga</Text>
             <Text style={styles.cardTitle}>Learn about symptoms</Text>
             <Text style={styles.cardDesc}>
-              Browse expert articles on triggers, home care, warnings, and when to see a GP.
+              Browse expert articles on triggers, home care, warnings, and when
+              to see a GP.
             </Text>
           </View>
-          <View style={[styles.actionCircle, { backgroundColor: colors.russet }]}>
+          <View
+            style={[styles.actionCircle, { backgroundColor: colors.russet }]}
+          >
             <Text style={styles.actionIcon}>→</Text>
           </View>
         </Pressable>
       </View>
-    </View>
+    </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    paddingBottom: spacing.xl,
+  },
+  gridWrap: {
+    paddingHorizontal: layout.screenPadding,
+    marginBottom: spacing.md,
+  },
   container: {
     padding: layout.screenPadding,
     gap: spacing.lg,

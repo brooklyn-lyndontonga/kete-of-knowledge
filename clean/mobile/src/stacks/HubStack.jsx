@@ -1,5 +1,3 @@
- 
- 
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { colors, typography } from "../theme"
 

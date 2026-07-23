@@ -1,58 +1,63 @@
 import { getDB } from "../db"
+import { insertRecord, softDeleteRecord, updateRecord } from "../db/records"
 
 export async function addChecklist({ title, items = [] }) {
-  const db = await getDB()
-  const createdAt = new Date().toISOString()
-  let checklistId = null
+  const list = await insertRecord("checklists", { title })
 
-  await db.withTransactionAsync(async () => {
-    const result = await db.runAsync(
-      `INSERT INTO checklists (title, created_at) VALUES (?, ?);`,
-      [title, createdAt]
-    )
-    checklistId = result.lastInsertRowId
+  for (let i = 0; i < items.length; i++) {
+    await insertRecord("checklist_items", {
+      checklist_id: list.id,
+      checklist_uuid: list.uuid,
+      label: items[i].label,
+      done: items[i].done ? 1 : 0,
+      sort_order: i,
+    })
+  }
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i]
-      await db.runAsync(
-        `INSERT INTO checklist_items (checklist_id, label, done, sort_order)
-         VALUES (?, ?, ?, ?);`,
-        [checklistId, item.label, item.done ? 1 : 0, i]
-      )
-    }
-  })
-
-  return { id: checklistId, title, items, created_at: createdAt }
+  return { ...list, items }
 }
 
 export async function getChecklists() {
   const db = await getDB()
 
   const lists = await db.getAllAsync(
-    `SELECT * FROM checklists ORDER BY id DESC;`
+    `SELECT * FROM checklists WHERE deleted_at IS NULL ORDER BY id DESC;`
   )
   const allItems = await db.getAllAsync(
-    `SELECT * FROM checklist_items ORDER BY sort_order ASC, id ASC;`
+    `SELECT * FROM checklist_items WHERE deleted_at IS NULL
+     ORDER BY sort_order ASC, id ASC;`
   )
 
   return lists.map((list) => ({
     ...list,
-    items: allItems.filter((i) => i.checklist_id === list.id),
+    items: allItems.filter(
+      (i) => i.checklist_id === list.id || i.checklist_uuid === list.uuid
+    ),
   }))
 }
 
+export async function addChecklistItem(checklist, label) {
+  return insertRecord("checklist_items", {
+    checklist_id: checklist.id,
+    checklist_uuid: checklist.uuid,
+    label,
+    done: 0,
+    sort_order: 0,
+  })
+}
+
 export async function toggleChecklistItem(itemId, done) {
-  const db = await getDB()
-  await db.runAsync(`UPDATE checklist_items SET done = ? WHERE id = ?;`, [
-    done ? 1 : 0,
-    itemId,
-  ])
+  return updateRecord("checklist_items", itemId, { done: done ? 1 : 0 })
 }
 
 export async function deleteChecklist(id) {
   const db = await getDB()
-  await db.withTransactionAsync(async () => {
-    await db.runAsync(`DELETE FROM checklist_items WHERE checklist_id = ?;`, [id])
-    await db.runAsync(`DELETE FROM checklists WHERE id = ?;`, [id])
-  })
+  const items = await db.getAllAsync(
+    `SELECT id FROM checklist_items WHERE checklist_id = ? AND deleted_at IS NULL;`,
+    [id]
+  )
+  for (const item of items) {
+    await softDeleteRecord("checklist_items", item.id)
+  }
+  return softDeleteRecord("checklists", id)
 }

@@ -1,41 +1,29 @@
-import { getDB } from "../db"
+import {
+  insertRecord,
+  listRecords,
+  softDeleteRecord,
+  updateRecord,
+} from "../db/records"
 
-/**
- * Kept for backwards compatibility - table creation now happens
- * centrally in initDB(). This is a no-op.
- */
+/** Table creation now happens centrally in initDB(). Kept as a no-op. */
 export async function initNotesTable() {}
 
 export async function getNotes() {
-  const db = await getDB()
-  return db.getAllAsync(`SELECT * FROM notes ORDER BY created_at DESC;`)
+  return listRecords("notes", { orderBy: "created_at DESC" })
 }
 
 export async function addNote({ title = "", content }) {
-  const db = await getDB()
-  const timestamp = new Date().toISOString()
-
-  const result = await db.runAsync(
-    `INSERT INTO notes (title, content, created_at) VALUES (?, ?, ?);`,
-    [title, content, timestamp]
-  )
-
-  return { id: result.lastInsertRowId, title, content, created_at: timestamp }
+  return insertRecord("notes", {
+    title,
+    content,
+    created_at: new Date().toISOString(),
+  })
 }
 
 export async function updateNote({ id, title = "", content }) {
-  const db = await getDB()
-  const timestamp = new Date().toISOString()
-
-  await db.runAsync(
-    `UPDATE notes SET title = ?, content = ?, updated_at = ? WHERE id = ?;`,
-    [title, content, timestamp, id]
-  )
-
-  return { id, title, content, updated_at: timestamp }
+  return updateRecord("notes", id, { title, content })
 }
 
 export async function deleteNote(id) {
-  const db = await getDB()
-  await db.runAsync(`DELETE FROM notes WHERE id = ?;`, [id])
+  return softDeleteRecord("notes", id)
 }

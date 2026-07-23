@@ -1,5 +1,3 @@
- 
- 
 import { ScrollView, View, Text, Pressable, StyleSheet } from "react-native"
 import { useEffect, useState } from "react"
 import { useIsFocused } from "@react-navigation/native"
@@ -33,6 +31,7 @@ export default function NotesScreen({ navigation }) {
           styles.primaryButton,
           (isGuest || pressed) && styles.primaryButtonDisabled,
         ]}
+        accessibilityRole="button"
       >
         <Text style={styles.primaryText}>Add Note</Text>
       </Pressable>

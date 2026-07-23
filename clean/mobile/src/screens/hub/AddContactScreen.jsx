@@ -63,12 +63,14 @@ export default function AddContactScreen({ navigation }) {
         style={styles.input}
         accessibilityLabel="Contact name"
       />
+
       <TextInput
         placeholder="Relationship (e.g. daughter, GP)"
         value={relationship}
         onChangeText={setRelationship}
         style={styles.input}
       />
+
       <TextInput
         placeholder="Phone number"
         value={phone}
@@ -76,6 +78,7 @@ export default function AddContactScreen({ navigation }) {
         keyboardType="phone-pad"
         style={styles.input}
       />
+
       <TextInput
         placeholder="Email (optional)"
         value={email}
@@ -113,9 +116,7 @@ export default function AddContactScreen({ navigation }) {
         accessibilityRole="checkbox"
         accessibilityState={{ checked: isEmergency }}
       >
-        <Text
-          style={[styles.chipText, isEmergency && styles.chipTextActive]}
-        >
+        <Text style={[styles.chipText, isEmergency && styles.chipTextActive]}>
           {isEmergency ? "✓ " : ""}Show in emergency quick-dial
         </Text>
       </Pressable>
@@ -127,6 +128,7 @@ export default function AddContactScreen({ navigation }) {
           styles.primaryButton,
           (!name.trim() || saving || pressed) && styles.buttonPressed,
         ]}
+        accessibilityRole="button"
       >
         <Text style={styles.primaryText}>
           {saving ? "Saving…" : "Save Contact"}
@@ -138,7 +140,11 @@ export default function AddContactScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   screen: { backgroundColor: colors.cornsilk },
-  content: { padding: layout.screenPadding, gap: spacing.sm, paddingBottom: 40 },
+  content: {
+    padding: layout.screenPadding,
+    gap: spacing.sm,
+    paddingBottom: 40,
+  },
   title: { ...typography.title, color: colors.text, marginBottom: spacing.xs },
   label: { ...typography.caption, color: colors.muted, marginTop: spacing.sm },
   input: {

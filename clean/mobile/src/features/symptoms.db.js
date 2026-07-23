@@ -1,26 +1,42 @@
 import { getDB } from "../db"
+import {
+  insertRecord,
+  listRecords,
+  softDeleteRecord,
+  updateRecord,
+} from "../db/records"
 
-export async function addSymptom({ symptom, severity = null, notes = "", tags = "" }) {
-  const db = await getDB()
-  const loggedAt = new Date().toISOString()
-
-  const result = await db.runAsync(
-    `INSERT INTO symptoms (symptom, severity, notes, tags, logged_at)
-     VALUES (?, ?, ?, ?, ?);`,
-    [symptom, severity, notes, tags, loggedAt]
-  )
-
-  return { id: result.lastInsertRowId, symptom, severity, notes, tags, logged_at: loggedAt }
+export async function addSymptom({
+  symptom,
+  severity = null,
+  notes = "",
+  tags = "",
+}) {
+  return insertRecord("symptoms", {
+    symptom,
+    severity,
+    notes,
+    tags,
+    logged_at: new Date().toISOString(),
+  })
 }
 
 export async function getSymptoms() {
-  const db = await getDB()
-  return db.getAllAsync(`SELECT * FROM symptoms ORDER BY logged_at DESC;`)
+  return listRecords("symptoms", { orderBy: "logged_at DESC" })
+}
+
+export async function updateSymptom(id, fields) {
+  return updateRecord("symptoms", id, fields)
+}
+
+export async function deleteSymptom(id) {
+  return softDeleteRecord("symptoms", id)
 }
 
 /**
- * Symptoms for the 7 days ending today, grouped by date key (YYYY-MM-DD).
- * Backs the weekly grid on the symptoms hub.
+ * Symptoms for the 7 days ending on endDate, keyed by YYYY-MM-DD.
+ * Every day in range is present, empty days included, so the grid
+ * can render a full week without gaps.
  */
 export async function getSymptomsForWeek(endDate = new Date()) {
   const db = await getDB()
@@ -33,7 +49,7 @@ export async function getSymptomsForWeek(endDate = new Date()) {
 
   const rows = await db.getAllAsync(
     `SELECT * FROM symptoms
-     WHERE logged_at >= ? AND logged_at <= ?
+     WHERE deleted_at IS NULL AND logged_at >= ? AND logged_at <= ?
      ORDER BY logged_at ASC;`,
     [start.toISOString(), end.toISOString()]
   )
@@ -42,7 +58,7 @@ export async function getSymptomsForWeek(endDate = new Date()) {
   for (let i = 0; i < 7; i++) {
     const d = new Date(start)
     d.setDate(start.getDate() + i)
-    days[d.toISOString().slice(0, 10)] = []
+    days[toKey(d)] = []
   }
 
   for (const row of rows) {
@@ -50,10 +66,12 @@ export async function getSymptomsForWeek(endDate = new Date()) {
     if (days[key]) days[key].push(row)
   }
 
-  return days
+  return { days, start, end }
 }
 
-export async function deleteSymptom(id) {
-  const db = await getDB()
-  await db.runAsync(`DELETE FROM symptoms WHERE id = ?;`, [id])
+export function toKey(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, "0")
+  const d = String(date.getDate()).padStart(2, "0")
+  return `${y}-${m}-${d}`
 }

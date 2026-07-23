@@ -1,6 +1,11 @@
- 
 import { useEffect, useState } from "react"
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native"
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native"
 import { fetchWhakatauki } from "../../api/appApi.js"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 

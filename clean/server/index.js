@@ -29,9 +29,11 @@ import appLearningResourceRoutes from "./routes/app/learningResources.js"
 import appConditionRoutes from "./routes/app/conditions.js"
 import appProfileSeedRoutes from "./routes/app/profileSeeds.js"
 import appAuthRoutes from "./routes/app/auth.js"
+import appSyncRoutes from "./routes/app/sync.js"
 
 // DB
 import { getDB, initSchema } from "./db/index.js"
+import { initSyncSchema } from "./db/syncSchema.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -99,6 +101,7 @@ const authLimiter = rateLimit({
 
 // Init DB + schema
 await initSchema()
+await initSyncSchema(await getDB())
 
 // ─────────────────────────────────────
 // HEALTH CHECKS
@@ -136,6 +139,7 @@ app.use("/api/app/learning-resources", appLearningResourceRoutes)
 app.use("/api/app/conditions", appConditionRoutes)
 app.use("/api/app/profile-seeds", appProfileSeedRoutes)
 app.use("/api/app/auth", authLimiter, appAuthRoutes)
+app.use("/api/app/sync", appSyncRoutes)
 
 // ─────────────────────────────────────
 // SERVER

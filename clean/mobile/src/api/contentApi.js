@@ -32,9 +32,10 @@ export async function fetchConditions() {
 
 export async function fetchCondition(id) {
   const all = await fetchConditions()
-  return (Array.isArray(all) ? all : []).find(
-    (c) => String(c.id) === String(id)
-  ) || null
+  return (
+    (Array.isArray(all) ? all : []).find((c) => String(c.id) === String(id)) ||
+    null
+  )
 }
 
 export async function fetchProfileSeeds() {

@@ -26,9 +26,7 @@ async function runMigrations(db) {
   for (const { table, column, type } of migrations) {
     try {
       if (!(await columnExists(db, table, column))) {
-        await db.execAsync(
-          `ALTER TABLE ${table} ADD COLUMN ${column} ${type};`
-        )
+        await db.execAsync(`ALTER TABLE ${table} ADD COLUMN ${column} ${type};`)
       }
     } catch (err) {
       // A missing table here is fine - CREATE TABLE IF NOT EXISTS above
@@ -48,6 +46,21 @@ export async function initDB() {
   await db.execAsync("PRAGMA foreign_keys = ON;")
   await db.execAsync(schema)
   await runMigrations(db)
+
+  // Rows created before sync existed have no uuid. Backfill so an
+  // existing install keeps its data when it first syncs.
+  const { backfillUuids } = await import("./records")
+  await backfillUuids([
+    "profiles",
+    "goals",
+    "symptoms",
+    "medicines",
+    "notes",
+    "reminders",
+    "checklists",
+    "checklist_items",
+    "contacts",
+  ])
 
   ready = true
   return db

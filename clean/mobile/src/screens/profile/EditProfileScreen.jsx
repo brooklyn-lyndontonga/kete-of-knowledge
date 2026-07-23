@@ -1,6 +1,3 @@
- 
- 
-
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 import { saveProfile } from "../../features/profile.db.js"
@@ -47,12 +44,14 @@ export default function EditProfileScreen({ navigation }) {
         onChangeText={setName}
         style={styles.input}
       />
+
       <TextInput
         placeholder="Date of birth"
         value={dob}
         onChangeText={setDob}
         style={styles.input}
       />
+
       <TextInput
         placeholder="Health info (conditions, allergies, etc)"
         value={healthInfo}
@@ -61,7 +60,11 @@ export default function EditProfileScreen({ navigation }) {
         style={[styles.input, styles.inputMultiline]}
       />
 
-      <Pressable onPress={save} style={styles.primaryButton}>
+      <Pressable
+        onPress={save}
+        style={styles.primaryButton}
+        accessibilityRole="button"
+      >
         <Text style={styles.primaryText}>Save Profile</Text>
       </Pressable>
     </View>

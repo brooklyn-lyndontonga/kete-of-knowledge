@@ -1,6 +1,3 @@
- 
- 
-
 import { View, Text, Pressable, Image, StyleSheet } from "react-native"
 import { useEffect, useState } from "react"
 import * as ImagePicker from "expo-image-picker"
@@ -23,7 +20,7 @@ export default function ProfileHeader({ onEdit }) {
     })
 
     if (!result.canceled) {
-      const uri = result.assets[0].uri;
+      const uri = result.assets[0].uri
 
       await saveProfile({
         ...profile,
@@ -38,8 +35,14 @@ export default function ProfileHeader({ onEdit }) {
     return (
       <View style={styles.emptyCard}>
         <Text style={styles.emptyTitle}>No profile yet</Text>
-        <Text style={styles.emptySubtitle}>Create your kōtaha to personalise your journey.</Text>
-        <Pressable onPress={onEdit} style={styles.linkButton}>
+        <Text style={styles.emptySubtitle}>
+          Create your kōtaha to personalise your journey.
+        </Text>
+        <Pressable
+          onPress={onEdit}
+          style={styles.linkButton}
+          accessibilityRole="button"
+        >
           <Text style={styles.linkText}>Create profile</Text>
         </Pressable>
       </View>
@@ -49,12 +52,9 @@ export default function ProfileHeader({ onEdit }) {
   return (
     <View style={styles.card}>
       {/* 🧑 Avatar */}
-      <Pressable onPress={pickImage}>
+      <Pressable onPress={pickImage} accessibilityRole="button">
         {profile.photo_uri ? (
-          <Image
-            source={{ uri: profile.photo_uri }}
-            style={styles.avatar}
-          />
+          <Image source={{ uri: profile.photo_uri }} style={styles.avatar} />
         ) : (
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarPlus}>+</Text>
@@ -66,11 +66,13 @@ export default function ProfileHeader({ onEdit }) {
       <View style={styles.info}>
         <Text style={styles.name}>{profile.name}</Text>
 
-        {profile.dob && (
-          <Text style={styles.meta}>DOB: {profile.dob}</Text>
-        )}
+        {profile.dob && <Text style={styles.meta}>DOB: {profile.dob}</Text>}
 
-        <Pressable onPress={onEdit} style={styles.linkButton}>
+        <Pressable
+          onPress={onEdit}
+          style={styles.linkButton}
+          accessibilityRole="button"
+        >
           <Text style={styles.linkText}>Edit profile</Text>
         </Pressable>
       </View>

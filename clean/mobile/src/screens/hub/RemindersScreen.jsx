@@ -1,4 +1,11 @@
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native"
 import { useCallback, useState } from "react"
 import { useFocusEffect } from "@react-navigation/native"
 
@@ -11,12 +18,14 @@ import { isAvailable } from "../../features/notifications"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import { useAuthGuard } from "../../auth/useAuthGuard"
+import { useLanguage } from "../../i18n/LanguageContext"
 
 export default function RemindersScreen({ navigation }) {
   const [reminders, setReminders] = useState([])
   const [alertsOn, setAlertsOn] = useState(true)
   const { isGuest } = useAuth()
   const guard = useAuthGuard()
+  const { t } = useLanguage()
 
   const load = useCallback(() => {
     getReminders()
@@ -45,14 +54,13 @@ export default function RemindersScreen({ navigation }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Reminders</Text>
-        <Text style={styles.subtitle}>Whakamahara</Text>
+        <Text style={styles.title} accessibilityRole="header">
+          {t("reminders.title")}
+        </Text>
       </View>
 
       {!alertsOn ? (
-        <Text style={styles.notice}>
-          Reminders are saved, but alerts are turned off for this build.
-        </Text>
+        <Text style={styles.notice}>{t("reminders.alertsOff")}</Text>
       ) : null}
 
       <Pressable
@@ -61,12 +69,13 @@ export default function RemindersScreen({ navigation }) {
           styles.primaryButton,
           (isGuest || pressed) && styles.primaryButtonDisabled,
         ]}
+        accessibilityRole="button"
       >
-        <Text style={styles.primaryText}>Add Reminder</Text>
+        <Text style={styles.primaryText}>{t("reminders.add")}</Text>
       </Pressable>
 
       {reminders.length === 0 ? (
-        <Text style={styles.empty}>No reminders yet</Text>
+        <Text style={styles.empty}>{t("reminders.empty")}</Text>
       ) : (
         reminders.map((item) => (
           <View
@@ -75,7 +84,9 @@ export default function RemindersScreen({ navigation }) {
           >
             <Text style={styles.cardTitle}>{item.title}</Text>
             <Text style={styles.cardMeta}>
-              {item.time_of_day ? `Daily at ${item.time_of_day}` : "No time set"}
+              {item.time_of_day
+                ? `${t("reminders.dailyAt")} ${item.time_of_day}`
+                : t("reminders.noTime")}
             </Text>
             {item.notes ? (
               <Text style={styles.cardNotes}>{item.notes}</Text>
@@ -84,9 +95,7 @@ export default function RemindersScreen({ navigation }) {
             <View style={styles.actions}>
               <Pressable
                 onPress={() =>
-                  guard(() =>
-                    toggleReminder(item.id, !item.active).then(load)
-                  )
+                  guard(() => toggleReminder(item.id, !item.active).then(load))
                 }
                 style={({ pressed }) => [
                   styles.smallButton,
@@ -100,7 +109,7 @@ export default function RemindersScreen({ navigation }) {
                 }
               >
                 <Text style={styles.smallText}>
-                  {item.active ? "Pause" : "Resume"}
+                  {item.active ? t("action.pause") : t("action.resume")}
                 </Text>
               </Pressable>
 
@@ -113,7 +122,7 @@ export default function RemindersScreen({ navigation }) {
                 accessibilityRole="button"
                 accessibilityLabel={`Delete reminder ${item.title}`}
               >
-                <Text style={styles.smallTextMuted}>Delete</Text>
+                <Text style={styles.smallTextMuted}>{t("action.delete")}</Text>
               </Pressable>
             </View>
           </View>

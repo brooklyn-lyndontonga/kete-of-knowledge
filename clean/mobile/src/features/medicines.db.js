@@ -1,42 +1,37 @@
-import { getDB } from "../db"
+import {
+  insertRecord,
+  listRecords,
+  softDeleteRecord,
+  updateRecord,
+} from "../db/records"
 
-export async function addMedicine({ name, type = "", dosage = "", notes = "" }) {
-  const db = await getDB()
-  const createdAt = new Date().toISOString()
-
-  const result = await db.runAsync(
-    `INSERT INTO medicines (name, type, dosage, notes, active, created_at)
-     VALUES (?, ?, ?, ?, 1, ?);`,
-    [name, type, dosage, notes, createdAt]
-  )
-
-  return { id: result.lastInsertRowId, name, type, dosage, notes, active: 1 }
+export async function addMedicine({
+  name,
+  type = "",
+  dosage = "",
+  notes = "",
+}) {
+  return insertRecord("medicines", { name, type, dosage, notes, active: 1 })
 }
 
 export async function getMedicines() {
-  const db = await getDB()
-  return db.getAllAsync(
-    `SELECT * FROM medicines ORDER BY active DESC, name ASC;`
-  )
+  return listRecords("medicines", { orderBy: "active DESC, name ASC" })
 }
 
-export async function updateMedicine({ id, name, type = "", dosage = "", notes = "" }) {
-  const db = await getDB()
-  await db.runAsync(
-    `UPDATE medicines SET name = ?, type = ?, dosage = ?, notes = ? WHERE id = ?;`,
-    [name, type, dosage, notes, id]
-  )
+export async function updateMedicine({
+  id,
+  name,
+  type = "",
+  dosage = "",
+  notes = "",
+}) {
+  return updateRecord("medicines", id, { name, type, dosage, notes })
 }
 
 export async function toggleMedicine(id, active) {
-  const db = await getDB()
-  await db.runAsync(`UPDATE medicines SET active = ? WHERE id = ?;`, [
-    active ? 1 : 0,
-    id,
-  ])
+  return updateRecord("medicines", id, { active: active ? 1 : 0 })
 }
 
 export async function deleteMedicine(id) {
-  const db = await getDB()
-  await db.runAsync(`DELETE FROM medicines WHERE id = ?;`, [id])
+  return softDeleteRecord("medicines", id)
 }

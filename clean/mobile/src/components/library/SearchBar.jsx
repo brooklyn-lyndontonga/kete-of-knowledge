@@ -1,5 +1,3 @@
- 
- 
 import { TextInput, StyleSheet } from "react-native"
 import { colors, radii, spacing, typography } from "../../theme"
 

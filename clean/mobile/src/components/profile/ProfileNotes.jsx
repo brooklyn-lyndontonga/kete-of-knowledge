@@ -1,5 +1,3 @@
- 
-
 import { View, Text, Pressable, StyleSheet } from "react-native"
 import { useEffect, useState } from "react"
 
@@ -47,9 +45,7 @@ export default function ProfileNotes() {
         <Text style={styles.subtitle}>Tuhipoka</Text>
       </View>
 
-      {notes.length === 0 && (
-        <Text style={styles.empty}>No notes yet</Text>
-      )}
+      {notes.length === 0 && <Text style={styles.empty}>No notes yet</Text>}
 
       {notes.map((note) => (
         <Pressable
@@ -58,10 +54,8 @@ export default function ProfileNotes() {
             setActiveNote(note)
             setModalOpen(true)
           }}
-          style={({ pressed }) => [
-            styles.card,
-            pressed && styles.cardPressed,
-          ]}
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          accessibilityRole="button"
         >
           <Text numberOfLines={3} style={styles.cardText}>
             {note.content}
@@ -79,6 +73,7 @@ export default function ProfileNotes() {
           styles.addButton,
           pressed && styles.cardPressed,
         ]}
+        accessibilityRole="button"
       >
         <Text style={styles.addText}>Add Note</Text>
       </Pressable>

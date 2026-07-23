@@ -1,4 +1,3 @@
- 
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import LibraryScreen from "../screens/LibraryScreen"
 import ConditionsScreen from "../screens/library/ConditionsScreen"

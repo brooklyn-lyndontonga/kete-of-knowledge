@@ -22,7 +22,9 @@ export async function buildDataExport() {
 
   for (const table of TABLES) {
     try {
-      data[table] = await db.getAllAsync(`SELECT * FROM ${table};`)
+      data[table] = await db.getAllAsync(
+        `SELECT * FROM ${table} WHERE deleted_at IS NULL;`
+      )
     } catch {
       data[table] = []
     }

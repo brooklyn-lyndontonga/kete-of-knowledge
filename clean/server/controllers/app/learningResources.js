@@ -12,6 +12,8 @@ export async function getAppLearningResources(req, res) {
         r.id,
         r.title,
         r.description,
+        r.title_mi,
+        r.description_mi,
         r.type,
         r.file_path,
         r.createdAt,

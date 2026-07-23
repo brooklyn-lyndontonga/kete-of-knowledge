@@ -6,13 +6,13 @@ export const images = {
   kawakawa_info: require("../../assets/images/kawakawa_info.jpg"),
   manuka_blossoms: require("../../assets/images/manuka_blossoms.jpg"),
   fern_frond: require("../../assets/images/fern_frond.jpg"),
-  
+
   // Landscape and atmospheric vistas
   beach_horizon: require("../../assets/images/beach_horizon.jpg"),
   tui_on_kowhai: require("../../assets/images/tui_on_kowhai.jpg"),
   sand_ripples: require("../../assets/images/sand_ripples.jpg"),
   kauri_giant_tree: require("../../assets/images/kauri_giant_tree.jpg"),
-  
+
   // Forest, mist, foliage, and vegetation
   forest_canopy_dense: require("../../assets/images/forest_canopy_dense.jpg"),
   forest_mist: require("../../assets/images/forest_mist.jpg"),

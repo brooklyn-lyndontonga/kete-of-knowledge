@@ -1,8 +1,13 @@
- 
 import { NavigationContainer } from "@react-navigation/native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useEffect, useState } from "react"
-import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native"
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native"
 import { StatusBar } from "expo-status-bar"
 import { useFonts } from "expo-font"
 import {
@@ -12,20 +17,27 @@ import {
 } from "@expo-google-fonts/manrope"
 import RootStack from "./src/stacks/RootStack"
 import { initDB } from "./src/db"
-import { colors, typography } from "./src/theme"
+import { a11y, colors, typography } from "./src/theme"
 import { AuthProvider } from "./src/auth/AuthContext"
+import { SyncProvider } from "./src/sync/SyncContext"
+import { LanguageProvider } from "./src/i18n/LanguageContext"
 
 Text.defaultProps = Text.defaultProps || {}
 Text.defaultProps.style = [
   { color: colors.text, fontFamily: typography.body.fontFamily },
   Text.defaultProps.style,
 ]
+// Respect the reader's OS text size, capped so cards stay intact.
+Text.defaultProps.allowFontScaling = true
+Text.defaultProps.maxFontSizeMultiplier = a11y.maxFontSizeMultiplier
 TextInput.defaultProps = TextInput.defaultProps || {}
 TextInput.defaultProps.placeholderTextColor = colors.muted
 TextInput.defaultProps.style = [
   { color: colors.text, fontFamily: typography.body.fontFamily },
   TextInput.defaultProps.style,
 ]
+TextInput.defaultProps.allowFontScaling = true
+TextInput.defaultProps.maxFontSizeMultiplier = a11y.maxFontSizeMultiplier
 
 export default function App() {
   const [dbReady, setDbReady] = useState(false)
@@ -66,9 +78,13 @@ export default function App() {
           <View style={styles.glowTop} />
           <View style={styles.glowBottom} />
         </View>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <SyncProvider>
+              <AppContent />
+            </SyncProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </SafeAreaView>
     </NavigationContainer>
   )

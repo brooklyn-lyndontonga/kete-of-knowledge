@@ -1,4 +1,11 @@
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native"
 import { useCallback, useState } from "react"
 import { useFocusEffect } from "@react-navigation/native"
 
@@ -10,11 +17,13 @@ import {
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import { useAuthGuard } from "../../auth/useAuthGuard"
+import { useLanguage } from "../../i18n/LanguageContext"
 
 export default function ChecklistsScreen({ navigation }) {
   const [checklists, setChecklists] = useState([])
   const { isGuest } = useAuth()
   const guard = useAuthGuard()
+  const { t } = useLanguage()
 
   const load = useCallback(() => {
     getChecklists()
@@ -42,8 +51,9 @@ export default function ChecklistsScreen({ navigation }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Checklists</Text>
-        <Text style={styles.subtitle}>Rārangi arowhai</Text>
+        <Text style={styles.title} accessibilityRole="header">
+          {t("checklists.title")}
+        </Text>
       </View>
 
       <Pressable
@@ -52,12 +62,13 @@ export default function ChecklistsScreen({ navigation }) {
           styles.primaryButton,
           (isGuest || pressed) && styles.buttonPressed,
         ]}
+        accessibilityRole="button"
       >
-        <Text style={styles.primaryText}>Create Checklist</Text>
+        <Text style={styles.primaryText}>{t("checklists.create")}</Text>
       </Pressable>
 
       {checklists.length === 0 ? (
-        <Text style={styles.empty}>No checklists yet</Text>
+        <Text style={styles.empty}>{t("checklists.empty")}</Text>
       ) : (
         checklists.map((list) => {
           const done = list.items.filter((i) => i.done).length
@@ -65,7 +76,7 @@ export default function ChecklistsScreen({ navigation }) {
             <View key={list.id} style={styles.card}>
               <Text style={styles.cardTitle}>{list.title}</Text>
               <Text style={styles.cardMeta}>
-                {done} of {list.items.length} done
+                {t("checklists.progress", { done, total: list.items.length })}
               </Text>
 
               {list.items.map((item) => (
@@ -102,7 +113,9 @@ export default function ChecklistsScreen({ navigation }) {
                 accessibilityRole="button"
                 accessibilityLabel={`Delete checklist ${list.title}`}
               >
-                <Text style={styles.deleteText}>Delete list</Text>
+                <Text style={styles.deleteText}>
+                  {t("checklists.deleteList")}
+                </Text>
               </Pressable>
             </View>
           )

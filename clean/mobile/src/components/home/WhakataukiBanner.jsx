@@ -1,5 +1,3 @@
- 
- 
 import { View, Text, StyleSheet } from "react-native"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 
@@ -74,4 +72,3 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 })
-

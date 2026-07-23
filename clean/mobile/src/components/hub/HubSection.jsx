@@ -1,6 +1,5 @@
- 
 /* eslint-disable no-unused-vars */
- 
+
 import { View, Text, Pressable, StyleSheet } from "react-native"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 
@@ -8,10 +7,8 @@ export default function HubSection({ title, subtitle, onPress }) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        pressed && styles.cardPressed,
-      ]}
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+      accessibilityRole="button"
     >
       <Text style={styles.title}>{title}</Text>
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}

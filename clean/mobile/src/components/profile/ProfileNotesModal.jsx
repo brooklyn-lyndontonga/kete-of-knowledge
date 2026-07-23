@@ -1,7 +1,11 @@
- 
- 
-
-import { Modal, View, Text, TextInput, Pressable, StyleSheet } from "react-native"
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+} from "react-native"
 import { useState, useEffect } from "react"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 
@@ -19,12 +23,8 @@ export default function ProfileNotesModal({
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View
-        style={styles.overlay}
-      >
-        <View
-          style={styles.modal}
-        >
+      <View style={styles.overlay}>
+        <View style={styles.modal}>
           <Text style={styles.title}>Profile Notes</Text>
 
           <TextInput
@@ -36,7 +36,11 @@ export default function ProfileNotesModal({
           />
 
           <View style={styles.actions}>
-            <Pressable onPress={onClose} style={styles.secondaryButton}>
+            <Pressable
+              onPress={onClose}
+              style={styles.secondaryButton}
+              accessibilityRole="button"
+            >
               <Text style={styles.secondaryText}>Cancel</Text>
             </Pressable>
             <Pressable
@@ -45,6 +49,7 @@ export default function ProfileNotesModal({
                 onClose()
               }}
               style={styles.primaryButton}
+              accessibilityRole="button"
             >
               <Text style={styles.primaryText}>Save</Text>
             </Pressable>

@@ -1,4 +1,5 @@
 import { getDB } from "../db"
+import { insertRecord, updateRecord } from "../db/records"
 
 function parseJson(value, fallback) {
   if (!value) return fallback
@@ -13,7 +14,7 @@ export async function getProfile() {
   const db = await getDB()
 
   const row = await db.getFirstAsync(
-    `SELECT * FROM profiles ORDER BY id DESC LIMIT 1;`
+    `SELECT * FROM profiles WHERE deleted_at IS NULL ORDER BY id DESC LIMIT 1;`
   )
   if (!row) return null
 
@@ -24,10 +25,7 @@ export async function getProfile() {
   }
 }
 
-/**
- * Upserts the single local profile rather than inserting a new row
- * every save, which is what the previous version did.
- */
+/** Upserts the single local profile rather than inserting a new row each save. */
 export async function saveProfile(profile) {
   const db = await getDB()
   const {
@@ -39,38 +37,19 @@ export async function saveProfile(profile) {
     emergency_contacts = [],
   } = profile || {}
 
-  const timestamp = new Date().toISOString()
-  const existing = await db.getFirstAsync(
-    `SELECT id FROM profiles ORDER BY id DESC LIMIT 1;`
-  )
-
-  const params = [
+  const fields = {
     name,
     dob,
     photo_uri,
     health_info,
-    JSON.stringify(health_providers || []),
-    JSON.stringify(emergency_contacts || []),
-    timestamp,
-  ]
-
-  if (existing) {
-    await db.runAsync(
-      `UPDATE profiles
-       SET name = ?, dob = ?, photo_uri = ?, health_info = ?,
-           health_providers = ?, emergency_contacts = ?, updated_at = ?
-       WHERE id = ?;`,
-      [...params, existing.id]
-    )
-    return { id: existing.id, ...profile }
+    health_providers: JSON.stringify(health_providers || []),
+    emergency_contacts: JSON.stringify(emergency_contacts || []),
   }
 
-  const result = await db.runAsync(
-    `INSERT INTO profiles
-     (name, dob, photo_uri, health_info, health_providers, emergency_contacts, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?);`,
-    params
+  const existing = await db.getFirstAsync(
+    `SELECT id FROM profiles WHERE deleted_at IS NULL ORDER BY id DESC LIMIT 1;`
   )
 
-  return { id: result.lastInsertRowId, ...profile }
+  if (existing) return updateRecord("profiles", existing.id, fields)
+  return insertRecord("profiles", fields)
 }

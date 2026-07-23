@@ -1,4 +1,3 @@
- 
 import { useState } from "react"
 import {
   ActivityIndicator,
@@ -29,14 +28,16 @@ export default function LoginScreen({ navigation }) {
     setLoading(true)
     setError("")
     setSuccessMessage("")
-    
+
     const result = await sendMagicLink(email)
-    
+
     if (!result.ok) {
       setError(result.error || "Failed to send magic link")
       setLoading(false)
     } else {
-      setSuccessMessage("✨ Magic link sent! Check your email (or server console) to log in.")
+      setSuccessMessage(
+        "✨ Magic link sent! Check your email (or server console) to log in."
+      )
       setLoading(false)
     }
   }
@@ -48,7 +49,9 @@ export default function LoginScreen({ navigation }) {
     >
       <View style={styles.content}>
         <Text style={styles.title}>Sign In</Text>
-        <Text style={styles.subtitle}>Enter your email to receive a magic link.</Text>
+        <Text style={styles.subtitle}>
+          Enter your email to receive a magic link.
+        </Text>
 
         <View style={styles.form}>
           {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -78,6 +81,7 @@ export default function LoginScreen({ navigation }) {
               pressed && styles.buttonPressed,
               loading && styles.buttonDisabled,
             ]}
+            accessibilityRole="button"
           >
             {loading ? (
               <ActivityIndicator color={colors.cornsilk} />
@@ -87,11 +91,12 @@ export default function LoginScreen({ navigation }) {
           </Pressable>
 
           <Pressable
-             style={styles.linkButton}
-             onPress={() => navigation.goBack()}
-           >
-             <Text style={styles.linkText}>Back</Text>
-           </Pressable>
+            style={styles.linkButton}
+            onPress={() => navigation.goBack()}
+            accessibilityRole="button"
+          >
+            <Text style={styles.linkText}>Back</Text>
+          </Pressable>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -135,7 +140,7 @@ const styles = StyleSheet.create({
   successText: {
     ...typography.body,
     color: colors.cornsilk,
-    textAlign: "center"
+    textAlign: "center",
   },
   inputGroup: {
     gap: spacing.xs,

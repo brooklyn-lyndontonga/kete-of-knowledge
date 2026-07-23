@@ -1,6 +1,3 @@
- 
- 
-
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native"
 import { useState } from "react"
 import { addGoal } from "../../features/goals.db.js"
@@ -47,7 +44,11 @@ export default function AddGoalScreen({ navigation }) {
         multiline
       />
 
-      <Pressable onPress={save} style={styles.primaryButton}>
+      <Pressable
+        onPress={save}
+        style={styles.primaryButton}
+        accessibilityRole="button"
+      >
         <Text style={styles.primaryText}>Save Goal</Text>
       </Pressable>
     </View>

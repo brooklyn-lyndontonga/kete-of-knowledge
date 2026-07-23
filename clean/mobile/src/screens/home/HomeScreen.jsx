@@ -1,27 +1,41 @@
- 
- 
+import {
+  ScrollView,
+  Text,
+  View,
+  StyleSheet,
+  Pressable,
+  ImageBackground,
+} from "react-native"
+import { useState } from "react"
+import { useAuth } from "../../auth/AuthContext"
 
-import { ScrollView, Text, View, StyleSheet, Pressable, ImageBackground } from 'react-native'
-import { useState } from 'react'
-import { useAuth } from '../../auth/AuthContext'
-
-import WhakataukiBanner from '../../components/home/WhakataukiBanner'
-import HubShortcuts from '../../components/home/HubShortcuts'
-import RemindersPreview from '../../components/home/RemindersPreview'
-import { colors, layout, radii, shadow, spacing, typography, images } from '../../theme'
+import WhakataukiBanner from "../../components/home/WhakataukiBanner"
+import HubShortcuts from "../../components/home/HubShortcuts"
+import RemindersPreview from "../../components/home/RemindersPreview"
+import {
+  colors,
+  layout,
+  radii,
+  shadow,
+  spacing,
+  typography,
+  images,
+} from "../../theme"
 
 export default function HomeScreen({ navigation }) {
   const { session, isAuthenticated } = useAuth()
-  
+
   // Extract user's name if authenticated, default to "Whānau"
-  const userName = isAuthenticated && session?.user?.name 
-    ? session.user.name.split(' ')[0] 
-    : "Whānau"
+  const userName =
+    isAuthenticated && session?.user?.name
+      ? session.user.name.split(" ")[0]
+      : "Whānau"
 
   // Check if we have an email letter for fallback avatar
-  const userInitial = isAuthenticated && session?.user?.email
-    ? session.user.email.charAt(0).toUpperCase()
-    : "W"
+  const userInitial =
+    isAuthenticated && session?.user?.email
+      ? session.user.email.charAt(0).toUpperCase()
+      : "W"
 
   const [reminders] = useState([])
 
@@ -33,8 +47,8 @@ export default function HomeScreen({ navigation }) {
     >
       {/* 🌿 Personalized Hero Card with Kauri Forest Backdrop */}
       <View style={styles.heroCardContainer}>
-        <ImageBackground 
-          source={images.kauri_giant_tree} 
+        <ImageBackground
+          source={images.kauri_giant_tree}
           style={styles.heroImageBg}
           imageStyle={styles.heroImageStyle}
         >
@@ -44,9 +58,10 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.title}>Rise & shine, {userName}!</Text>
               <Text style={styles.subtitle}>How do you feel today?</Text>
             </View>
-            <Pressable 
+            <Pressable
               style={styles.avatarCircle}
-              onPress={() => navigation.navigate('Profile')}
+              onPress={() => navigation.navigate("Profile")}
+              accessibilityRole="button"
             >
               <Text style={styles.avatarLetter}>{userInitial}</Text>
               <View style={styles.avatarOnlineDot} />
@@ -54,7 +69,6 @@ export default function HomeScreen({ navigation }) {
           </View>
         </ImageBackground>
       </View>
-
 
       {/* 🌿 Daily Reflection */}
       <WhakataukiBanner
@@ -65,17 +79,17 @@ export default function HomeScreen({ navigation }) {
       {/* 🧭 Interactive tools grid */}
       <HubShortcuts
         onNavigate={(item) => {
-          if (item === 'Symptoms') navigation.navigate('SymptomsHub')
-          if (item === 'Rongoā') navigation.navigate('MedicinesHub')
-          if (item === 'Notes') navigation.navigate('Hub')
-          if (item === 'Checklists') navigation.navigate('Hub')
+          if (item === "Symptoms") navigation.navigate("SymptomsHub")
+          if (item === "Rongoā") navigation.navigate("MedicinesHub")
+          if (item === "Notes") navigation.navigate("Hub")
+          if (item === "Checklists") navigation.navigate("Hub")
         }}
       />
 
       {/* ⏰ Reminders / Care Calendar */}
       <RemindersPreview
         items={reminders}
-        onAdd={() => navigation.navigate('Hub')}
+        onAdd={() => navigation.navigate("Hub")}
       />
     </ScrollView>
   )
@@ -165,4 +179,3 @@ const styles = StyleSheet.create({
     borderColor: "#FFFFFF",
   },
 })
-

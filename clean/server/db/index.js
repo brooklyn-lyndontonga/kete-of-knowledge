@@ -109,6 +109,8 @@ export async function initSchema() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
       description TEXT,
+      title_mi TEXT,
+      description_mi TEXT,
       type TEXT,
       file_path TEXT,
       status TEXT DEFAULT 'draft',
@@ -153,6 +155,10 @@ export async function initSchema() {
       summary TEXT,
       triggers TEXT,
       treatments TEXT,
+      title_mi TEXT,
+      summary_mi TEXT,
+      triggers_mi TEXT,
+      treatments_mi TEXT,
       status TEXT DEFAULT 'draft',
       sort_order INTEGER DEFAULT 0,
       archived INTEGER DEFAULT 0
@@ -222,6 +228,21 @@ export async function initSchema() {
       await db.exec(`ALTER TABLE ${table} ADD COLUMN archived INTEGER DEFAULT 0;`)
     } catch (_err) {
       // Column already exists
+    }
+  }
+
+  // Te reo Māori content columns
+  const reoColumns = {
+    conditions: ["title_mi", "summary_mi", "triggers_mi", "treatments_mi"],
+    learning_resources: ["title_mi", "description_mi"],
+  }
+  for (const [table, cols] of Object.entries(reoColumns)) {
+    for (const col of cols) {
+      try {
+        await db.exec(`ALTER TABLE ${table} ADD COLUMN ${col} TEXT;`)
+      } catch (_err) {
+        // Column already exists
+      }
     }
   }
 

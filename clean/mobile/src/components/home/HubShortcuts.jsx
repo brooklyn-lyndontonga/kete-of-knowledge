@@ -1,42 +1,39 @@
- 
- 
-
 import { View, Text, Pressable, StyleSheet } from "react-native"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 
 export default function HubShortcuts({ onNavigate }) {
   const items = [
-    { 
-      label: "Symptoms", 
-      subtitle: "Tohumate", 
-      desc: "Track and monitor heart symptoms", 
+    {
+      label: "Symptoms",
+      subtitle: "Tohumate",
+      desc: "Track and monitor heart symptoms",
       bg: "rgba(143, 163, 143, 0.08)", // Light dusty eucalyptus tint
       accent: colors.olive,
-      actionIcon: "+"
+      actionIcon: "+",
     },
-    { 
-      label: "Rongoā", 
-      subtitle: "Medicines", 
-      desc: "Daily heart medicine logger", 
+    {
+      label: "Rongoā",
+      subtitle: "Medicines",
+      desc: "Daily heart medicine logger",
       bg: "rgba(194, 168, 143, 0.06)", // Warm sand tint
       accent: colors.russet,
-      actionIcon: "→"
+      actionIcon: "→",
     },
-    { 
-      label: "Notes", 
-      subtitle: "Tuhipoka", 
-      desc: "Journal your thoughts and feelings", 
-      bg: "#FFFFFF", 
+    {
+      label: "Notes",
+      subtitle: "Tuhipoka",
+      desc: "Journal your thoughts and feelings",
+      bg: "#FFFFFF",
       accent: colors.laurel,
-      actionIcon: "+"
+      actionIcon: "+",
     },
-    { 
-      label: "Checklists", 
-      subtitle: "Rārangi arowhai", 
-      desc: "Health tasks & lifestyle goals", 
-      bg: "#FFFFFF", 
+    {
+      label: "Checklists",
+      subtitle: "Rārangi arowhai",
+      desc: "Health tasks & lifestyle goals",
+      bg: "#FFFFFF",
       accent: colors.camel,
-      actionIcon: "✓"
+      actionIcon: "✓",
     },
   ]
 
@@ -53,17 +50,22 @@ export default function HubShortcuts({ onNavigate }) {
               { backgroundColor: item.bg },
               pressed && styles.cardPressed,
             ]}
+            accessibilityRole="button"
           >
             <View style={styles.cardHeader}>
               <View>
-                <Text style={[styles.label, { color: colors.text }]}>{item.label}</Text>
+                <Text style={[styles.label, { color: colors.text }]}>
+                  {item.label}
+                </Text>
                 <Text style={styles.subtitle}>{item.subtitle}</Text>
               </View>
             </View>
             <Text style={styles.descText}>{item.desc}</Text>
-            
+
             {/* Mockup Action Button Circle at the bottom right */}
-            <View style={[styles.actionCircle, { backgroundColor: item.accent }]}>
+            <View
+              style={[styles.actionCircle, { backgroundColor: item.accent }]}
+            >
               <Text style={styles.actionIcon}>{item.actionIcon}</Text>
             </View>
           </Pressable>
@@ -147,4 +149,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 })
-

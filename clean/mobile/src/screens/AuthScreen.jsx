@@ -1,15 +1,9 @@
- 
- 
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { useAuth } from "../auth/AuthContext"
 import { colors, radii, spacing, typography } from "../theme"
 
 export default function AuthScreen({ navigation }) {
-  const {
-    continueAsGuest,
-    isGuest,
-    closeAuth,
-  } = useAuth()
+  const { continueAsGuest, isGuest, closeAuth } = useAuth()
 
   return (
     <View style={styles.container}>
@@ -19,7 +13,9 @@ export default function AuthScreen({ navigation }) {
         <Text style={styles.subtitle}>
           Sign in to support your heart health journey.
         </Text>
-        <Text style={styles.subtitle}>Takiuru kia manaaki i tō oranga ngākau.</Text>
+        <Text style={styles.subtitle}>
+          Takiuru kia manaaki i tō oranga ngākau.
+        </Text>
       </View>
 
       <Pressable
@@ -28,6 +24,7 @@ export default function AuthScreen({ navigation }) {
           styles.primaryButton,
           pressed && styles.primaryPressed,
         ]}
+        accessibilityRole="button"
       >
         <Text style={styles.primaryText}>Continue with Email</Text>
       </Pressable>
@@ -38,6 +35,7 @@ export default function AuthScreen({ navigation }) {
           styles.secondaryButton,
           pressed && styles.secondaryPressed,
         ]}
+        accessibilityRole="button"
       >
         <Text style={styles.secondaryText}>Continue as Guest</Text>
       </Pressable>
@@ -49,6 +47,7 @@ export default function AuthScreen({ navigation }) {
             styles.ghostButton,
             pressed && styles.secondaryPressed,
           ]}
+          accessibilityRole="button"
         >
           <Text style={styles.ghostText}>Back to app</Text>
         </Pressable>

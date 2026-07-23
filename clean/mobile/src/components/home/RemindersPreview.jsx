@@ -1,6 +1,3 @@
- 
- 
-
 import { View, Text, Pressable, StyleSheet } from "react-native"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 
@@ -12,7 +9,11 @@ export default function RemindersPreview({ items = [], onAdd }) {
           <Text style={styles.title}>Reminders</Text>
           <Text style={styles.subtitle}>Whakamahara</Text>
         </View>
-        <Pressable onPress={onAdd} style={styles.action}>
+        <Pressable
+          onPress={onAdd}
+          style={styles.action}
+          accessibilityRole="button"
+        >
           <Text style={styles.actionText}>Add</Text>
         </Pressable>
       </View>
@@ -21,10 +22,7 @@ export default function RemindersPreview({ items = [], onAdd }) {
         <Text style={styles.empty}>No reminders set for today</Text>
       ) : (
         items.map((item) => (
-          <View
-            key={item.id}
-            style={styles.card}
-          >
+          <View key={item.id} style={styles.card}>
             <Text style={styles.cardTitle}>{item.title}</Text>
             {item.time ? (
               <Text style={styles.cardMeta}>{item.time}</Text>

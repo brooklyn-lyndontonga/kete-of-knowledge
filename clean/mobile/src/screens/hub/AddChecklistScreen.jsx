@@ -1,5 +1,3 @@
- 
- 
 import { View, TextInput, Pressable, Text, StyleSheet } from "react-native"
 import { useState } from "react"
 import { addChecklist } from "../../features/checklists.db"
@@ -60,7 +58,12 @@ export default function AddChecklistScreen({ navigation }) {
           onChangeText={setItem}
           style={[styles.input, styles.rowInput]}
         />
-        <Pressable onPress={addItem} style={styles.secondaryButton}>
+
+        <Pressable
+          onPress={addItem}
+          style={styles.secondaryButton}
+          accessibilityRole="button"
+        >
           <Text style={styles.secondaryText}>Add</Text>
         </Pressable>
       </View>
@@ -71,7 +74,11 @@ export default function AddChecklistScreen({ navigation }) {
         </Text>
       ))}
 
-      <Pressable onPress={save} style={styles.primaryButton}>
+      <Pressable
+        onPress={save}
+        style={styles.primaryButton}
+        accessibilityRole="button"
+      >
         <Text style={styles.primaryText}>Save Checklist</Text>
       </Pressable>
     </View>
