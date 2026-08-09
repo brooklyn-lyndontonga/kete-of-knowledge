@@ -8,7 +8,7 @@ import {
 } from "react-native"
 import { useState } from "react"
 
-import { CONTACT_CATEGORIES, addContact } from "../../features/contacts.db"
+import { CONTACT_CATEGORIES, addContact } from "../../features/contacts.db.js"
 import { colors, layout, radii, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import GuestGate from "../../auth/GuestGate"

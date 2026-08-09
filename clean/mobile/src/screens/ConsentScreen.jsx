@@ -8,7 +8,7 @@ import {
 } from "react-native"
 import { useState } from "react"
 
-import { acceptConsent } from "../features/consent.db"
+import { acceptConsent } from "../features/consent.db.js"
 import { colors, layout, radii, spacing, typography } from "../theme"
 import { REQUIRED_BEFORE_RELEASE } from "../config"
 

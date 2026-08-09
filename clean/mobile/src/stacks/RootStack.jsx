@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import AppTabs from "./AppTabs"
 import AuthStack from "./AuthStack"
 import ConsentScreen from "../screens/ConsentScreen"
-import { hasAcceptedConsent } from "../features/consent.db"
+import { hasAcceptedConsent } from "../features/consent.db.js"
 import { useAuth } from "../auth/AuthContext"
 import { colors } from "../theme"
 

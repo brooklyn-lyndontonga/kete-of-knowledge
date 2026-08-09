@@ -1,6 +1,6 @@
 import { View, TextInput, Pressable, Text, StyleSheet } from "react-native"
 import { useState } from "react"
-import { addChecklist } from "../../features/checklists.db"
+import { addChecklist } from "../../features/checklists.db.js"
 import { colors, radii, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import GuestGate from "../../auth/GuestGate"

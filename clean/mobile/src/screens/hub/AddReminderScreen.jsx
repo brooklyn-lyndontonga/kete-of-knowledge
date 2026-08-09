@@ -8,7 +8,7 @@ import {
 } from "react-native"
 import { useState } from "react"
 
-import { addReminder } from "../../features/reminders.db"
+import { addReminder } from "../../features/reminders.db.js"
 import { colors, radii, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import GuestGate from "../../auth/GuestGate"

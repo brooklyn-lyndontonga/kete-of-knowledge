@@ -2,7 +2,7 @@ import { useCallback, useState } from "react"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { useFocusEffect } from "@react-navigation/native"
 
-import { getSymptomsForWeek, toKey } from "../../features/symptoms.db"
+import { getSymptomsForWeek, toKey } from "../../features/symptoms.db.js"
 import { useLanguage } from "../../i18n/LanguageContext"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 
