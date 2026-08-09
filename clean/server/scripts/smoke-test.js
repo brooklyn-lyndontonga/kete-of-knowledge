@@ -3,8 +3,7 @@ const DEFAULT_BASE_URL = "http://localhost:3000"
 const baseUrl = (process.env.API_URL || DEFAULT_BASE_URL).replace(/\/$/, "")
 const timeoutMs = Number(process.env.TIMEOUT_MS || 8000)
 
-const adminEmail = process.env.ADMIN_EMAIL
-const adminPassword = process.env.ADMIN_PASSWORD
+const adminToken = process.env.ADMIN_TOKEN || process.env.ADMIN_BEARER_TOKEN
 
 function withTimeout(signal, ms) {
   const controller = new AbortController()
@@ -59,23 +58,18 @@ async function run() {
   const appConditions = await fetchJson("/api/app/conditions")
   ok = logResult("GET /api/app/conditions", appConditions) && ok
 
-  if (adminEmail && adminPassword) {
-    const login = await fetchJson("/api/admin/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: adminEmail, password: adminPassword }),
+  if (adminToken) {
+    const adminMe = await fetchJson("/api/admin/auth/me", {
+      headers: { Authorization: `Bearer ${adminToken}` },
     })
-    const loginOk = logResult("POST /api/admin/auth/login", login)
-    ok = loginOk && ok
+    ok = logResult("GET /api/admin/auth/me", adminMe) && ok
 
-    if (loginOk && login.json?.token) {
-      const adminWhakatauki = await fetchJson("/api/admin/whakatauki", {
-        headers: { Authorization: `Bearer ${login.json.token}` },
-      })
-      ok = logResult("GET /api/admin/whakatauki", adminWhakatauki) && ok
-    }
+    const adminWhakatauki = await fetchJson("/api/admin/whakatauki", {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    })
+    ok = logResult("GET /api/admin/whakatauki", adminWhakatauki) && ok
   } else {
-    console.log("SKIP admin auth checks (set ADMIN_EMAIL and ADMIN_PASSWORD)")
+    console.log("SKIP admin auth checks (set ADMIN_TOKEN or ADMIN_BEARER_TOKEN)")
   }
 
   if (!ok) {
