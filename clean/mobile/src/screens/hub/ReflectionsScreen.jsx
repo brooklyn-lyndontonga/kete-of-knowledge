@@ -16,7 +16,7 @@ import {
   addReflection,
   deleteReflection,
   getReflections,
-} from "../../features/reflections.db"
+} from "../../features/reflections.db.js"
 import { useAuth } from "../../auth/AuthContext"
 import { useAuthGuard } from "../../auth/useAuthGuard"
 import { useLanguage } from "../../i18n/LanguageContext"

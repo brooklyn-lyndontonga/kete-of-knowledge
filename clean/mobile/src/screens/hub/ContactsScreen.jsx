@@ -14,7 +14,7 @@ import {
   CONTACT_CATEGORIES,
   deleteContact,
   getContactsByCategory,
-} from "../../features/contacts.db"
+} from "../../features/contacts.db.js"
 import { colors, layout, radii, shadow, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import { useAuthGuard } from "../../auth/useAuthGuard"

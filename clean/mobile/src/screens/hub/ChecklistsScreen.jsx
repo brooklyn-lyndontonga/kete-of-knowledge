@@ -13,7 +13,7 @@ import {
   deleteChecklist,
   getChecklists,
   toggleChecklistItem,
-} from "../../features/checklists.db"
+} from "../../features/checklists.db.js"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
 import { useAuthGuard } from "../../auth/useAuthGuard"

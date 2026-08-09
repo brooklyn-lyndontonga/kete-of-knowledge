@@ -13,7 +13,7 @@ import {
   deleteReminder,
   getReminders,
   toggleReminder,
-} from "../../features/reminders.db"
+} from "../../features/reminders.db.js"
 import { isAvailable } from "../../features/notifications"
 import { colors, radii, shadow, spacing, typography } from "../../theme"
 import { useAuth } from "../../auth/AuthContext"
