@@ -34,19 +34,28 @@ router.post("/magic-link", async (req, res) => {
       },
     })
 
-    const magicLink = `keteofknowledge://auth?token=${token}`
-    
+    const deepLink = `keteofknowledge://auth?token=${token}`
+
+    // Build an HTTPS redirect URL that email clients will render as a
+    // clickable link. The redirect endpoint (GET /magic-redirect) bounces
+    // the user's browser into the app via the deep link.
+    const serverBase =
+      process.env.SERVER_URL ||
+      `http://localhost:${process.env.PORT || 3000}`
+    const emailLink = `${serverBase}/api/app/auth/magic-redirect?token=${token}`
+
     // Always print the magic link in development to ease testing
     if (process.env.NODE_ENV !== "production") {
         console.log("\n✨ ---------------------------------------------------")
         console.log(`🔮 Magic Link for ${email}:`)
-        console.log(magicLink)
+        console.log(deepLink)
+        console.log(`📧 Email link: ${emailLink}`)
         console.log("--------------------------------------------------- ✨\n")
     }
 
     // Send email using service
     try {
-        await sendMagicLink(email, magicLink);
+        await sendMagicLink(email, emailLink);
     } catch (emailErr) {
         console.error("⚠️ Failed to send magic link email (check SMTP settings):", emailErr.message)
         if (process.env.NODE_ENV === "production") {
@@ -59,6 +68,46 @@ router.post("/magic-link", async (req, res) => {
     console.error("Magic link request failed", err)
     return res.status(500).json({ error: "Server error" })
   }
+})
+
+// GET /magic-redirect — browser-based trampoline from email → deep link
+// The email contains an https:// URL pointing here. This page auto-redirects
+// to the keteofknowledge:// deep link so the app opens directly.
+router.get("/magic-redirect", (req, res) => {
+  const { token } = req.query
+  if (!token) {
+    return res.status(400).send("Missing token")
+  }
+
+  const deepLink = `keteofknowledge://auth?token=${encodeURIComponent(token)}`
+
+  // Serve a small HTML page that immediately redirects to the deep link.
+  // Falls back to a tap-to-open link if the redirect doesn't fire.
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Opening Kete of Knowledge…</title>
+  <meta http-equiv="refresh" content="0;url=${deepLink}">
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f5f5f5;color:#333;text-align:center;padding:1rem}
+    .card{background:#fff;border-radius:16px;padding:2.5rem;max-width:380px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+    h1{font-size:1.25rem;margin:0 0 .75rem}
+    p{margin:0 0 1.25rem;color:#666;font-size:.9rem}
+    a{display:inline-block;background:#1a7a5c;color:#fff;text-decoration:none;padding:.75rem 2rem;border-radius:10px;font-weight:600;font-size:1rem}
+    a:hover{background:#15614a}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Opening Kete of Knowledge…</h1>
+    <p>If the app doesn't open automatically, tap the button below.</p>
+    <a href="${deepLink}">Open App</a>
+  </div>
+  <script>window.location.href="${deepLink}";</script>
+</body>
+</html>`)
 })
 
 // POST /verify-magic-link
