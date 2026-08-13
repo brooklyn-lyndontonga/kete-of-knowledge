@@ -34,7 +34,13 @@ router.post("/magic-link", async (req, res) => {
       },
     })
 
-    const deepLink = `keteofknowledge://auth?token=${token}`
+    // In Expo Go the custom scheme keteofknowledge:// isn't registered —
+    // only the exp:// scheme works. DEEP_LINK_BASE lets us switch:
+    //   Dev  (Expo Go):  exp://10.1.1.137:8081/--/auth
+    //   Prod (standalone): keteofknowledge://auth
+    const deepLinkBase =
+      process.env.DEEP_LINK_BASE || 'keteofknowledge://auth'
+    const deepLink = `${deepLinkBase}?token=${token}`
 
     // Build an HTTPS redirect URL that email clients will render as a
     // clickable link. The redirect endpoint (GET /magic-redirect) bounces
@@ -72,14 +78,16 @@ router.post("/magic-link", async (req, res) => {
 
 // GET /magic-redirect — browser-based trampoline from email → deep link
 // The email contains an https:// URL pointing here. This page auto-redirects
-// to the keteofknowledge:// deep link so the app opens directly.
+// to the keteofknowledge:// (or exp://) deep link so the app opens directly.
 router.get("/magic-redirect", (req, res) => {
   const { token } = req.query
   if (!token) {
     return res.status(400).send("Missing token")
   }
 
-  const deepLink = `keteofknowledge://auth?token=${encodeURIComponent(token)}`
+  const deepLinkBase =
+    process.env.DEEP_LINK_BASE || 'keteofknowledge://auth'
+  const deepLink = `${deepLinkBase}?token=${encodeURIComponent(token)}`
 
   // Serve a small HTML page that immediately redirects to the deep link.
   // Falls back to a tap-to-open link if the redirect doesn't fire.
