@@ -191,13 +191,13 @@ export async function initSchema() {
     CREATE TABLE IF NOT EXISTS magic_link_tokens (
       token TEXT PRIMARY KEY,
       email TEXT NOT NULL,
-      expiresAt INTEGER NOT NULL
+      expiresAt BIGINT NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS admin_password_resets (
       token TEXT PRIMARY KEY,
       email TEXT NOT NULL,
-      expiresAt INTEGER NOT NULL
+      expiresAt BIGINT NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS audit_logs (

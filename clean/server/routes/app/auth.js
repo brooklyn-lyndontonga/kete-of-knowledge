@@ -30,21 +30,28 @@ router.post("/magic-link", async (req, res) => {
       data: {
         token,
         email,
-        expiresAt,
+        expiresAt: BigInt(expiresAt),
       },
     })
 
     const magicLink = `keteofknowledge://auth?token=${token}`
     
-    // Send email using service
-    await sendMagicLink(email, magicLink);
-
-    // Development log
-    if (process.env.SMTP_HOST === 'smtp.ethereal.email') {
+    // Always print the magic link in development to ease testing
+    if (process.env.NODE_ENV !== "production") {
         console.log("\n✨ ---------------------------------------------------")
         console.log(`🔮 Magic Link for ${email}:`)
         console.log(magicLink)
         console.log("--------------------------------------------------- ✨\n")
+    }
+
+    // Send email using service
+    try {
+        await sendMagicLink(email, magicLink);
+    } catch (emailErr) {
+        console.error("⚠️ Failed to send magic link email (check SMTP settings):", emailErr.message)
+        if (process.env.NODE_ENV === "production") {
+            throw emailErr;
+        }
     }
 
     return res.json({ ok: true, message: "Magic link sent" })
@@ -75,7 +82,7 @@ router.post("/verify-magic-link", async (req, res) => {
     }
 
     // Check expiration
-    if (Date.now() > record.expiresAt) {
+    if (Date.now() > Number(record.expiresAt)) {
       await prisma.magic_link_tokens.delete({
         where: { token },
       })

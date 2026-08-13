@@ -113,13 +113,13 @@ model app_users {
 model magic_link_tokens {
   token     String   @id
   email     String
-  expiresAt Int
+  expiresAt BigInt
 }
 
 model admin_password_resets {
   token     String   @id
   email     String
-  expiresAt Int
+  expiresAt BigInt
 }
 
 model audit_logs {
