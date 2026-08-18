@@ -20,7 +20,7 @@ export const REQUIRED_BEFORE_RELEASE = {
   termsUrl: "https://kete-server-production.up.railway.app/terms.html",
 
   /** Shown in Settings and required as the app store support contact. */
-  supportEmail: "REPLACE_ME_support_email" /* ← the ONE value I can't choose for you: use your own email until ManawaOra provide theirs, then swap */,
+  supportEmail: "brooklynlt24@gmail.com" /* ← swap for ManawaOra's email when they provide it */,
 }
 
 /**
