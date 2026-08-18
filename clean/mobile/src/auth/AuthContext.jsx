@@ -42,7 +42,13 @@ export function AuthProvider({ children }) {
       const { url } = event
       const parsed = Linking.parse(url)
 
-      if (parsed.path === "auth" && parsed.queryParams?.token) {
+      // In Expo Go the link is exp://IP:8081/--/auth?token=... and "auth"
+      // arrives as the *path*. In a standalone build the link is
+      // keteofknowledge://auth?token=... and "auth" arrives as the
+      // *hostname* (custom-scheme URLs have no path). Accept both, or
+      // sign-in silently fails on TestFlight/APK builds.
+      const route = parsed.path || parsed.hostname
+      if (route === "auth" && parsed.queryParams?.token) {
         verifyMagicLink(parsed.queryParams.token)
       }
     }

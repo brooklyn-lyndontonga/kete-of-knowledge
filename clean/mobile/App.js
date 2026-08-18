@@ -1,5 +1,9 @@
 import { NavigationContainer } from "@react-navigation/native"
-import { SafeAreaView } from "react-native-safe-area-context"
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+  initialWindowMetrics,
+} from "react-native-safe-area-context"
 import { useEffect, useState } from "react"
 import {
   ActivityIndicator,
@@ -64,13 +68,16 @@ export default function App() {
 
   if (!fontsLoaded || !dbReady) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <ActivityIndicator size="large" color={colors.olive} />
-      </SafeAreaView>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <SafeAreaView style={styles.safeArea}>
+          <ActivityIndicator size="large" color={colors.olive} />
+        </SafeAreaView>
+      </SafeAreaProvider>
     )
   }
 
   return (
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
     <NavigationContainer>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
@@ -87,6 +94,7 @@ export default function App() {
         </LanguageProvider>
       </SafeAreaView>
     </NavigationContainer>
+    </SafeAreaProvider>
   )
 }
 
