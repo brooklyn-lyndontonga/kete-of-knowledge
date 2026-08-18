@@ -1,57 +1,108 @@
 // services/email.js — hardened, non-throwing mailer for Kete of Knowledge
-// Drop-in replacement: same exports (sendMagicLink, sendPasswordResetLink),
-// same call signatures. Difference: these never throw. They return
-//   { ok: true, messageId } on success, or { ok: false, error } on failure.
-// This guarantees an SMTP problem can never turn into a 500 "Server error"
-// that blocks login — in dev OR production. The token is already persisted
-// before the email is attempted, so login still works even if delivery fails.
+//
+// TWO TRANSPORTS, picked automatically:
+//   1. Brevo HTTPS API  — used when BREVO_API_KEY is set. Required on
+//      Railway Free/Trial/Hobby plans, where outbound SMTP ports are
+//      blocked (connections just time out). Works over plain HTTPS.
+//      Set in Railway:  BREVO_API_KEY   = your key from app.brevo.com
+//                       BREVO_FROM_EMAIL = the VERIFIED sender address
+//                       BREVO_FROM_NAME  = display name (optional)
+//   2. SMTP (nodemailer) — fallback for local dev / SMTP-capable hosts.
+//      Uses SMTP_* vars, connecting via an explicitly-resolved IPv4
+//      address (some hosts resolve Gmail to IPv6 with no IPv6 route).
+//
+// Same exports as always (sendMagicLink, sendPasswordResetLink), same
+// signatures, and they NEVER throw — they return {ok:true,messageId}
+// or {ok:false,error}, so email trouble can never 500 a login request.
 
 import nodemailer from 'nodemailer';
 import dns from 'node:dns';
 
-// Railway's resolver can return only an IPv6 address for smtp.gmail.com,
-// but the container has no IPv6 route (connect ENETUNREACH 2404:...).
-// Result-order hints don't help when there's no A record in the answer,
-// so resolve an IPv4 address explicitly and connect to it, keeping TLS
-// certificate validation against the original hostname via servername.
+const BREVO_API_KEY = process.env.BREVO_API_KEY || null;
+const BREVO_FROM_EMAIL =
+  process.env.BREVO_FROM_EMAIL || process.env.SMTP_USER || null;
+const BREVO_FROM_NAME = process.env.BREVO_FROM_NAME || 'Kete of Knowledge';
 
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.ethereal.email';
 
-const transporterPromise = (async () => {
-  let host = SMTP_HOST;
-  try {
-    const addrs = await dns.promises.resolve4(SMTP_HOST);
-    if (addrs && addrs.length) {
-      host = addrs[0];
-      console.log(`📧 SMTP using IPv4 ${host} for ${SMTP_HOST}`);
-    }
-  } catch (e) {
-    console.warn(`📧 IPv4 resolve failed for ${SMTP_HOST} (${e.message}) — using hostname`);
-  }
-  return nodemailer.createTransport({
-    host,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'true', // true only for port 465
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS, // Gmail: must be a 16-char App Password, no spaces
+// ── Transport 1: Brevo over HTTPS ────────────────────────────────
+async function sendViaBrevo({ to, subject, text, html, label }) {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': BREVO_API_KEY,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
     },
-    tls: { servername: SMTP_HOST }, // cert check against the real hostname
+    body: JSON.stringify({
+      sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
+      to: [{ email: to }],
+      subject,
+      textContent: text,
+      htmlContent: html,
+    }),
   });
-})();
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(
+      `Brevo ${res.status}: ${body.message || JSON.stringify(body)}`
+    );
+  }
+  console.log(`📧 ${label} sent to ${to} via Brevo: ${body.messageId || 'ok'}`);
+  return { ok: true, messageId: body.messageId || null };
+}
 
-// Verify at startup so a bad login (like the 535 you're hitting) shows up
-// immediately and clearly, instead of only on the first send attempt.
-transporterPromise.then((t) =>
-  t.verify()
-    .then(() => console.log('📧 SMTP ready'))
-    .catch((err) =>
-      console.warn('⚠️  SMTP not ready — emails will be skipped:', err.message)
-    )
-);
+// ── Transport 2: SMTP via nodemailer (IPv4-pinned) ───────────────
+const transporterPromise = BREVO_API_KEY
+  ? null
+  : (async () => {
+      let host = SMTP_HOST;
+      try {
+        const addrs = await dns.promises.resolve4(SMTP_HOST);
+        if (addrs && addrs.length) {
+          host = addrs[0];
+          console.log(`📧 SMTP using IPv4 ${host} for ${SMTP_HOST}`);
+        }
+      } catch (e) {
+        console.warn(
+          `📧 IPv4 resolve failed for ${SMTP_HOST} (${e.message}) — using hostname`
+        );
+      }
+      return nodemailer.createTransport({
+        host,
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === 'true', // true only for port 465
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS, // Gmail: 16-char App Password
+        },
+        tls: { servername: SMTP_HOST }, // cert check against real hostname
+      });
+    })();
+
+// Startup self-check so problems appear in the logs immediately.
+if (BREVO_API_KEY) {
+  if (!BREVO_FROM_EMAIL) {
+    console.warn('⚠️  BREVO_API_KEY set but no BREVO_FROM_EMAIL/SMTP_USER — sends will fail');
+  } else {
+    console.log(`📧 Email via Brevo HTTPS API (sender: ${BREVO_FROM_EMAIL})`);
+  }
+} else {
+  transporterPromise.then((t) =>
+    t
+      .verify()
+      .then(() => console.log('📧 SMTP ready'))
+      .catch((err) =>
+        console.warn('⚠️  SMTP not ready — emails will be skipped:', err.message)
+      )
+  );
+}
 
 async function send({ to, subject, text, html, label }) {
   try {
+    if (BREVO_API_KEY) {
+      return await sendViaBrevo({ to, subject, text, html, label });
+    }
     const transporter = await transporterPromise;
     const info = await transporter.sendMail({
       from: process.env.SMTP_FROM || '"Kete of Knowledge" <no-reply@kete.com>',
