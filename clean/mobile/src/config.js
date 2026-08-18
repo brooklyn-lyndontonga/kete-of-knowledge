@@ -14,13 +14,13 @@ export const REQUIRED_BEFORE_RELEASE = {
    * Apple will reject the app without a working, publicly reachable
    * privacy policy URL. It must be live before submission, not after.
    */
-  privacyPolicyUrl: "REPLACE_ME_privacy_policy_url",
+  privacyPolicyUrl: "https://kete-server-production.up.railway.app/privacy.html",
 
   /** Recommended by Apple, optional but sensible. */
-  termsUrl: "REPLACE_ME_terms_of_use_url",
+  termsUrl: "https://kete-server-production.up.railway.app/terms.html",
 
   /** Shown in Settings and required as the app store support contact. */
-  supportEmail: "REPLACE_ME_support_email",
+  supportEmail: "REPLACE_ME_support_email" /* ← the ONE value I can't choose for you: use your own email until ManawaOra provide theirs, then swap */,
 }
 
 /**
