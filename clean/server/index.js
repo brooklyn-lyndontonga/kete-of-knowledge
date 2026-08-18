@@ -90,6 +90,7 @@ export const UPLOADS_DIR =
 
 fs.mkdirSync(UPLOADS_DIR, { recursive: true })
 app.use("/uploads", express.static(UPLOADS_DIR))
+app.use(express.static(path.join(__dirname, "public")))
 
 // Rate limiting for auth routes to prevent brute-force attacks
 const authLimiter = rateLimit({

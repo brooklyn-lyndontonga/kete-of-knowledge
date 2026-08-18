@@ -38,16 +38,18 @@ export default function ConsentScreen({ onAccepted }) {
         <Text style={styles.heading}>Your information stays with you</Text>
         <Text style={styles.body}>
           Everything you record in this app — your profile, goals, symptoms,
-          medicines, notes and contacts — is stored on this device only. It is
-          not uploaded to our servers and we cannot see it.
+          medicines, notes and contacts — is stored on this device. If you use
+          the app as a guest, nothing leaves your phone.
         </Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.heading}>What we do collect</Text>
         <Text style={styles.body}>
-          If you sign in, we store your email address so we can send you a
-          secure sign-in link. That is all.
+          If you sign in, we store your email address to send you a secure
+          sign-in link, and the health information you record is backed up to
+          your account so you can restore it on another device. You can delete
+          it all at any time from Settings.
         </Text>
       </View>
 

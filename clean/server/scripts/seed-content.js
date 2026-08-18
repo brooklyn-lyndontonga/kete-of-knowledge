@@ -5,7 +5,7 @@
 //      published content, so the original draft-status seeds made a fresh
 //      server look empty in the app.
 //   2. Realistic bilingual dummy content (the same set used for the
-//      screenshots) instead of "replace before launch" placeholders, so the
+//      screenshots) instead of the original sample placeholders, so the
 //      team's beta build has something real-feeling to browse. Kory OK'd
 //      dummy content. Replace with real content via the admin panel before
 //      store submission — app store reviewers open the app.

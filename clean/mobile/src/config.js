@@ -34,7 +34,7 @@ export const EMERGENCY_NUMBER = "111"
  * Increment it if the privacy wording changes materially — otherwise
  * people who already accepted will never see the new version.
  */
-export const CONSENT_VERSION = "1.0"
+export const CONSENT_VERSION = "1.1"
 
 export const config = {
   ...REQUIRED_BEFORE_RELEASE,

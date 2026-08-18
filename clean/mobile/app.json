@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.keteofknowledge.mobile",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -27,7 +27,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.keteofknowledge.mobile",
-      "versionCode": 2,
+      "versionCode": 3,
       "edgeToEdgeEnabled": true
     },
     "web": {
