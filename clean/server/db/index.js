@@ -211,6 +211,33 @@ export async function initSchema() {
     );
   `)
 
+  // Legacy fix: databases created before Prisma was introduced declared
+  // expiresAt as INT/INTEGER. Prisma maps the model's BigInt strictly and
+  // refuses to write millisecond timestamps into an INT-declared column
+  // (P2023: "Value ... does not fit in an INT column"), which breaks
+  // magic-link sign-in. Tokens are transient (15-minute expiry), so the
+  // safe migration is to rebuild the token tables with the BIGINT
+  // declaration whenever the legacy form is found.
+  for (const tokenTable of ["magic_link_tokens", "admin_password_resets"]) {
+    const def = await db.get(
+      `SELECT sql FROM sqlite_master WHERE type='table' AND name=?`,
+      [tokenTable]
+    )
+    if (def?.sql && !/expiresAt\s+BIGINT/i.test(def.sql)) {
+      await db.exec(`
+        DROP TABLE IF EXISTS ${tokenTable};
+        CREATE TABLE ${tokenTable} (
+          token TEXT PRIMARY KEY,
+          email TEXT NOT NULL,
+          expiresAt BIGINT NOT NULL
+        );
+      `)
+      console.log(
+        `🔧 Rebuilt ${tokenTable} with BIGINT expiresAt (legacy schema fix)`
+      )
+    }
+  }
+
   // Migration logic: add columns if they don't exist in existing tables
   const tablesToMigrate = ["whakatauki", "reflection_templates", "profile_seeds", "learning_resources", "conditions"];
   for (const table of tablesToMigrate) {

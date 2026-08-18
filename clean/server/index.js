@@ -1,4 +1,8 @@
 import "dotenv/config"
+// Railway containers can resolve Gmail to IPv6 but cannot route IPv6
+// egress, so SMTP dies with ENETUNREACH. Prefer IPv4 results globally.
+import dns from "node:dns"
+dns.setDefaultResultOrder("ipv4first")
 import express from "express"
 import cors from "cors"
 import compression from "compression"
