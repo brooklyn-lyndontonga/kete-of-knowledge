@@ -102,6 +102,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   input: {
+    color: colors.text, // explicit: OEM force-dark made typed text invisible
+
     padding: spacing.md,
     borderRadius: radii.md,
     borderWidth: 1,

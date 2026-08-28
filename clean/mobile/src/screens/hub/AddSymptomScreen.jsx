@@ -147,6 +147,8 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   input: {
+    color: colors.text, // explicit: OEM force-dark made typed text invisible
+
     padding: spacing.md,
     borderRadius: radii.md,
     borderWidth: 1,
@@ -154,6 +156,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
   },
   inputMultiline: {
+    color: colors.text, // explicit: OEM force-dark made typed text invisible
+
     minHeight: 90,
     textAlignVertical: "top",
   },

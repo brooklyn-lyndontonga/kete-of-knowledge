@@ -14,6 +14,8 @@ export default function SearchBar({ value, onChange }) {
 
 const styles = StyleSheet.create({
   input: {
+    color: colors.text, // explicit: OEM force-dark made typed text invisible
+
     padding: spacing.md,
     borderRadius: radii.md,
     backgroundColor: colors.card,

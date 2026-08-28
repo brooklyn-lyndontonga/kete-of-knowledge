@@ -189,6 +189,8 @@ const styles = StyleSheet.create({
   promptTitle: { ...typography.bodyStrong, color: colors.text },
   promptText: { ...typography.body, color: colors.text },
   input: {
+    color: colors.text, // explicit: OEM force-dark made typed text invisible
+
     backgroundColor: colors.card,
     borderRadius: radii.md,
     borderWidth: 1,

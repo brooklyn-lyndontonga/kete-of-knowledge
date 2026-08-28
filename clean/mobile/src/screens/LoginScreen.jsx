@@ -151,6 +151,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   input: {
+    color: colors.text, // explicit: OEM force-dark made typed text invisible
+
     backgroundColor: colors.card,
     borderRadius: radii.md,
     padding: spacing.md,

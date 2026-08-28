@@ -155,6 +155,8 @@ const styles = StyleSheet.create({
   chipText: { ...typography.bodyStrong, color: colors.russet },
   chipTextActive: { color: colors.cornsilk },
   input: {
+    color: colors.text, // explicit: OEM force-dark made typed text invisible
+
     backgroundColor: colors.card,
     borderRadius: radii.md,
     borderWidth: 1,
@@ -163,7 +165,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     minHeight: 48,
   },
-  inputMultiline: { minHeight: 100, textAlignVertical: "top" },
+  inputMultiline: {
+    color: colors.text, // explicit: OEM force-dark made typed text invisible
+ minHeight: 100, textAlignVertical: "top" },
   error: { ...typography.caption, color: colors.orange },
   primaryButton: {
     marginTop: spacing.md,

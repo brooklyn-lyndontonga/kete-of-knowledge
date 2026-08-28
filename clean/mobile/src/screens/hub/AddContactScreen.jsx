@@ -148,6 +148,8 @@ const styles = StyleSheet.create({
   title: { ...typography.title, color: colors.text, marginBottom: spacing.xs },
   label: { ...typography.caption, color: colors.muted, marginTop: spacing.sm },
   input: {
+    color: colors.text, // explicit: OEM force-dark made typed text invisible
+
     backgroundColor: colors.card,
     borderRadius: radii.md,
     borderWidth: 1,

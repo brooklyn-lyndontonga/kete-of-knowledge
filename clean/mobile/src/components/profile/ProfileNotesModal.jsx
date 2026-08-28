@@ -81,6 +81,8 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   input: {
+    color: colors.text, // explicit: OEM force-dark made typed text invisible
+
     minHeight: 120,
     borderWidth: 1,
     borderColor: colors.border,

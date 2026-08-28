@@ -181,3 +181,22 @@ h1 {
 [data-theme="business"] .table-zebra tbody tr:nth-child(even) {
   background-color: #1a202c !important;
 }
+
+/* ── Fix: typed text invisible in some inputs/themes ─────────────────
+   Light backgrounds are forced above, but text colour was only defined
+   for dark-mode class-based inputs. Cover ALL text-entry elements in
+   both themes so typing is always visible. */
+input, textarea, select, [contenteditable="true"] {
+  color: #111827 !important;
+  caret-color: #111827 !important;
+}
+input::placeholder, textarea::placeholder {
+  color: #6B7280 !important;
+}
+[data-theme="business"] input,
+[data-theme="business"] textarea,
+[data-theme="business"] select,
+[data-theme="business"] [contenteditable="true"] {
+  color: #F9FAFB !important;
+  caret-color: #F9FAFB !important;
+}
